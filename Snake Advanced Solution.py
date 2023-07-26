@@ -103,26 +103,104 @@ TouchTheSameK = {(s,k):
 
 # --- Snake Path Constraints ---
 # Ensures at each end of the path, signified by 0, there is exactly one path next to it.
-# For each square which is the end point (only two squares), the sum of X[s,0] for the neighbouring squares must be == 1
+# For each square which is the end point (only two squares), the sum of X[s,0] for the 
+# neighbouring squares must be == 1
 OnePathTouchesEnds = {(x,y):
                       m.addConstr(quicksum(X[s,0] for s in Neigh[x,y]) == 1)
                                   for x in N for y in N if Pre[x][y]==0}
 
-# For all squares, (x,y) not pre-defined (excluding endpoints), the path neighbours must be at least 0 if not on path and at least 2 if on path
+# For all squares, (x,y) not pre-defined (excluding endpoints), the path neighbours must be at 
+# least 0 if not on path and at least 2 if on path
 NeighboursOfPathA = {(x,y):
                      m.addConstr(quicksum(X[s,0] for s in Neigh[(x,y)]) >= 2*X[(x,y),0]) 
                      for x in N for y in N if Pre[x][y] < 0}
 
-# For all squares, (x,y) not pre-defined (excluding endpoints), the path neighbours must be at most 4 if not on path and at most 2 if on path
+# For all squares, (x,y) not pre-defined (excluding endpoints), the path neighbours must be at 
+# most 4 if not on path and at most 2 if on path
 NeighboursOfPathB = {(x,y):
                      m.addConstr(quicksum(X[s,0] for s in Neigh[(x,y)]) <= 4 - 2*X[(x,y),0]) 
                      for x in N for y in N if Pre[x][y] < 0}
 
-# With the above two constraints, we bound above and below that all points on the path (excluding end-points), must have exactly 2 neighbours on the path
+# With the above two constraints, we bound above and below that all points on the path 
+# (excluding end-points), must have exactly 2 neighbours on the path
 # This ensures the path does not split.
 
-m.optimize()
-Sol = [[min(k for k in K if X[(i,j),k].x >= 0.9) for j in N] for i in N]
-PlotBoard(Sol, Pre)
+# m.optimize()
+# Sol = [[min(k for k in K if X[(i,j),k].x >= 0.9) for j in N] for i in N]
+# PlotBoard(Sol, Pre)
 
+
+# EnoughNeighboursCloseEnough = {
+#     (s,k):
+#     m.addConstr(quicksum(X[s_prime,k] for s_prime in S if abs(s[0]-s_prime[0])+abs(s[1]-s_prime[1]) <= k-1) >= k * X[s,k])
+#     for s in S for k in K if k >= 4
+# }
+
+
+def FindSet(i,j, k,Sol):
+    # Set this square to inactive in the solution. This is so we don't start another cluster.
+    Sol[i][j] = -1
+
+    # Initialise the cluster to this square
+    clusterSet = {(i,j)}
+
+    # For squares in (i,j)'s neighbourhood
+    for (ii, jj) in Neigh[i,j]:
+        # If a neighbour has the same k value (is turned on)
+        if Sol[ii][jj] == k:
+            # Add to the tSet the set of neighbours of that square, (ii, jj)
+            clusterSet |= FindSet(ii,jj,k, Sol)
     
+    # When there are no more neighbours to find, return tSet
+
+    return clusterSet
+
+def calculateSol(X):
+    return [[min(k for k in K if X[(i,j),k] >= 0.9) for j in N] for i in N]
+
+def callback(model, where):
+    if where != GRB.Callback.MIPSOL:
+        return
+    print("Callback Actual")
+    # Get Current Solution from Gurobi
+    XV = model.cbGetSolution(X)
+
+    # Calculate solution 2D list
+    Sol = calculateSol(XV)
+    PlotBoard(Sol, Pre)
+    # Our aim is to find clusters of a given k. For each square (i,j) in the grid, we find 
+    # a cluster of neighbours of that k value. Duplicate clusters are avoided in the recursive
+    # function.
+    KSets = [[] for k in K]
+    for i in N:
+        for j in N:
+            k = Sol[i][j]
+            if k >= 0:
+                KSets[k].append(FindSet(i,j,k, Sol))
+
+    # Then we find all the neightbours for all squares in each of the cluster(s) of k
+    # We remove the inner squares (tSet) leaving the neighbours of that cluster.
+    # Finally, we add a constraint for each square in the cluster, add a constraint to
+    # the model which says the sum of the neighbours of the cluster must be greater
+    # than square, s. So either you add one to the neighbour set, nSet or you turn off
+    # the square, s. Very clever.
+    for k in K:
+        if len(KSets[k]) <= 1:
+            continue
+        for clusterSet in KSets[k]:
+            # nSet is the set of Neighbours
+            nSet = set()
+            for s in clusterSet:
+                nSet |= Neigh[s]
+            nSet -= clusterSet
+            for s in clusterSet:
+                model.cbLazy(XV[s,k] <= 
+                            quicksum(XV[s_prime,k] for s_prime in nSet)
+                            )
+
+
+
+m.setParam('LazyConstraints', 1)
+m.optimize(callback)
+# Sol = calculateSol(X)
+# PlotBoard(Sol, Pre)
