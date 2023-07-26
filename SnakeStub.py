@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from gurobipy import *
+from gurobipy import GRB, Model, quicksum
 
 
 # Plot a solution
@@ -17,7 +17,7 @@ def PlotBoard(Sol, Pre):
                          fontsize='x-large', fontweight='black')
     plt.show()
 
-if True:
+if False:
     K = range(6)
     Pre = [
         [-1, 2,-1, 0,-1,-1],
@@ -45,7 +45,7 @@ else:
 N = range(len(Pre))
 
 # Plot blank board
-PlotBoard([[(Pre[i][j] if (Pre[i][j]>=0) else 0) for j in N] for i in N], Pre)
+# PlotBoard([[(Pre[i][j] if (Pre[i][j]>=0) else 0) for j in N] for i in N], Pre)
 
 # Set of squares
 S = {(i, j) for i in N for j in N}
@@ -62,29 +62,67 @@ Neigh = {s: GetNeigh(*s) for s in S}
 m = Model("Snake")
 m.setParam("Seed", 0)
 
-
+# Variable X is binary. It says for each square and each number, k, is that square turned on
 X = {(s,k): m.addVar(vtype=GRB.BINARY) for s in S for k in K}
 
+# Constraints
+# If we sum over all the k's, for each square, exactly 1 can be turned on.
+# Exactly 1 because k = 0 means the path of the snake
 OneValPerSq = {s:
                m.addConstr(quicksum(X[s,k] for k in K) == 1)
-               
                for s in S
                }
 
+# Set pre-assignments for s: (i,j) to be 1 for that k for each row and column if >= 0
 PreAssign = {(i, j):
                m.addConstr(X[(i,j), Pre[i][j]] == 1)
-               
                for i in N for j in N if Pre[i][j] >= 0}
 
+# For each k, we must have exactly k squares turned on which are that k
 KItemsOfTypeK = {k:
                  m.addConstr(quicksum(X[s,k] for s in S) == k)
                  for k in K[1:]
                  }
 
+# {s: 
+#  m.addConstr(X[s,k] <= quicksum(X[s_prime, k] for s_prime in GetNeigh(*s))) for s in S for k in K if k >= 2 }
 
+# For each k, and for each square, s, the neighbours of that square, s_primes, must not be of a different k value.
+# So this is done by saying either the square s for K=k is on OR if you sum over the other k values greater than 1, at most one of them will be on.
+# By using an exclusive OR here, this prevents K=k from being a neighbour of K!=k
+DifferentKsNotTouching = {(s, s_prime, k):
+                          m.addConstr(X[s,k] + quicksum(X[s_prime, k_prime] for k_prime in K if k_prime >= 1 and k_prime != k)
+                                       <= 1) for s in S for s_prime in Neigh[s] for k in K if k >= 1}
+
+# For each square, s, and each k greater than or equal to 2, the sum of the neighbours must be greater than s
+# This ensures squares of the same k must be turned on next to each other in at least groups of 2.
+# It cannot ensure that groups of k > 2 stick together.
+TouchTheSameK = {(s,k):
+                 m.addConstr(X[s,k] <= quicksum(X[s_prime, k] for s_prime in Neigh[s]))
+                 for s in S for k in K if k >= 2}
+
+# --- Snake Path Constraints ---
+# Ensures at each end of the path, signified by 0, there is exactly one path next to it.
+# For each square which is the end point (only two squares), the sum of X[s,0] for the neighbouring squares must be == 1
+OnePathTouchesEnds = {(x,y):
+                      m.addConstr(quicksum(X[s,0] for s in Neigh[x,y]) == 1)
+                                  for x in N for y in N if Pre[x][y]==0}
+
+# For all squares, (x,y) not pre-defined (excluding endpoints), the path neighbours must be at least 0 if not on path and at least 2 if on path
+NeighboursOfPathA = {(x,y):
+                     m.addConstr(quicksum(X[s,0] for s in Neigh[(x,y)]) >= 2*X[(x,y),0]) 
+                     for x in N for y in N if Pre[x][y] < 0}
+
+# For all squares, (x,y) not pre-defined (excluding endpoints), the path neighbours must be at most 4 if not on path and at most 2 if on path
+NeighboursOfPathB = {(x,y):
+                     m.addConstr(quicksum(X[s,0] for s in Neigh[(x,y)]) <= 4 - 2*X[(x,y),0]) 
+                     for x in N for y in N if Pre[x][y] < 0}
+
+# With the above two constraints, we bound above and below that all points on the path (excluding end-points), must have exactly 2 neighbours on the path
+# This ensures the path does not split.
 
 m.optimize()
+Sol = [[min(k for k in K if X[(i,j),k].x >= 0.9) for j in N] for i in N]
+PlotBoard(Sol, Pre)
 
-
-print("Hi")
-PlotBoard([[min(k for k in K if X[(i,j),k].x >= 0.9) for j in N] for i in N], Pre)
+    
