@@ -4,7 +4,7 @@ from gurobipy import *
 
 # Plot a solution
 def PlotBoard(Sol, Pre):
-    plt.figure(figsize=(len(Pre), len(Pre)), dpi=300)
+    plt.figure(figsize=(len(Pre), len(Pre)), dpi=100)
     plt.pcolormesh(Sol, cmap='tab20', alpha=0.7, edgecolors='k', linewidth=2)
     plt.axis(False)
     for i in N:
@@ -63,3 +63,28 @@ m = Model("Snake")
 m.setParam("Seed", 0)
 
 
+X = {(s,k): m.addVar(vtype=GRB.BINARY) for s in S for k in K}
+
+OneValPerSq = {s:
+               m.addConstr(quicksum(X[s,k] for k in K) == 1)
+               
+               for s in S
+               }
+
+PreAssign = {(i, j):
+               m.addConstr(X[(i,j), Pre[i][j]] == 1)
+               
+               for i in N for j in N if Pre[i][j] >= 0}
+
+KItemsOfTypeK = {k:
+                 m.addConstr(quicksum(X[s,k] for s in S) == k)
+                 for k in K[1:]
+                 }
+
+
+
+m.optimize()
+
+
+print("Hi")
+PlotBoard([[min(k for k in K if X[(i,j),k].x >= 0.9) for j in N] for i in N], Pre)

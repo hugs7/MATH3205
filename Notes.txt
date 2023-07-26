@@ -1,0 +1,21 @@
+What makes a good paper
+
+Need to have availability of data
+Even better if it has published code
+
+If no data, can we generate data?
+
+--
+
+Ideally look for Benders decompostion
+Can choose area interested in though too
+
+Optimising battery technology
+EVs
+Recharging domestic batteries
+
+--
+
+Example projects on BB
+
+--
