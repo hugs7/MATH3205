@@ -159,44 +159,43 @@ def calculateSol(X):
     return [[min(k for k in K if X[(i,j),k] >= 0.9) for j in N] for i in N]
 
 def callback(model, where):
-    if where != GRB.Callback.MIPSOL:
-        return
-    print("Callback Actual")
-    # Get Current Solution from Gurobi
-    XV = model.cbGetSolution(X)
+    if where == GRB.Callback.MIPSOL:
+        print("Callback Actual")
+        # Get Current Solution from Gurobi
+        XV = model.cbGetSolution(X)
 
-    # Calculate solution 2D list
-    Sol = calculateSol(XV)
-    PlotBoard(Sol, Pre)
-    # Our aim is to find clusters of a given k. For each square (i,j) in the grid, we find 
-    # a cluster of neighbours of that k value. Duplicate clusters are avoided in the recursive
-    # function.
-    KSets = [[] for k in K]
-    for i in N:
-        for j in N:
-            k = Sol[i][j]
-            if k >= 0:
-                KSets[k].append(FindSet(i,j,k, Sol))
+        # Calculate solution 2D list
+        Sol = calculateSol(XV)
+        PlotBoard(Sol, Pre)
+        # Our aim is to find clusters of a given k. For each square (i,j) in the grid, we find 
+        # a cluster of neighbours of that k value. Duplicate clusters are avoided in the recursive
+        # function.
+        KSets = [[] for k in K]
+        for i in N:
+            for j in N:
+                k = Sol[i][j]
+                if k >= 0:
+                    KSets[k].append(FindSet(i,j,k, Sol))
 
-    # Then we find all the neightbours for all squares in each of the cluster(s) of k
-    # We remove the inner squares (tSet) leaving the neighbours of that cluster.
-    # Finally, we add a constraint for each square in the cluster, add a constraint to
-    # the model which says the sum of the neighbours of the cluster must be greater
-    # than square, s. So either you add one to the neighbour set, nSet or you turn off
-    # the square, s. Very clever.
-    for k in K:
-        if len(KSets[k]) <= 1:
-            continue
-        for clusterSet in KSets[k]:
-            # nSet is the set of Neighbours
-            nSet = set()
-            for s in clusterSet:
-                nSet |= Neigh[s]
-            nSet -= clusterSet
-            for s in clusterSet:
-                model.cbLazy(XV[s,k] <= 
-                            quicksum(XV[s_prime,k] for s_prime in nSet)
-                            )
+        # Then we find all the neightbours for all squares in each of the cluster(s) of k
+        # We remove the inner squares (tSet) leaving the neighbours of that cluster.
+        # Finally, we add a constraint for each square in the cluster, add a constraint to
+        # the model which says the sum of the neighbours of the cluster must be greater
+        # than square, s. So either you add one to the neighbour set, nSet or you turn off
+        # the square, s. Very clever.
+        for k in K:
+            if len(KSets[k]) <= 1:
+                continue
+            for clusterSet in KSets[k]:
+                # nSet is the set of Neighbours
+                nSet = set()
+                for s in clusterSet:
+                    nSet |= Neigh[s]
+                nSet -= clusterSet
+                for s in clusterSet:
+                    model.cbLazy(XV[s,k] <= 
+                                quicksum(XV[s_prime,k] for s_prime in nSet)
+                                )
 
 
 
