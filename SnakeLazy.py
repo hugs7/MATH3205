@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from gurobipy import *
+from gurobipy import Model, GRB, quicksum
 
 
 # Plot a solution
