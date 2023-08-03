@@ -1,4 +1,4 @@
-from gurobipy import *
+from gurobipy import Model, quicksum, GRB
 
 EPS = 0.0001
 
@@ -24,3 +24,14 @@ Demand = [
 
 Sell = [60,40,10]
 
+m = Model("Dakota")
+
+Y = {(r): m.addVar() for r in R}
+X = {(p,s): m.addVar() for p in P for s in S}
+
+# objective
+
+m.setObjective(quicksum(Prob[s] * quicksum(Sell[p] * X[p,s] for p in P) for s in S) - quicksum(Cost[r] * Y[r] for r in R))
+
+{(p,s):
+ m.addConstr(quicksum(Input[r][p] * X[p,s] for p in P) <= Y[r])}
