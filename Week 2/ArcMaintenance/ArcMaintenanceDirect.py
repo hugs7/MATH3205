@@ -1,4 +1,4 @@
-from gurobipy import *
+from gurobipy import Model, quicksum, GRB
 
 # Initialise empty data
 Nodes = []
