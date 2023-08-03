@@ -1,6 +1,7 @@
 from gurobipy import Model, quicksum, GRB
 
 # Initialise empty data
+EPS = 1e-6
 Nodes = []
 Arcs = []
 BackArc = None
@@ -52,7 +53,6 @@ JobsTA = [[[(j,p) for j in JobsA[a] for p in JP[j] if p<=t and p+Jobs[j][3]>t]
 print('Calculated JobsTA')
 
 BSP = Model()
-BSP.setParam('OutputFlag', 0)
 
 X = {a: BSP.addVar() for a in A}
 
@@ -65,19 +65,52 @@ FlowConversion = {n: BSP.addConstr(quicksum(X[a] for a in A if Arcs[a][0] == n) 
 UpperBound = {a: BSP.addConstr(X[a]<=Arcs[a][2])
               for a in X}
 
+BSP.setParam('OutputFlag', 0)
 BSP.optimize()
 print(BSP.objVal)
 
-
-
 BMP = Model()
+BMP.setParam('OutputFlag', 0)
 
 Y = {(j,t): BMP.addVar(vtype=GRB.BINARY) for j in J for t in JP[j]}
 Theta = {t: BMP.addVar(ub=BSP.objVal) for t in T}
 BMP.setObjective(quicksum(Theta[t] for t in T), GRB.MAXIMIZE)
-
-
 EachJobOnce = {j: BMP.addConstr(quicksum(Y[j,t] for t in JP[j])==1)
                                 for j in J}
 
-BMP.optimize()
+
+for vtype in [GRB.CONTINUOUS, GRB.BINARY]:
+    for k in Y:
+        Y[k].vtype = vtype
+
+    while True:
+        BMP.optimize()
+        print("BSP Objective: ", BSP.objVal)
+        CalcObj = 0
+        # In each time period, turn off the arcs which are turned off for this
+        # time period
+
+        cutsAdded = 0
+        for t in T:
+            for a in A:
+                # Change RHS of constraint within Subproblem
+                # Updating with the Y* value
+                # UpperBound[a].RHS = Arcs[a][2] * (1 - sum(Y[(j, td)].x for (j, td) in JobsTA[t][a]))
+
+                UpperBound[a].RHS = Arcs[a][2] * (1 - sum(Y[(j, td)].x for (j, td) in JobsTA[t][a]))
+
+            # Now optimise (once updated all RHS)
+            BSP.optimize()
+            CalcObj += BSP.objVal
+
+            # If subproblems overestimate, add a cut
+            if BSP.objVal < Theta[t].x - EPS:
+                # <= sum(dual variable associated with upper bound constraint for all arcs in A)
+                BMP.addConstr(Theta[t] <= quicksum(UpperBound[a].pi * (Arcs[a][2] * (1 - quicksum(Y[(j, td)] for (j, td) in JobsTA[t][a]))) for a in A))
+            
+        print("Cuts added", cutsAdded)
+        print("BMP Objective: ", BMP.objVal)
+        print("Calculated Objective: ", CalcObj)
+
+        if cutsAdded == 0:
+            break
