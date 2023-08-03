@@ -66,11 +66,14 @@ for k in range(40):
 
         if BSP.objVal > Theta[s].x + EPS:
             cutsAdded += 1
-            {BMP.addConstr(Theta[s] >= quicksum(ResourceLimit[r].pi * Y[r] for r in R) + 
-                        quicksum(DemandLimit[p].pi * Demand[p][s] for p in P)) for s in S}
+            BMP.addConstr(Theta[s] >= quicksum(ResourceLimit[r].pi * Y[r] for r in R) + 
+                        quicksum(DemandLimit[p].pi * Demand[p][s] for p in P))
         elif BSP.objVal < Theta[s].x - EPS:
             print("######## Bad Theta", s, Theta[s].x, BSP.objVal)
 
     if cutsAdded == 0:
         print("Stopped at ", k)
         break
+
+
+print("Global Objective: " + str(-BMP.objVal))

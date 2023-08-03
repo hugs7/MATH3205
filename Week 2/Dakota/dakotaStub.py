@@ -31,7 +31,14 @@ X = {(p,s): m.addVar() for p in P for s in S}
 
 # objective
 
-m.setObjective(quicksum(Prob[s] * quicksum(Sell[p] * X[p,s] for p in P) for s in S) - quicksum(Cost[r] * Y[r] for r in R))
+m.setObjective(quicksum(Prob[s] * quicksum(Sell[p] * X[p,s] for p in P) for s in S) - quicksum(Cost[r] * Y[r] for r in R), GRB.MAXIMIZE)
 
-{(p,s):
- m.addConstr(quicksum(Input[r][p] * X[p,s] for p in P) <= Y[r])}
+ResourceLimit = {   (s,r):
+                    m.addConstr(quicksum(Input[r][p] * X[p,s] for p in P) <= Y[r]) for s in S for r in R}
+
+DemandLimit = {(p,s): m.addConstr(X[p,s] <= Demand[p][s]) for p in P for s in S}
+
+m.optimize()
+
+print("\n\n")
+print("Objective Value: " + str(m.objVal))
