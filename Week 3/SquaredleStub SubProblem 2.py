@@ -1,4 +1,4 @@
-from gurobipy import *
+from gurobipy import Model, quicksum, GRB
 
 # Goal: Make a 3x3 squaredle, with 9 distinct letters
 #       Maximise the number of 4+ letter words
@@ -37,3 +37,50 @@ W = range(len(WordList))
 print(len(WordList), "words after palindromes removed")
 
 print('Alphabet:', FSet)
+
+m = Model()
+# Sets
+
+W = range(len(WordList))
+A = Alphabet
+P = set([frozenset([a,b]) for w in W for a,b in zip(WordList[w], WordList[w][1:])])
+
+# Data
+
+# Variables
+Y = {a: m.addVar(vtype=GRB.BINARY) for a in FSet}
+Z = {p: m.addVar(vtype=GRB.BINARY) for p in P}
+Theta = {w: m.addVar() for w in W}
+
+# Objective
+
+m.setObjective(quicksum(Theta[w] * wDict[WordList[w]] for w in W), GRB.MAXIMIZE)
+
+# Constraints
+
+for p in P:
+    for a in p:
+        m.addConstr(Z[p] <= Y[a])
+for w in W:
+    for a,b in zip(WordList[w], WordList[w][1:]):
+        m.addConstr(Theta[w] <= Z[frozenset([a,b])])
+
+m.addConstr(quicksum(Y.values()) == len(S))
+m.addConstr(quicksum(Z.values()) <= 20)
+
+for a in Y:
+    Y[a].BranchPriority = Freq[a]
+
+m.setParam('BranchDir', 1)
+m.setParam('Heuristics', 0)
+m.setParam('Cuts', 0)
+m.setParam('MIPGap', 0)
+m.setParam('MIPFocus', 2)
+m.optimize()
+
+
+#####
+
+
+# tSet = set([frozenset([a,b]) for w in W if Theta[w].x > 0.9 for a,b in zip(WordList[w], WordList[w][1:])])
+# len(tSet)

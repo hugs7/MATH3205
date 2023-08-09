@@ -1,4 +1,4 @@
-from gurobipy import *
+from gurobipy import Model, quicksum, GRB
 
 # Goal: Make a 3x3 squaredle, with 9 distinct letters
 #       Maximise the number of 4+ letter words
@@ -37,3 +37,29 @@ W = range(len(WordList))
 print(len(WordList), "words after palindromes removed")
 
 print('Alphabet:', FSet)
+
+m = Model()
+# Sets
+
+W = range(len(WordList))
+A = Alphabet
+
+# Data
+
+# Variables
+Y = {a: m.addVar(vtype=GRB.BINARY) for a in FSet}
+Theta = {w: m.addVar() for w in W}
+
+# Objective
+
+m.setObjective(quicksum(Theta[w] * wDict[WordList[w]] for w in W), GRB.MAXIMIZE)
+
+# Constraints
+
+for w in W:
+    for a in WordList[w]:
+        m.addConstr(Theta[w] <= Y[a])
+
+m.addConstr(quicksum(Y.values()) == len(S))
+
+m.optimize()
