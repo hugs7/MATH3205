@@ -105,6 +105,7 @@ for vtype in [GRB.CONTINUOUS, GRB.BINARY]:
 
             # If subproblems overestimate, add a cut
             if BSP.objVal < Theta[t].x - EPS:
+                cutsAdded += 1
                 # <= sum(dual variable associated with upper bound constraint for all arcs in A)
                 BMP.addConstr(Theta[t] <= quicksum(UpperBound[a].pi * (Arcs[a][2] * (1 - quicksum(Y[(j, td)] for (j, td) in JobsTA[t][a]))) for a in A))
             
