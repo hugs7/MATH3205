@@ -38,12 +38,15 @@ print(len(WordList), "words after palindromes removed")
 
 print('Alphabet:', FSet)
 
+
 m = Model()
 # Sets
 
+N = {3:4, 5:4, 8:1}         # Valence size indexed with v
 W = range(len(WordList))
 A = Alphabet
 P = set([frozenset([a,b]) for w in W for a,b in zip(WordList[w], WordList[w][1:])])
+
 
 # Data
 
@@ -51,6 +54,7 @@ P = set([frozenset([a,b]) for w in W for a,b in zip(WordList[w], WordList[w][1:]
 Y = {a: m.addVar(vtype=GRB.BINARY) for a in FSet}
 Z = {p: m.addVar(vtype=GRB.BINARY) for p in P}
 Theta = {w: m.addVar() for w in W}
+VV = {(a,v): m.addVar(vtype=GRB.BINARY) for a in FSet for v in N}
 
 # Objective
 
@@ -68,6 +72,16 @@ for w in W:
 m.addConstr(quicksum(Y.values()) == len(S))
 m.addConstr(quicksum(Z.values()) <= 20)
 
+AperV = {v: m.addConstr(quicksum(VV[a,v] for a in FSet) == N[v]) for v in N}
+VperA = {a: m.addConstr(quicksum(VV[a,v] for v in N) == Y[a]) for a in FSet}
+
+ParisMatchValency = {a: m.addConstr(quicksum(Z[p] for p in P if a in p) == 
+                                    quicksum(v *
+                                              VV[a,v] for v in N)) for a in FSet}
+
+# Tuning
+
+
 for a in Y:
     Y[a].BranchPriority = Freq[a]
 
@@ -78,8 +92,3 @@ m.setParam('MIPGap', 0)
 m.setParam('MIPFocus', 2)
 m.optimize()
 
-
-#####
-
-
-[(a, len(p for p in Z if a in p and Z[p].x > 0.9)) for a in Y if Y[a].x > 0.9]
