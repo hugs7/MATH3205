@@ -2,7 +2,7 @@
 import random
 import heapq
 import collections
-from gurobipy import *
+from gurobipy import GRB, quicksum, Model
 
 EPS = 0.0001
 
@@ -28,7 +28,7 @@ ArriveChoice = [i for i in range(len(Arrive)) for j in range(Arrive[i])]
 T = range(max(Start)+len(Arrive)) # reduce this
 L = 30
 
-# Generate |S| simulations
+# Generate |S| scenarios
 # Each entry contains arrival time, flight and service time
 
 random.seed(25)
@@ -44,6 +44,7 @@ for s in S:
                  f,random.expovariate(1/ServiceTime)))
     Sim[s].sort()
     
+# Discrete event simulation
 def Simulate(s,level):
     # Next available agent serves each passenger
     # Add more agents as if the level goes up
@@ -54,8 +55,8 @@ def Simulate(s,level):
     desks = []
     for i in range(level[0]):
         heapq.heappush(desks,0)
-    tUpto = 0
-    for k in Sim[s]:
+    tUpto = 0       # Time up to
+    for k in Sim[s]:     # For each people in this scenario/simulation
         # Have we crossed a time period boundary
         while tUpto < T[-1] and (len(desks)==0 or max(k[0],desks[0])>=(tUpto+1)*L):                
             if tUpto>=T[-1]:
@@ -79,3 +80,30 @@ def Simulate(s,level):
     
 
 
+m = Model()
+
+# Variables
+Y = {t: m.addVar(vtype=GRB.INTEGER, ub=MaxDesks) for t in T}
+
+
+# Data is above
+
+# Objective
+
+m.setObjective(quicksum(DeskCost*Y[t] for t in T))
+
+ClearFutureWork = {t: m.addConstr(L*quicksum(Y[t_prime] for t_prime in T[t:])>=
+                                  max(sum(k[2] for k in Sim[s] if k[0] >= t*L) for s in S)) for t in T}
+
+ClearEachFlight = {t: m.addConstr(L*quicksum(Y[t_prime] for t_prime in T[:t+1]) >=
+                                  max(sum(k[2] for k in Sim[s] if Start[k[1]]+len(Arrive) <= t) for s in S)) for t in T}
+
+m.optimize()
+
+Level = [int(Y[t].x) for t in T]
+print("Level:", Level)
+TotalDelay = sum(Simulate(s,Level) for s in S)
+print("Agent Cost = ", m.objVal)
+print("Delay Cost = ", QueueCost*TotalDelay / len(S) / L)
+
+print(m.objVal)
