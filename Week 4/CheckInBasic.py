@@ -8,7 +8,7 @@ EPS = 0.0001
 
 ServiceTime = 2 # Average passenger service time - exponentially distributed
 DeskCost = 40 # Cost of opening a desk per half hour
-QueueCost = 40 # Queuing cost per half hour per passenger
+QueueCost = 4 # Queuing cost per half hour per passenger
 MaxDesks = 20 # Maximum number of desks to open
 
 N = range(MaxDesks+1)
@@ -124,7 +124,7 @@ Z = {(n,t): m.addVar(vtype=GRB.BINARY) for n in N for t in T}
 Theta = {(s,t): m.addVar() for s in S for t in T}
 
 m.setObjective((quicksum(DeskCost*Y[t] for t in T) + 
-               QueueCost * quicksum(Theta[s,t] for s in S for t in T) / len(S)*L))
+               QueueCost * quicksum(Theta[s,t] for s in S for t in T) / (len(S)*L)))
 
 ClearFutureWork = {t:
     m.addConstr(L*quicksum(Y[tt] for tt in T[t:])>=
@@ -135,14 +135,112 @@ ClearEachFlight = {t:
     m.addConstr(L*quicksum(Y[tt] for tt in T[:t+1])>=
         max(sum(k[2] for k in Sim[s] if Start[k[1]]+len(Arrive)<=t) for s in S))
     for t in T}
-    
+
+OneZPerT = {t: m.addConstr(quicksum(Z[n,t] for n in N)==1) for t in T}
+LinkZY = {t: m.addConstr(quicksum(n*Z[n,t] for n in N)==Y[t]) for t in T}
+
+InitialCust = {(s,t):
+               m.addConstr(Theta[s,t] >=quicksum(Z[n,t] * Simulate(s,[(t,n)])[t] for n in N))
+                for s in S for t in T}
 
 
-m.optimize()
+def Callback(model, where):
+    if where == GRB.Callback.MIPSOL:
+        ThetaV = model.cbGetSolution(Theta)
+        YV = model.cbGetSolution(Y)
+        Level = [(t,int(YV[t])) for t in T]
 
-Level = [(t,int(Y[t].x)) for t in T]
-TotalDelay = sum(sum(Simulate(s,Level).values()) for s in S)
-print('Agent Cost =', m.objVal)
-print('Delay cost=', QueueCost*TotalDelay/len(S)/L)
+        for s in S:
+            delay = Simulate(s, Level)      # Starting delays
+            for t in T:
+                if ThetaV[s,t] > delay[t] + EPS:
+                    print('###########Bad Cut')
+                    # exit()
+                if delay[t] < ThetaV[s,t] + EPS:
+                    continue
+                # Start with an initial window either side
+                # Add cuts
+                tLow = max(t-1, 0)
+                tHigh = min(t+1, T[-1])
+                # Expand until the restricted simulation matches the whole answer
+                while Simulate(s,Level[tLow:tHigh + 1])[t] < delay[t] - EPS:
+                    tLow = max(tLow - 1, 0)
+                    tHigh = min(tHigh + 1, T[-1])
+
+                # Try to make window smaller
+                # Reduce upper bound first
+                while tHigh > t and abs(Simulate(s, Level[tLow:tHigh])[t] - delay[t]) <= EPS:
+                    tHigh -= 1
+                # tHigh += 1
+
+                # Now reduce lower bound
+                while tLow < t and abs(Simulate(s, Level[tLow+1:tHigh + 1])[t] - delay[t]) <= EPS:
+                    tLow += 1
+                # tLow -= 1
+                
+                # Cut is turned off if you add any more desks from tLow to tHigh
+                model.cbLazy(Theta[s,t] >= delay[t]* 
+                            (1-quicksum(Z[n, tt] 
+                            for tt in range(tLow, tHigh + 1)
+                            for n in N[int(YV[tt])+1:])
+                            ))
+
+
+# m.setParam('OutputFlag', 0)
+m.setParam('LazyConstraints', 1)
+m.setParam('MipGap', 0)
+m.setParam('Heuristics',0)
+m.optimize(Callback)
+print(len(_Simulate)/len(S))
+# Sim = [[] for s in S]
+# BestSol=GRB.INFINITY
+# for kk in range(10):
+#     m.optimize()
+#     Level = [(t,int(Y[t].x)) for t in T]
+#     print(Level)
+#     TotalDelay = sum(sum(Simulate(s,Level).values()) for s in S)
+#     print('Agent Cost =', DeskCost * sum(Y[t].x for t in T))
+#     print('Theta Cost =', QueueCost * sum(Theta[s,t].x for s in S for t in T)/(len(S)*L))
+#     print(len(S) * L)
+#     print("Total Delay: ", TotalDelay)
+#     print('Delay cost=', QueueCost * TotalDelay/(len(S)*L))
+#     # import pdb; pdb.set_trace()
+#     cutsCount = 0
+#     for s in S:
+#         delay = Simulate(s, Level)      # Starting delays
+#         if Theta[s,t].x > delay[t] + EPS:
+#             print('Bad Cut')
+#             exit()
+#         for t in T:
+#             if delay[t] < Theta[s,t].x + EPS:
+#                 continue
+#             cutsCount += 1
+#             # Start with an initial window either side
+#             # Add cuts
+#             tLow = max(t-1, 0)
+#             tHigh = min(t+1, T[-1])
+#             # Expand until the restricted simulation matches the whole answer
+#             while Simulate(s,Level[tLow:tHigh + 1])[t] < delay[t] - EPS:
+#                 tLow = max(tLow - 1, 0)
+#                 tHigh = min(tHigh + 1, T[-1])
+
+#             # Try to make window smaller
+#             # Reduce upper bound first
+#             while tHigh > t and Simulate(s, Level[tLow:tHigh])[t] >= delay[t] - EPS:
+#                 tHigh -= 1
+
+#             # Now reduce lower bound
+#             while tLow < t and Simulate(s, Level[tLow+1:tHigh + 1])[t] >= delay[t] - EPS:
+#                 tLow += 1
+#             # Cut is turned off if you add any more desks from tLow to tHigh
+#             m.addConstr(Theta[s,t] >= delay[t]* 
+#                         (1-quicksum(Z[n, tt] 
+#                          for tt in range(tLow, tHigh + 1)
+#                          for n in N[int(Y[tt].x)+1:])
+#                          ))
+            
+#     if cutsCount == 0:
+#         print("Break")
+#         break
 
 
