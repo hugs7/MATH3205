@@ -33,20 +33,5 @@ class ConstraintManager:
         new_constraint = Constraint(constraint_data)
         self.constraints.append(new_constraint)
 
-
-# Example data
-data = {
-    "Constraints": [
-        # ... (constraints data)
-    ]
-}
-
-constraint_manager = ConstraintManager()
-
-# Add constraints to the ConstraintManager
-for constraint_data in data["Constraints"]:
-    constraint_manager.add_constraint(constraint_data)
-
-# Print constraints using their __repr__ method
-for constraint in constraint_manager.constraints:
-    print(constraint)
+    def __str__(self):
+        return "\n".join([str(constraint) for constraint in self.constraints])
