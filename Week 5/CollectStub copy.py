@@ -33,17 +33,20 @@ C = [[random.randint(0,4) for j in N] for i in N]
 #     print (c)
 
 # Generate paths
-Paths = [{(frozenset((s,)), s) for s in S}]
-for t in T[1:]:
-    Paths.append(set())
-    for p in Paths[t-1]:
-        for s in Neighbours(p[1]):
-            if s not in p[0]:
-                Paths[t].add((frozenset(p[0]|{s}), s))
+from functools import lru_cache
 
-    print(t, " ", len(Paths[t]))
+@lru_cache(maxsize=None)
+def generate_paths(t, p):
+    if t == 0:
+        return {(frozenset((p,)), p)}
+    
+    new_paths = set()
+    for s in Neighbours(p):
+        new_paths.update({(frozenset(new_p[0] | {s}), s) for new_p in generate_paths(t - 1, s)})
+    
+    return new_paths
 
-
+Paths = [generate_paths(t, s) for t in T]
 P = set(p[0] for p in Paths[T[-1]])
 print(len(P))
 m = Model("CollectPoints")
