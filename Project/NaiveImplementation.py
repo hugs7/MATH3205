@@ -8,7 +8,9 @@ Hugo Burton
 from gurobipy import Model, quicksum, GRB
 import json  # For importing the data as JSON format
 
-from Room import Room, RoomManager
+from Room import RoomManager
+from Constraint import ConstraintManager
+from Course import CourseManager
 
 # Import data
 data_file = ".\\Project\\testData.json"
@@ -24,9 +26,19 @@ parsed_data = json.loads(json_data)
 # Exam schedule constraints
 constraints = parsed_data["Constraints"]
 
+constrManager = ConstraintManager()
+
+for constraint in constraints:
+    constrManager.add_constraint(constraint)
+
 # Courses
 courses = parsed_data["Courses"]
-print(courses)
+
+courseManager = CourseManager()
+
+for course in courses:
+    courseManager.add_course(course)
+
 # Curricula
 curricula = parsed_data["Curricula"]
 
