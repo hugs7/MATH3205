@@ -11,42 +11,36 @@ import json  # For importing the data as JSON format
 from Room import RoomManager
 from Constraint import ConstraintManager
 from Course import CourseManager
+from Curriculum import CurriculaManager
 
-# Import data
+# ------ Import data ------
 data_file = ".\\Project\\testData.json"
 
 with open(data_file, "r") as json_file:
     json_data = json_file.read()
 
-# print(json_data)
 parsed_data = json.loads(json_data)
 
-# Separate out data
+# ------ Separate out data ------
 
 # Exam schedule constraints
-constraints = parsed_data["Constraints"]
-
+constrs = parsed_data["Constraints"]
 constrManager = ConstraintManager()
-
-for constraint in constraints:
+for constraint in constrs:
     constrManager.add_constraint(constraint)
 
 # Courses
-courses = parsed_data["Courses"]
-
+crces = parsed_data["Courses"]
 courseManager = CourseManager()
-
-for course in courses:
+for course in crces:
     courseManager.add_course(course)
 
 # Curricula
-curricula = parsed_data["Curricula"]
+curicla = parsed_data["Curricula"]
+curriculaManager = CurriculaManager()
+for curriculum in curicla:
+    curriculaManager.add_curriculum(curriculum)
 
-# Time Periods
-periods = parsed_data["Periods"]
-
-# Exam Distance
-primaryPrimaryDistance = parsed_data["PrimaryPrimaryDistance"]
 
 # Rooms
 rooms = parsed_data["Rooms"]
@@ -54,26 +48,45 @@ roomManager = RoomManager()
 for room in rooms:
     roomManager.add_room(room)
 
-# Time slots
-slotsPerDay = parsed_data["SlotsPerDay"]
-
+print("\n\n------\nGurobi\n------")
 # --- Define Model ---
 m = Model("Uni Exams")
 
-# Sets
+# ------ Sets ------
+
+
+# ------ Data ------
+# Constraints
+constraints = constrManager
+
+# Courses
+courses = courseManager
+
+# Curricula
+curricula = curriculaManager
+
+# Teachers
 teachers = parsed_data["Teachers"]
+
+# Time Periods
+periods = parsed_data["Periods"]
+
+# Time slots
+slotsPerDay = parsed_data["SlotsPerDay"]
+
+# Exam Distance
+primaryPrimaryDistance = parsed_data["PrimaryPrimaryDistance"]
+
+# Rooms
 rooms = roomManager
 
-
-# Data
-
-
-# Variables
+# ------ Variables ------
+X = {(e, p, r): m.addVar(vtype=GRB.BINARY) for e in E for p in P for r in R}
 
 
-# Objective Function
+# ------ Objective Function ------
 # m.setObjective(0, GRB.MAXIMIZE)
 
-# Print output
+# ------ Print output ------
 
 # print("Objective Value:", m.ObjVal)
