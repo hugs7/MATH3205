@@ -17,8 +17,9 @@ Depots = range(nDepots)
 
 # The points are chosen in a region of size Square*Square
 # The travel time/cost trades off against the BusCost
-Square = 240
-BusCost = 100
+Square = 120
+BusCost = 10000
+MaxShiftDuration = 8 * 60
 random.seed(3)
 
 # Set up random locations but set some of the positions to be corners
@@ -68,14 +69,6 @@ TripDep = [GenerateDepots() for i in Trips]
 Succ = {(t, d): set() for t in Trips for d in Depots if TripDep[t][d]}
 Pred = {(t, d): set() for (t, d) in Succ}
 
-for t1, d in Succ:
-    for t2 in Trips:
-        if (
-            TripDep[t2][d]
-            and TripTime[t2][0] >= TripTime[t1][1] + D[TripLoc[t1][1]][TripLoc[t2][0]]
-        ):
-            Succ[t1, d].add(t2)
-            Pred[t2, d].add(t1)
 
 # Trip to trip travel times - only required values
 TravTT = {
@@ -87,6 +80,16 @@ TravTT = {
 TravTD = {(t, d): D[TripLoc[t][1]][d] for (t, d) in Succ}
 TravDT = {(d, t): D[d][TripLoc[t][0]] for (t, d) in Succ}
 
+for t1, d in Succ:
+    for t2 in Trips:
+        if (
+            TripDep[t2][d]
+            and TripTime[t2][0] >= TripTime[t1][1] + D[TripLoc[t1][1]][TripLoc[t2][0]]
+            and TripTime[t2][1] + TravTD[t2, d] - (TripTime[t1][0] - TravDT[d, t1])
+            <= MaxShiftDuration
+        ):
+            Succ[t1, d].add(t2)
+            Pred[t2, d].add(t1)
 # We want to create schedules for buses
 # Start at the depot and make a chain of trips.
 # Minimise the fixed cost of buses plus the total distance travelled
@@ -104,11 +107,14 @@ YE = {(i, d): m.addVar(vtype=GRB.BINARY) for (i, d) in Pred}
 
 # Objective Function
 
-m.setObjective(
-    quicksum((BusCost + TravDT[d, i]) * YS[i, d] for (i, d) in YS)
-    + quicksum(TravTD[i, d] * YE[i, d] for (i, d) in YE)
-    + quicksum(X[i, j, d] * TravTT[i, j] for (i, j, d) in X)
-)
+# m.setObjective(
+#     quicksum((BusCost + TravDT[d, i]) * YS[i, d] for (i, d) in YS)
+#     + quicksum(TravTD[i, d] * YE[i, d] for (i, d) in YE)
+#     + quicksum(X[i, j, d] * TravTT[i, j] for (i, j, d) in X)
+# )
+
+m.setObjective(quicksum(YS[i, d] for (i, d) in YS), GRB.MINIMIZE)
+
 
 # Constriants
 Cover = {
@@ -128,6 +134,19 @@ Flow = {
     for (i, d) in Succ
 }
 
+AverageLess8Hours = {
+    d: m.addConstr(
+        quicksum(
+            (TripTime[i][1] + TravTD[i, d]) * YE[i, d] for i in Trips if (i, d) in YE
+        )
+        - quicksum(
+            (TripTime[i][0] - TravDT[d, i]) * YS[i, d] for i in Trips if (i, d) in YS
+        )
+        <= MaxShiftDuration * quicksum(YS[i, d] for i in Trips if (i, d) in YS)
+    )
+    for d in Depots
+}
+
 # Output
 m.setParam("MIPGap", 0)
 m.optimize()
@@ -138,7 +157,7 @@ print("Objective Value: " + str(m.objVal))
 # Print details each trip (bus)
 for i, d in YS:
     if round(YS[i, d].x) == 1:
-        print("---\n\nTrip " + str(i) + " from depot " + str(d))
+        # print("---\n\nTrip " + str(i) + " from depot " + str(d))
         TList = [i]
         TCost = BusCost + TravDT[d, i]
         while True:

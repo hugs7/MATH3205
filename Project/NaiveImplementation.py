@@ -56,8 +56,20 @@ m = Model("Uni Exams")
 # Events (one course can have multiple exam (events))
 E = {}
 
-# Periods
-P = {}
+# Days
+
+# Time Periods
+periods = parsed_data["Periods"]
+
+# Time slots
+slotsPerDay = parsed_data["SlotsPerDay"]
+
+NumDays = periods // slotsPerDay
+Days = list(range(NumDays))
+print(Days)
+
+# Periods in each day
+Periods = list(range(slotsPerDay))
 
 # Rooms
 R = {}
@@ -75,12 +87,6 @@ curricula = curriculaManager
 # Teachers
 teachers = parsed_data["Teachers"]
 
-# Time Periods
-periods = parsed_data["Periods"]
-
-# Time slots
-slotsPerDay = parsed_data["SlotsPerDay"]
-
 # Exam Distance
 primaryPrimaryDistance = parsed_data["PrimaryPrimaryDistance"]
 
@@ -89,13 +95,32 @@ rooms = roomManager
 
 # ------ Variables ------
 # X = 1 if event e is assigned to period p and room r, 0 else
-X = {(e, p, r): m.addVar(vtype=GRB.BINARY) for e in E for p in P for r in R}
+X = {
+    (e, d, p, r): m.addVar(vtype=GRB.BINARY)
+    for e in E
+    for d in Days
+    for p in Periods
+    for r in R
+}
 
 # Y = 1 if event e is assigned to period p, 0 else (auxiliary variable)
-Y = {(e, p): m.addVar(vtype=GRB.BINARY) for e in E for p in P}
+Y = {(e, d, p): m.addVar(vtype=GRB.BINARY) for e in E for d in Days for p in Periods}
 
 # The ordinal (order) value of the period assigned to event e
 H = {e: m.addVar(vtype=GRB.INTEGER) for e in E}
+
+# ------ Constraints -------
+
+for constraint in constrManager:
+    print(constraint)
+    if constraint.level == "Forbidden":  # Hard Constraints only
+        if constraint.type == "RoomPeriodConstraint":
+            pass
+        elif constraint.type == "EventPeriodConstraint":
+            pass
+        elif constraint.type == "PeriodConstraint":
+            pass
+
 
 # ------ Objective Function ------
 # m.setObjective(0, GRB.MAXIMIZE)
