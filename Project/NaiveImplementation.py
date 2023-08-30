@@ -53,7 +53,14 @@ print("\n\n------\nGurobi\n------")
 m = Model("Uni Exams")
 
 # ------ Sets ------
+# Events (one course can have multiple exam (events))
+E = {}
 
+# Periods
+P = {}
+
+# Rooms
+R = {}
 
 # ------ Data ------
 # Constraints
@@ -81,8 +88,14 @@ primaryPrimaryDistance = parsed_data["PrimaryPrimaryDistance"]
 rooms = roomManager
 
 # ------ Variables ------
+# X = 1 if event e is assigned to period p and room r, 0 else
 X = {(e, p, r): m.addVar(vtype=GRB.BINARY) for e in E for p in P for r in R}
 
+# Y = 1 if event e is assigned to period p, 0 else (auxiliary variable)
+Y = {(e, p): m.addVar(vtype=GRB.BINARY) for e in E for p in P}
+
+# The ordinal (order) value of the period assigned to event e
+H = {e: m.addVar(vtype=GRB.INTEGER) for e in E}
 
 # ------ Objective Function ------
 # m.setObjective(0, GRB.MAXIMIZE)
