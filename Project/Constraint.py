@@ -35,3 +35,15 @@ class ConstraintManager:
 
     def __str__(self):
         return "\n".join([str(constraint) for constraint in self.constraints])
+
+    def __iter__(self):
+        self._index = 0
+        return self
+
+    def __next__(self):
+        if self._index < len(self.constraints):
+            constraint = self.constraints[self._index]
+            self._index += 1
+            return constraint
+        else:
+            raise StopIteration
