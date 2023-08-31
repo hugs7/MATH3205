@@ -165,13 +165,19 @@ def Callback(model, where):
                         print("Lost successor")
                         break
                 if not BusCoCrewCG.CheckLegal(d, TList):
-                    print("Bad Shift", TList)
+                    # print("Bad Shift", TList)
                     # Add lazy constraint to prevent shifts being too long from being together
+                    while len(TList) > 1 and not BusCoCrewCG.CheckLegal(d, TList[1:]):
+                        TList = TList[1:]
+                    while len(TList) > 1 and not BusCoCrewCG.CheckLegal(d, TList[:-1]):
+                        TList = TList[:-1]
+
                     model.cbLazy(
                         quicksum(X[t1, t2, d] for t1, t2 in zip(TList, TList[1:]))
                         <= len(TList) - 2
                     )
-                print(TCost, TList)
+
+                # print(TCost, TList)
 
 
 m.setParam("LazyConstraints", 1)
