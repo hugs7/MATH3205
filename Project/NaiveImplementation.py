@@ -12,9 +12,10 @@ from Room import RoomManager
 from Constraint import ConstraintManager
 from Course import CourseManager
 from Curriculum import CurriculaManager
+import os
 
 # ------ Import data ------
-data_file = ".\\Project\\testData.json"
+data_file = os.path.join(".", "Project", "testData.json")
 
 with open(data_file, "r") as json_file:
     json_data = json_file.read()
