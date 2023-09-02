@@ -66,7 +66,7 @@ class RoomManager:
         return composite_rooms
 
     @staticmethod
-    def get_composite_room_members(compositeRoom: list(Room)):
+    def get_composite_room_members(compositeRoom: List[Room]):
         """
         Returns a list of individual rooms which make up the compositeRoom
         """
