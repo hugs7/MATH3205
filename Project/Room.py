@@ -65,20 +65,6 @@ class RoomManager:
                 composite_rooms.append(room)
         return composite_rooms
 
-    @staticmethod
-    def get_composite_room_members(compositeRoom: List[Room]):
-        """
-        Returns a list of individual rooms which make up the compositeRoom
-        """
-
-        members = []
-
-        for room in compositeRoom:
-            room: Room
-            members.append(room.room)
-
-        return members
-
     # Implement the iterable functionality
     def __iter__(self):
         return iter(self.rooms)
