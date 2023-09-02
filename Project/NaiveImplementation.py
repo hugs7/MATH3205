@@ -50,11 +50,12 @@ for examRoom in examRooms:
 
 # ------ Sets ------
 # Some sets are already defined above
-# Events (one course can have multiple exam (events))
+# -- Events --
+# (one course can have multiple exam (events))
 Events = frozenset(r for r in sum((x.events() for x in courseManager.courses), []))
 
 # -- Periods --
-
+# Redefine set of periods into days and timeslots
 # Calculate number of days in exam period
 NumDays = parsed_data["Periods"] // parsed_data["SlotsPerDay"]
 
@@ -66,6 +67,19 @@ Timeslots = list(range(parsed_data["SlotsPerDay"]))
 
 # Set of composite rooms
 CompositeRooms = Rooms.get_composite_rooms()
+
+# -- Room Equivalence Class --
+K = {}
+
+# The set of overlapping rooms of composite room
+# Indexed by rc
+R0 = {}
+
+# The set of available rooms for event e
+RA = {}
+
+# The set of available room equivalence classes for event e
+KE = {}
 
 # F = the set of examination pairs with precendence constraints
 F = {}
