@@ -48,6 +48,9 @@ Rooms = RoomManager()
 for examRoom in examRooms:
     Rooms.add_room(examRoom)
 
+# Cannot add any more rooms after this
+Rooms.construct_composite_map()
+
 # ------ Sets ------
 # Some sets are already defined above
 # -- Events --
@@ -75,8 +78,20 @@ K = {}
 # Indexed by rc
 R0 = {}
 
-# The set of available rooms for event e
+# Dictionary mapping events to a set of rooms in which it can be held
 RA = {}
+for e in Events:
+    if e.num_rooms == 0:
+        RA[e] = set((Rooms.get_dummy_room(),))
+    elif e.num_rooms == 1:
+        RA[e] = set(r for r in Rooms.get_single_rooms() if r.get_type() == e.room_type)
+    else:
+        RA[e] = set(
+            r
+            for r in Rooms.get_composite_rooms()
+            if len(r.get_members()) >= e.num_rooms
+            and next(iter(Rooms.composite_map[r])).get_type() == e.room_type
+        )
 
 # The set of available room equivalence classes for event e
 KE = {}

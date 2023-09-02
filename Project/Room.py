@@ -6,19 +6,24 @@ from typing import List
 
 
 class Room:
-    def __init__(self, room_data):
-        self.room = room_data.get("Room")
-        self.type = room_data.get("Type")
-        self.members = room_data.get("Members", [])
+    def __init__(self, room_data=None):
+        if room_data is None:
+            self.room = "Dummy"
+            self.room_type = "Dummy"
+            self.members = []
+        else:
+            self.room = room_data.get("Room")
+            self.room_type = room_data.get("Type")
+            self.members = room_data.get("Members", [])
 
     def __repr__(self):
-        return f"Room {self.room} - Type: {self.type}, Members: {', '.join(self.members)}\n"
+        return f"Room {self.room} - Type: {self.room_type}, Members: {', '.join(self.members)}\n"
 
     def get_room(self):
         return self.room
 
     def get_type(self):
-        return self.type
+        return self.room_type
 
     def get_members(self):
         return self.members
@@ -26,10 +31,14 @@ class Room:
 
 class RoomManager:
     def __init__(self):
-        # rooms is a list of Room objects
-        self.rooms: List[Room] = []
+        # rooms is a list of Room objects; initialise collection of all rooms
+        # so that it contains the dummy room
+        self.rooms: List[Room] = [Room()]
+        self.composite_map = {}
+        self.constructed = False
 
     def add_room(self, room_data):
+        assert not self.constructed
         # Check if room already exists
         existing_room = self.get_room_by_name(room_data.get("Room"))
         if existing_room is not None:
@@ -47,34 +56,31 @@ class RoomManager:
                 return room
         return None
 
-    def get_rooms_by_type(self, room_type):
-        matching_rooms = []
-        for room in self.rooms:
-            if room.get_type() == room_type:
-                matching_rooms.append(room)
-        return matching_rooms
-
     def get_composite_rooms(self):
-        # Gets a subset of self.rooms which are composite
-        # Begin with an empty list
-        composite_rooms: List[Room] = []
-
-        # Iterate over all rooms
-        for room in self.rooms:
-            if room.get_type() == "Composite":
-                composite_rooms.append(room)
-        return composite_rooms
+        return [r for r in self.rooms if r.get_type() == "Composite"]
 
     def get_single_rooms(self):
-        # Gets a subset of self.rooms which are composite
-        # Begin with an empty list
-        single_rooms: List[Room] = []
+        return [
+            r
+            for r in self.rooms
+            if r.get_type() != "Composite" and r.get_type != "Dummy"
+        ]
 
-        # Iterate over all rooms
-        for room in self.rooms:
-            if room.get_type() != "Composite":
-                single_rooms.append(room)
-        return single_rooms
+    def get_dummy_room(self):
+        for r in self.rooms:
+            if r.get_type() == "Dummy":
+                return r
+        raise Exception("no dummy room big sad")
+
+    def construct_composite_map(self):
+        assert not self.constructed
+        self.constructed = True
+        for comp in self.get_rooms():
+            if comp.get_type() == "Composite":
+                members = comp.get_members()
+                self.composite_map[comp] = frozenset(
+                    self.get_room_by_name(r) for r in members
+                )
 
     # Implement the iterable functionality
     def __iter__(self):
