@@ -97,11 +97,11 @@ for e in Events:
             [],
         )
     )
-    conflict_set = set(sum((c.events for c in primary_curricula_courses), []))
+    conflict_set = set(sum((c.events() for c in primary_curricula_courses), []))
     teacher_courses = set(
         c for c in courseManager.courses if c.teacher == e.course_teacher
     )
-    conflict_set |= set(sum((c.events for c in teacher_courses), []))
+    conflict_set |= set(sum((c.events() for c in teacher_courses), []))
     HC[e] = frozenset(conflict_set)
 
 # ------ Data ------
@@ -158,7 +158,6 @@ room_constraints = constrManager.get_room_constraints()
 event_constraints = constrManager.get_event_constraints()
 period_constraints = constrManager.get_period_constraints()
 course_list = constrManager.get_course_list()
-breakpoint()
 
 # Constraint 1: Each event assigned to an available period and room.
 RoomRequest = {
