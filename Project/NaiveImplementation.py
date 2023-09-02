@@ -42,95 +42,65 @@ curriculaManager = CurriculaManager()
 for curriculum in curicla:
     curriculaManager.add_curriculum(curriculum)
 
-
 # Rooms
-rooms = parsed_data["Rooms"]
-roomManager = RoomManager()
-for room in rooms:
-    roomManager.add_room(room)
-
-print("\n\n------\nGurobi\n------")
-# --- Define Model ---
-m = Model("Uni Exams")
+examRooms = parsed_data["Rooms"]
+Rooms = RoomManager()
+for examRoom in examRooms:
+    Rooms.add_room(examRoom)
 
 # ------ Sets ------
+# Some sets are already defined above
 # Events (one course can have multiple exam (events))
-E = frozenset(r for r in sum((x.events() for x in courseManager.courses), []))
+Events = frozenset(r for r in sum((x.events() for x in courseManager.courses), []))
 
-# Days
+# -- Periods --
 
-# Time Periods
-periods = parsed_data["Periods"]
+# Calculate number of days in exam period
+NumDays = parsed_data["Periods"] // parsed_data["SlotsPerDay"]
 
-# Time slots
-slotsPerDay = parsed_data["SlotsPerDay"]
-
-NumDays = periods // slotsPerDay
+# Set of days
 Days = list(range(NumDays))
-print(Days)
 
-# Periods in each day
-Periods = list(range(slotsPerDay))
-
-# Rooms
-R = {}
+# Set of Periods in each day
+Periods = list(range(parsed_data["SlotsPerDay"]))
 
 # ------ Data ------
-# Constraints
+# -- Constraints --
 constraints = constrManager
 
-# Courses
+# -- Courses --
 courses = courseManager
 
-# Curricula
+# -- Curricula --
 curricula = curriculaManager
 
-# Teachers
+# -- Teachers --
 teachers = parsed_data["Teachers"]
 
-# Exam Distance
+# -- Exam Distance --
 primaryPrimaryDistance = parsed_data["PrimaryPrimaryDistance"]
-
-# Rooms
-rooms = parsed_data["Rooms"]
-roomManager = RoomManager()
-for room in rooms:
-    roomManager.add_room(room)
 
 
 print("\n\n------\nGurobi\n------")
 # --- Define Model ---
 m = Model("Uni Exams")
 
-# ------ Sets ------
-# Events (one course can have multiple exam (events))
-E = {}
-
-# Periods
-NumDays = periods // slotsPerDay
-# Number of days in the exam period
-Days = list(range(NumDays))
-# Number of exam timeslots per day
-TimeSlots = list(range(slotsPerDay))
-
-# Rooms
-Rooms = roomManager
 
 # ------ Variables ------
 # X = 1 if event e is assigned to period p and room r, 0 else
 X = {
     (e, d, p, r): m.addVar(vtype=GRB.BINARY)
-    for e in E
+    for e in Events
     for d in Days
     for p in P
     for r in R
 }
 
 # Y = 1 if event e is assigned to period p, 0 else (auxiliary variable)
-Y = {(e, d, p): m.addVar(vtype=GRB.BINARY) for e in E for d in Days for p in P}
+Y = {(e, d, p): m.addVar(vtype=GRB.BINARY) for e in Events for d in Days for p in P}
 
 # The ordinal (order) value of the period assigned to event e
-H = {e: m.addVar(vtype=GRB.INTEGER) for e in E}
+H = {e: m.addVar(vtype=GRB.INTEGER) for e in Events}
 
 
 # ------ Constraints ------
