@@ -97,9 +97,6 @@ roomManager = RoomManager()
 for room in rooms:
     roomManager.add_room(room)
 
-# Rooms
-rooms = roomManager
-
 
 print("\n\n------\nGurobi\n------")
 # --- Define Model ---
@@ -117,8 +114,7 @@ Days = list(range(NumDays))
 TimeSlots = list(range(slotsPerDay))
 
 # Rooms
-R = {}
-
+Rooms = roomManager
 
 # ------ Variables ------
 # X = 1 if event e is assigned to period p and room r, 0 else
