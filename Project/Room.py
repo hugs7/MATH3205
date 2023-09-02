@@ -43,14 +43,14 @@ class RoomManager:
 
     def get_room_by_name(self, room_name):
         for room in self.rooms:
-            if room.get_room == room_name:
+            if room.get_room() == room_name:
                 return room
         return None
 
     def get_rooms_by_type(self, room_type):
         matching_rooms = []
         for room in self.rooms:
-            if room.get_type == room_type:
+            if room.get_type() == room_type:
                 matching_rooms.append(room)
         return matching_rooms
 
@@ -61,7 +61,7 @@ class RoomManager:
 
         # Iterate over all rooms
         for room in self.rooms:
-            if room.get_type == "Composite":
+            if room.get_type() == "Composite":
                 composite_rooms.append(room)
         return composite_rooms
 
@@ -82,30 +82,3 @@ class RoomManager:
     # Implement the iterable functionality
     def __iter__(self):
         return iter(self.rooms)
-
-
-# # Example data
-# data = {
-#     "Rooms": [
-#         {"Room": "A", "Type": "Large"},
-#         {"Room": "B", "Type": "Large"},
-#         # ... (other room data)
-#     ]
-# }
-
-# room_manager = RoomManager()
-
-# # Add rooms to the RoomManager
-# for room_data in data["Rooms"]:
-#     room_manager.add_room(room_data)
-
-# # Accessing rooms and their properties
-# room_A = room_manager.get_room_by_name("A")
-# large_rooms = room_manager.get_rooms_by_type("Large")
-# composite_rooms = room_manager.get_composite_rooms()
-
-# print(room_A.room, room_A.type, room_A.members)
-# for room in large_rooms:
-#     print(room.room, room.type)
-# for room in composite_rooms:
-#     print(room.room, room.type, room.members)
