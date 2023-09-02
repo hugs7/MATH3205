@@ -62,7 +62,7 @@ NumDays = parsed_data["Periods"] // parsed_data["SlotsPerDay"]
 Days = list(range(NumDays))
 
 # Set of Periods in each day
-Periods = list(range(parsed_data["SlotsPerDay"]))
+Timeslots = list(range(parsed_data["SlotsPerDay"]))
 
 # ------ Data ------
 # -- Constraints --
@@ -89,15 +89,20 @@ m = Model("Uni Exams")
 # ------ Variables ------
 # X = 1 if event e is assigned to period p and room r, 0 else
 X = {
-    (e, d, p, r): m.addVar(vtype=GRB.BINARY)
+    (e, d, t, r): m.addVar(vtype=GRB.BINARY)
     for e in Events
     for d in Days
-    for p in P
-    for r in R
+    for t in Timeslots
+    for r in Rooms
 }
 
-# Y = 1 if event e is assigned to period p, 0 else (auxiliary variable)
-Y = {(e, d, p): m.addVar(vtype=GRB.BINARY) for e in Events for d in Days for p in P}
+# Y = 1 if event e is assigned to day d and timeslot t, 0 else (auxiliary variable)
+Y = {
+    (e, d, t): m.addVar(vtype=GRB.BINARY)
+    for e in Events
+    for d in Days
+    for t in Timeslots
+}
 
 # The ordinal (order) value of the period assigned to event e
 H = {e: m.addVar(vtype=GRB.INTEGER) for e in Events}
@@ -118,10 +123,26 @@ breakpoint()
 # Constraint 1: Each event assigned to an available period and room
 RoomRequest = {
     e: m.addConstr(
-        quicksum(X[e, d, p, r] for p in Periods for d in Days for r in Rooms) == 1
+        quicksum(X[e, d, t, r] for t in Timeslots for d in Days for r in Rooms) == 1
     )
     for e in Events
 }
+
+# Constraint 2: At most one event can use a room at once
+RoomOccupation = {
+    (r, d, t): m.addConstr(quicksum(X[e, d, t] for e in Events))
+    for r in Rooms
+    for t in Timeslots
+    for d in Days
+}
+
+
+HardConflicts = {m.addConstr()}
+
+
+Precendences = {m.addConstr()}
+
+Unavailabilities = {m.addConstr()}
 
 # AssignEventToOnePeriod = {
 #     (e, d, p): m.addConstr(quicksum(y[e, d, p] for d in Days for p in P) == 1)
