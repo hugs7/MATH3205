@@ -16,6 +16,39 @@ class Course:
     def __repr__(self):
         return f"Course: {self.course}, Exam Type: {self.exam_type}, Teacher: {self.teacher}"
 
+    def events(self):
+        """
+        Create a list of (exam) events for this course, where each event is a
+        RoomRequest object
+        """
+        if self.exam_type == "Written" or self.exam_type == "Oral":
+            # All the exams are the same
+            return [
+                RoomRequest(
+                    self.course, self.teacher, self.exam_type, self.rooms_requested
+                )
+                for _ in range(self.num_of_exams)
+            ]
+        elif self.exam_type == "WrittenAndOral":
+            # I'm not sure if this will always hold in larger data sets so this
+            # will make the program crash if we need to fix this bit of the
+            # code
+            assert self.num_of_exams == 2
+            room_for_oral = self.written_oral_specs["RoomForOral"]
+            res = [
+                RoomRequest(self.course, self.teacher, "Written", self.rooms_requested)
+            ]
+            if room_for_oral:
+                res.append(
+                    RoomRequest(self.course, self.teacher, "Oral", self.rooms_requested)
+                )
+            else:
+                res.append(RoomRequest(self.course, self.teacher, "Oral", None))
+            return res
+        else:
+            # There is a case that was not matched rip
+            raise Exception("could not match exam type", self.exam_type)
+
 
 class CourseManager:
     def __init__(self):
@@ -27,3 +60,26 @@ class CourseManager:
 
     def __str__(self):
         return "\n".join([str(course) for course in self.courses])
+
+
+class RoomRequest:
+    """
+    Used in the Course.events() method, has members num_rooms and room_type
+    """
+
+    def __init__(self, course_name, course_teacher, event_type, rooms_requested_dict):
+        self.event_type = event_type
+        self.course_name = course_name
+        self.course_teacher = course_teacher
+        if rooms_requested_dict is None:
+            self.num_rooms = 0
+            self.room_type = None
+        else:
+            self.num_rooms = rooms_requested_dict["Number"]
+            if "Type" in rooms_requested_dict:
+                self.room_type = rooms_requested_dict["Type"]
+            else:
+                self.room_type = None
+
+    def __repr__(self):
+        return f"course name: {self.course_name}, teacher: {self.course_teacher}, exam type: {self.event_type}, num rooms: {self.num_rooms}, type: {self.room_type}"
