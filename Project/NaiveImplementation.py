@@ -147,21 +147,21 @@ period_constraints = constrManager.get_period_constraints()
 course_list = constrManager.get_course_list()
 breakpoint()
 
-AssignEventToOnePeriod = {
-    (e, d, p): m.addConstr(quicksum(y[e, d, p] for d in Days for p in P) == 1)
-    for e in E
-    for d in Days
-    for p in P
-}
+# AssignEventToOnePeriod = {
+#     (e, d, p): m.addConstr(quicksum(y[e, d, p] for d in Days for p in P) == 1)
+#     for e in E
+#     for d in Days
+#     for p in P
+# }
 
-OneEventPerRoom = {
-    (e, d, p, r): m.addConstr(quicksum(X[e, d, p, r] for e in E) == 1)
-    for d in Days
-    for p in P
-    for r in R
-}
+# OneEventPerRoom = {
+#     (e, d, p, r): m.addConstr(quicksum(X[e, d, p, r] for e in E) == 1)
+#     for d in Days
+#     for p in P
+#     for r in R
+# }
 
-EventPrecedence = {(e1, e2): m.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
+# EventPrecedence = {(e1, e2): m.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
 
 
 # ------ Objective Function ------
