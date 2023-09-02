@@ -65,6 +65,17 @@ class RoomManager:
                 composite_rooms.append(room)
         return composite_rooms
 
+    def get_single_rooms(self):
+        # Gets a subset of self.rooms which are composite
+        # Begin with an empty list
+        single_rooms: List[Room] = []
+
+        # Iterate over all rooms
+        for room in self.rooms:
+            if room.get_type() != "Composite":
+                single_rooms.append(room)
+        return single_rooms
+
     def get_room_overlap(self) -> List[str]:
         rooms = []
         overlap = []

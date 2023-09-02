@@ -90,8 +90,25 @@ KE = {}
 # F = the set of examination pairs with precendence constraints
 F = {}
 
-# HC set of events that is in hard confict with event e
-HC = {}
+# dictionary mapping events e to the set of events in H3 hard conflict with e
+HC = {}  # type is dict[Event, Frozenset(Event)]
+for e in Events:
+    primary_curricula_courses = set(
+        sum(
+            (
+                c.primary_courses
+                for c in curriculaManager.curricula
+                if e in c.primary_courses
+            ),
+            [],
+        )
+    )
+    conflict_set = set(sum((c.events() for c in primary_curricula_courses), []))
+    teacher_courses = set(
+        c for c in courseManager.courses if c.teacher == e.course_teacher
+    )
+    conflict_set |= set(sum((c.events() for c in teacher_courses), []))
+    HC[e] = frozenset(conflict_set)
 
 # ------ Data ------
 # -- Constraints --
@@ -138,16 +155,15 @@ H = {e: m.addVar(vtype=GRB.INTEGER) for e in Events}
 
 
 # ------ Constraints ------
-for constraint in constrManager:
-    print(constraint.type)
-    print(constraint.level)
-    print(constraint.exam)
+# for constraint in constrManager:
+#     print(constraint.type)
+#     print(constraint.level)
+#     print(constraint.exam)
 
 room_constraints = constrManager.get_room_constraints()
 event_constraints = constrManager.get_event_constraints()
 period_constraints = constrManager.get_period_constraints()
 course_list = constrManager.get_course_list()
-breakpoint()
 
 # Constraint 1: Each event assigned to an available period and room.
 RoomRequest = {
@@ -176,11 +192,7 @@ M = 1
 HardConflicts = {
     m.addConstr(
         M * quicksum(X[e, d, t, cr] for e in Events)
-        + quicksum(
-            X[e, d, t, ro]
-            for e in Events
-            for ro in RoomManager.get_composite_room_members()
-        )
+        + quicksum(X[e, d, t, ro] for e in Events for ro in R0[cr])
         <= M
     )
     for cr in CompositeRooms

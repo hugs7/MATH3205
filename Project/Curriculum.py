@@ -7,12 +7,6 @@ class Curriculum:
     def __repr__(self):
         return f"Curriculum: {self.name}\nPrimary Courses: {', '.join(self.primary_courses)}\nSecondary Courses: {', '.join(self.secondary_courses)}"
 
-    def get_primary_courses(self):
-        return self.primary_courses
-
-    def get_secondary_courses(self):
-        return self.secondary_courses
-
     def get_courses(self):
         return self.primary_courses + self.secondary_courses
 
