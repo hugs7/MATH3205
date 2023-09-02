@@ -149,10 +149,10 @@ H = {e: m.addVar(vtype=GRB.INTEGER) for e in Events}
 
 
 # ------ Constraints ------
-for constraint in constrManager:
-    print(constraint.type)
-    print(constraint.level)
-    print(constraint.exam)
+# for constraint in constrManager:
+#     print(constraint.type)
+#     print(constraint.level)
+#     print(constraint.exam)
 
 room_constraints = constrManager.get_room_constraints()
 event_constraints = constrManager.get_event_constraints()
