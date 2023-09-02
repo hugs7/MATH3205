@@ -67,6 +67,12 @@ Timeslots = list(range(parsed_data["SlotsPerDay"]))
 # Set of composite rooms
 CompositeRooms = Rooms.get_composite_rooms()
 
+# F = the set of examination pairs with precendence constraints
+F = {}
+
+# HC set of events that is in hard confict with event e
+HC = {}
+
 # ------ Data ------
 # -- Constraints --
 constraints = constrManager
@@ -162,11 +168,16 @@ HardConflicts = {
     for t in Timeslots
 }
 
-# Constarint 4: Some events must precede other events (hard constraint).
-Precendences = {m.addConstr()}
+# Constraint 4: Some events must precede other events (hard constraint).
+Precendences = {m.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
 
 # Constraint 5: Some rooms, day and timeslot configurations are unavailable.
-Unavailabilities = {m.addConstr()}
+Unavailabilities = {
+    m.addConstr(M * Y[e, d, t] + quicksum(Y[e2, d, t] for e2 in HC[e]) <= M)
+    for e in Events
+    for d in Days
+    for t in Timeslots
+}
 
 # AssignEventToOnePeriod = {
 #     (e, d, p): m.addConstr(quicksum(y[e, d, p] for d in Days for p in P) == 1)
