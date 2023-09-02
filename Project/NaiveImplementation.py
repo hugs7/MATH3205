@@ -56,8 +56,20 @@ m = Model("Uni Exams")
 # Events (one course can have multiple exam (events))
 E = {}
 
-# Periods
-P = {}
+# Days
+
+# Time Periods
+periods = parsed_data["Periods"]
+
+# Time slots
+slotsPerDay = parsed_data["SlotsPerDay"]
+
+NumDays = periods // slotsPerDay
+Days = list(range(NumDays))
+print(Days)
+
+# Periods in each day
+Periods = list(range(slotsPerDay))
 
 # Rooms
 R = {}
@@ -75,12 +87,6 @@ curricula = curriculaManager
 # Teachers
 teachers = parsed_data["Teachers"]
 
-# Time Periods
-periods = parsed_data["Periods"]
-
-# Time slots
-slotsPerDay = parsed_data["SlotsPerDay"]
-
 # Exam Distance
 primaryPrimaryDistance = parsed_data["PrimaryPrimaryDistance"]
 
@@ -92,7 +98,6 @@ for room in rooms:
 
 # Rooms
 rooms = roomManager
-
 
 
 print("\n\n------\nGurobi\n------")
@@ -115,13 +120,20 @@ R = {}
 
 # ------ Variables ------
 # X = 1 if event e is assigned to period p and room r, 0 else
-X = {(e, d, p, r): m.addVar(vtype=GRB.BINARY) for e in E for d in Days for p in P for r in R}
+X = {
+    (e, d, p, r): m.addVar(vtype=GRB.BINARY)
+    for e in E
+    for d in Days
+    for p in P
+    for r in R
+}
 
 # Y = 1 if event e is assigned to period p, 0 else (auxiliary variable)
 Y = {(e, d, p): m.addVar(vtype=GRB.BINARY) for e in E for d in Days for p in P}
 
 # The ordinal (order) value of the period assigned to event e
 H = {e: m.addVar(vtype=GRB.INTEGER) for e in E}
+
 
 # ------ Constraints ------
 for constraint in constrManager:
@@ -135,18 +147,22 @@ period_constraints = constrManager.get_period_constraints()
 course_list = constrManager.get_course_list()
 breakpoint()
 
-AssignEventToOnePeriod = {(e,d,p):
-    m.addConstr(quicksum(y[e,d,p] for d in Days for p in P)== 1)
-    for e in E}
+AssignEventToOnePeriod = {
+    (e, d, p): m.addConstr(quicksum(y[e, d, p] for d in Days for p in P) == 1)
+    for e in E
+    for d in Days
+    for p in P
+}
 
-OneEventPerRoom = {(e,d,p,r):
-    m.addConstr(quicksum(X[e,d,p,r] for e in E)==1)
-    for d in Days for p in P for r in R
-    }
+OneEventPerRoom = {
+    (e, d, p, r): m.addConstr(quicksum(X[e, d, p, r] for e in E) == 1)
+    for d in Days
+    for p in P
+    for r in R
+}
 
-EventPrecedence = {(e1,e2):
-    m.addConstr(H[e1]-H[e2] <= -1) for (e1,e2) in F
-    }
+EventPrecedence = {(e1, e2): m.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
+
 
 # ------ Objective Function ------
 # m.setObjective(0, GRB.MAXIMIZE)
