@@ -17,7 +17,7 @@ Depots = range(nDepots)
 
 # The points are chosen in a region of size Square*Square
 # The travel time/cost trades off against the BusCost
-Square = 180
+Square = 60
 BusCost = 10000
 MaxDur = 480
 MaxNoBreak = 270
@@ -46,7 +46,7 @@ TripLoc = [(random.choice(Locs), random.choice(Locs)) for i in Trips]
 def GenerateTimes(i):
     # Generate a start and end time for a trip
     start = random.randint(240, 1440 - D[TripLoc[i][0]][TripLoc[i][1]] - 60)
-    end = start + D[TripLoc[i][0]][TripLoc[i][1]] + random.randint(30, 60)
+    end = start + D[TripLoc[i][0]][TripLoc[i][1]] + random.randint(10, 20)
     return (start, end)
 
 
@@ -108,16 +108,18 @@ def CheckLegal(d, p):
         <= MaxDur
     ):
         # Return true if no break needed
-        if TripTime[p[-1]][1] - TripTime[p[0]][0] <= MaxNoBreak:
+        if TripTime[p[-1]][1] - TripTime[p[0]][0] + TravTD[p[-1], d] <= MaxNoBreak:
+            return True
+        if TripTime[p[-1]][1] - TripTime[p[0]][0] + TravDT[d, p[0]] <= MaxNoBreak:
             return True
         # Check for breaks
-        for t1, t2 in zip(p, p[1:]):
-            if (
-                Succ[t1, d][t2]
-                and TripTime[t1][1] - TripTime[p[0]][0] <= MaxNoBreak
-                and TripTime[p[-1]][1] - TripTime[t2][0] <= MaxNoBreak
-            ):
-                return True
+        # for t1, t2 in zip(p, p[1:]):
+        #     if (
+        #         Succ[t1, d][t2]
+        #         and TripTime[t1][1] - TripTime[p[0]][0] <= MaxNoBreak
+        #         and TripTime[p[-1]][1] - TripTime[t2][0] <= MaxNoBreak
+        #     ):
+        #         return True
     return False
 
 
@@ -133,7 +135,7 @@ while len(Paths[l]) > 0:
     Paths.append(nList)
     l += 1
 P = sum(Paths, [])
-
+exit()
 m = Model()
 Z = {p: m.addVar(vtype=GRB.BINARY) for p in P}
 Contains = {t: [] for t in Trips}
