@@ -79,6 +79,10 @@ class RoomManager:
 
         return members
 
+    # Implement the iterable functionality
+    def __iter__(self):
+        return iter(self.rooms)
+
 
 # # Example data
 # data = {
