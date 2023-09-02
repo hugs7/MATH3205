@@ -87,13 +87,12 @@ class RoomManager:
                     rooms.append(room)
         return overlap
 
-    def get_overlap(self, Room:Room) -> List[Room]:
+    def get_overlap(self, Room: Room) -> List[Room]:
         overlap = []
         for room in Room.get_members():
             if room in self.get_room_overlap():
                 overlap.append(room)
         return overlap
-                
 
     # Implement the iterable functionality
     def __iter__(self):

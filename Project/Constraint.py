@@ -33,6 +33,15 @@ class Constraint:
     def is_period_constraint(self) -> bool:
         return self.type == "PeriodConstraint"
 
+    def is_forbidden(self) -> bool:
+        return self.level == "Forbidden"
+
+    def is_undesired(self) -> bool:
+        return self.level == "Undesired"
+
+    def get_level(self):
+        return self.level
+
 
 class ConstraintManager:
     def __init__(self):
@@ -85,6 +94,23 @@ class ConstraintManager:
     def get_period_constraints(self) -> dict[int, str]:
         period_constraints = {}
         for constr in self.constraints:
+            constr: Constraint
             if constr.is_period_constraint():
                 period_constraints[constr.period] = constr.level
+        return period_constraints
+
+    def get_forbidden_period_constraints(self) -> int:
+        period_constraints = []
+        for constr in self.constraints:
+            constr: Constraint
+            if constr.is_period_constraint() and constr.is_forbidden():
+                period_constraints.append(constr.period)
+        return period_constraints
+
+    def get_undesired_period_constraints(self) -> int:
+        period_constraints = []
+        for constr in self.constraints:
+            constr: Constraint
+            if constr.is_period_constraint() and constr.is_undesired():
+                period_constraints.append(constr.period)
         return period_constraints
