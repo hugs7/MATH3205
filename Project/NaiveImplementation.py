@@ -67,12 +67,18 @@ Timeslots = list(range(parsed_data["SlotsPerDay"]))
 
 # Set of composite rooms
 CompositeRooms = Rooms.get_composite_rooms()
-
 # -- Room Equivalence Class --
 K = {}
 
 # The set of overlapping rooms of composite room
 # Indexed by rc
+room_overlap = {}
+for room in Rooms:
+    if Rooms.get_overlap(room):
+        room_overlap[room] = Rooms.get_overlap(room)
+        print(room_overlap)
+breakpoint()
+
 R0 = {}
 
 # The set of available rooms for event e
