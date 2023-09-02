@@ -64,6 +64,9 @@ Days = list(range(NumDays))
 # Set of Periods in each day
 Timeslots = list(range(parsed_data["SlotsPerDay"]))
 
+# Set of composite rooms
+CompositeRooms = Rooms.get_composite_rooms()
+
 # ------ Data ------
 # -- Constraints --
 constraints = constrManager
@@ -120,7 +123,7 @@ period_constraints = constrManager.get_period_constraints()
 course_list = constrManager.get_course_list()
 breakpoint()
 
-# Constraint 1: Each event assigned to an available period and room
+# Constraint 1: Each event assigned to an available period and room.
 RoomRequest = {
     e: m.addConstr(
         quicksum(X[e, d, t, r] for t in Timeslots for d in Days for r in Rooms) == 1
@@ -128,20 +131,41 @@ RoomRequest = {
     for e in Events
 }
 
-# Constraint 2: At most one event can use a room at once
+# Constraint 2: At most one event can use a room at once.
 RoomOccupation = {
-    (r, d, t): m.addConstr(quicksum(X[e, d, t] for e in Events))
+    (r, d, t): m.addConstr(quicksum(X[e, d, t] for e in Events) <= 1)
     for r in Rooms
     for t in Timeslots
     for d in Days
 }
 
+# Constraint 3: Two events must have different periods if they are in hard conflict
+# Occurs in the following cases:
+#   - They are part of the same primary curriculum
+#   - They have the same teacher
+# M: Number of elements in the overlapping rooms sum
+M = 1
+# rc is room-composite   - Rooms that are composite
+# ro is room-overlapping - Rooms that overlap in a composite room
+HardConflicts = {
+    m.addConstr(
+        M * quicksum(X[e, d, t, cr] for e in Events)
+        + quicksum(
+            X[e, d, t, ro]
+            for e in Events
+            for ro in RoomManager.get_composite_room_members()
+        )
+        <= M
+    )
+    for cr in CompositeRooms
+    for d in Days
+    for t in Timeslots
+}
 
-HardConflicts = {m.addConstr()}
-
-
+# Constarint 4: Some events must precede other events (hard constraint).
 Precendences = {m.addConstr()}
 
+# Constraint 5: Some rooms, day and timeslot configurations are unavailable.
 Unavailabilities = {m.addConstr()}
 
 # AssignEventToOnePeriod = {

@@ -37,12 +37,24 @@ class RoomManager:
                 matching_rooms.append(room)
         return matching_rooms
 
-    def get_composite_rooms(self):
+    def get_composite_rooms(self) -> list(Room):
         composite_rooms = []
         for room in self.rooms:
             if room.type == "Composite":
                 composite_rooms.append(room)
         return composite_rooms
+
+    @staticmethod
+    def get_composite_room_members(compositeRoom: list(Room)):
+        """
+        Returns a list of individual rooms which make up the compositeRoom
+        """
+
+        members = []
+        for room in compositeRoom:
+            members.append(room.room)
+
+        return members
 
 
 # # Example data
