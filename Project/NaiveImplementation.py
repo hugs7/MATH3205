@@ -170,11 +170,7 @@ M = 1
 HardConflicts = {
     m.addConstr(
         M * quicksum(X[e, d, t, cr] for e in Events)
-        + quicksum(
-            X[e, d, t, ro]
-            for e in Events
-            for ro in RoomManager.get_composite_room_members()
-        )
+        + quicksum(X[e, d, t, ro] for e in Events for ro in R0[cr])
         <= M
     )
     for cr in CompositeRooms
