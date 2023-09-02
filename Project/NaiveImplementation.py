@@ -55,7 +55,7 @@ m = Model("Uni Exams")
 
 # ------ Sets ------
 # Events (one course can have multiple exam (events))
-E = {}
+E = frozenset(r for r in sum((x.events() for x in courseManager.courses), []))
 
 # Periods
 P = {}
