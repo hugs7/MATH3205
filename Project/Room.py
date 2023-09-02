@@ -82,6 +82,24 @@ class RoomManager:
                     self.get_room_by_name(r) for r in members
                 )
 
+    def get_room_overlap(self) -> List[str]:
+        rooms = []
+        overlap = []
+        for comp_room in self.get_composite_rooms():
+            for room in comp_room.get_members():
+                if room in rooms:
+                    overlap.append(room)
+                else:
+                    rooms.append(room)
+        return overlap
+
+    def get_overlap(self, Room: Room) -> List[Room]:
+        overlap = []
+        for room in Room.get_members():
+            if room in self.get_room_overlap():
+                overlap.append(room)
+        return overlap
+
     # Implement the iterable functionality
     def __iter__(self):
         return iter(self.rooms)

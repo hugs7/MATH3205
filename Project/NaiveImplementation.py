@@ -51,6 +51,12 @@ for examRoom in examRooms:
 # Cannot add any more rooms after this
 Rooms.construct_composite_map()
 
+room_constraints = constrManager.get_room_constraints()
+event_constraints = constrManager.get_event_constraints()
+period_constraints = constrManager.get_period_constraints()
+forbidden_period_constraints = constrManager.get_forbidden_period_constraints()
+course_list = constrManager.get_course_list()
+
 # ------ Sets ------
 # Some sets are already defined above
 # -- Events --
@@ -60,23 +66,44 @@ Events = frozenset(r for r in sum((x.events() for x in courseManager.courses), [
 # -- Periods --
 # Redefine set of periods into days and timeslots
 # Calculate number of days in exam period
-NumDays = parsed_data["Periods"] // parsed_data["SlotsPerDay"]
+SlotsPerDay = parsed_data["SlotsPerDay"]
+NumDays = parsed_data["Periods"] // SlotsPerDay
 
 # Set of days
 Days = list(range(NumDays))
 
 # Set of Periods in each day
-Timeslots = list(range(parsed_data["SlotsPerDay"]))
+Timeslots = list(range(SlotsPerDay))
 
 # Set of composite rooms
 CompositeRooms = Rooms.get_composite_rooms()
-
 # -- Room Equivalence Class --
 K = {}
 
 # The set of overlapping rooms of composite room
 # Indexed by rc
-R0 = {}
+R0 = {cr: Rooms.get_overlap(cr) for cr in CompositeRooms}
+
+# -- Period Availabilities --
+# Set of periods available for event e
+
+# Convert periods into day and timeslot tuples
+forbidden_dt_constraints = []
+for period in forbidden_period_constraints:
+    day = period % SlotsPerDay
+    timeslot = period - SlotsPerDay * day
+    day = -1
+    forbidden_dt_constraints.append((day, timeslot))
+
+PA = {
+    e: [
+        (day, timeslot)
+        for day in Days
+        for timeslot in Timeslots
+        if (day, timeslot) not in forbidden_dt_constraints
+    ]
+    for e in Events
+}
 
 # Dictionary mapping events to a set of rooms in which it can be held
 RA = {}
@@ -137,6 +164,10 @@ primaryPrimaryDistance = parsed_data["PrimaryPrimaryDistance"]
 
 
 print("\n\n------\nGurobi\n------")
+room_constraints = constrManager.get_room_constraints()
+event_constraints = constrManager.get_event_constraints()
+period_constraints = constrManager.get_period_constraints()
+course_list = constrManager.get_course_list()
 # --- Define Model ---
 m = Model("Uni Exams")
 
@@ -169,10 +200,6 @@ H = {e: m.addVar(vtype=GRB.INTEGER) for e in Events}
 #     print(constraint.level)
 #     print(constraint.exam)
 
-room_constraints = constrManager.get_room_constraints()
-event_constraints = constrManager.get_event_constraints()
-period_constraints = constrManager.get_period_constraints()
-course_list = constrManager.get_course_list()
 
 # Constraint 1: Each event assigned to an available period and room.
 RoomRequest = {

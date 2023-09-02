@@ -182,6 +182,10 @@
             "Type": "Small"
         },
         {
+            "Room": "I",
+            "Type": "Small"
+        },
+        {
             "Members": ["A", "B"],
             "Room": "AB",
             "Type": "Composite"
@@ -189,6 +193,16 @@
         {
             "Members": ["A", "C"],
             "Room": "AC",
+            "Type": "Composite"
+        },
+        {
+            "Members": ["H", "I"],
+            "Room": "HI",
+            "Type": "Composite"
+        },        
+        {
+            "Members": ["A", "H"],
+            "Room": "AH",
             "Type": "Composite"
         }
     ],
