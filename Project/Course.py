@@ -24,9 +24,7 @@ class Course:
         if self.exam_type == "Written" or self.exam_type == "Oral":
             # All the exams are the same
             return [
-                RoomRequest(
-                    self.course, self.teacher, self.exam_type, self.rooms_requested
-                )
+                Event(self.course, self.teacher, self.exam_type, self.rooms_requested)
                 for _ in range(self.num_of_exams)
             ]
         elif self.exam_type == "WrittenAndOral":
@@ -35,15 +33,13 @@ class Course:
             # code
             assert self.num_of_exams == 2
             room_for_oral = self.written_oral_specs["RoomForOral"]
-            res = [
-                RoomRequest(self.course, self.teacher, "Written", self.rooms_requested)
-            ]
+            res = [Event(self.course, self.teacher, "Written", self.rooms_requested)]
             if room_for_oral:
                 res.append(
-                    RoomRequest(self.course, self.teacher, "Oral", self.rooms_requested)
+                    Event(self.course, self.teacher, "Oral", self.rooms_requested)
                 )
             else:
-                res.append(RoomRequest(self.course, self.teacher, "Oral", None))
+                res.append(Event(self.course, self.teacher, "Oral", None))
             return res
         else:
             # There is a case that was not matched rip
@@ -62,7 +58,7 @@ class CourseManager:
         return "\n".join([str(course) for course in self.courses])
 
 
-class RoomRequest:
+class Event:
     """
     Used in the Course.events() method, has members num_rooms and room_type
     """

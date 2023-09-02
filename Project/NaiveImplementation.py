@@ -70,8 +70,25 @@ CompositeRooms = Rooms.get_composite_rooms()
 # F = the set of examination pairs with precendence constraints
 F = {}
 
-# HC set of events that is in hard confict with event e
-HC = {}
+# dictionary mapping events e to the set of events in H3 hard conflict with e
+HC = {}  # type is dict[Event, Frozenset(Event)]
+for e in Events:
+    primary_curricula_courses = set(
+        sum(
+            (
+                c.primary_courses
+                for c in curriculaManager.curricula
+                if e in c.primary_courses
+            ),
+            [],
+        )
+    )
+    conflict_set = set(sum((c.events for c in primary_curricula_courses), []))
+    teacher_courses = set(
+        c for c in courseManager.courses if c.teacher == e.course_teacher
+    )
+    conflict_set |= set(sum((c.events for c in teacher_courses), []))
+    HC[e] = frozenset(conflict_set)
 
 # ------ Data ------
 # -- Constraints --
