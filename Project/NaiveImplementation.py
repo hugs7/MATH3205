@@ -111,9 +111,10 @@ E = {}
 
 # Periods
 NumDays = periods // slotsPerDay
+# Number of days in the exam period
 Days = list(range(NumDays))
-
-P = {}
+# Number of exam timeslots per day
+TimeSlots = list(range(slotsPerDay))
 
 # Rooms
 R = {}
