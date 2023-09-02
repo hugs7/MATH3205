@@ -115,6 +115,14 @@ period_constraints = constrManager.get_period_constraints()
 course_list = constrManager.get_course_list()
 breakpoint()
 
+# Constraint 1: Each event assigned to an available period and room
+RoomRequest = {
+    e: m.addConstr(
+        quicksum(X[e, d, p, r] for p in Periods for d in Days for r in Rooms) == 1
+    )
+    for e in Events
+}
+
 # AssignEventToOnePeriod = {
 #     (e, d, p): m.addConstr(quicksum(y[e, d, p] for d in Days for p in P) == 1)
 #     for e in E
