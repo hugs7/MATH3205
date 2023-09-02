@@ -24,6 +24,16 @@ class Constraint:
         elif self.type == "PeriodConstraint":
             return f"{self.level} at Period {self.period}"
 
+    def is_room_constraint(self) -> bool:
+        return self.type == "RoomPeriodConstraint"
+    
+    def is_event_period_constraint(self) -> bool:
+        return self.type == "EventPeriodConstraint"
+
+    def is_period_constraint(self) -> bool:
+        return self.type == "PeriodConstraint"
+    
+
 
 class ConstraintManager:
     def __init__(self):
@@ -47,3 +57,42 @@ class ConstraintManager:
             return constraint
         else:
             raise StopIteration
+    
+    def get_course_list(self) -> list:
+        course_list = []
+        for constr in self.constraints:
+            if constr.course not in course_list and constr.course != None:
+                course_list.append(constr.course)
+        return course_list
+
+    def get_room_constraints(self) -> dict[int,dict[str,str]]:
+        room_constraints = {}
+        for constr in self.constraints:
+            if constr.is_room_constraint():
+                room_constraints[constr.period] = {}
+                room_constraints[constr.period].update({constr.room: constr.level})
+        return room_constraints
+    
+    def get_event_constraints(self)-> dict[str,(str,str,int,int)]:
+        event_constraints = {}
+        for course in self.get_course_list():
+            temp = []
+            for constr in self.constraints:
+                if constr.is_event_period_constraint() and constr.course == course:
+                    temp.append((constr.level, constr.part, constr.exam, constr.period))
+            event_constraints[course] = temp
+        return event_constraints
+
+    def get_period_constraints(self) -> dict[int,str]:
+        period_constraints = {}
+        for constr in self.constraints:
+            if constr.is_period_constraint():
+                period_constraints[constr.period] = constr.level
+        return period_constraints
+
+    
+
+
+
+
+

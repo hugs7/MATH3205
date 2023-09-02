@@ -19,9 +19,9 @@ data_file = ".\\Project\\testData.json"
 with open(data_file, "r") as json_file:
     json_data = json_file.read()
 
-parsed_data = json.loads(json_data)
-
 # ------ Separate out data ------
+
+parsed_data = json.loads(json_data)
 
 # Exam schedule constraints
 constrs = parsed_data["Constraints"]
@@ -85,17 +85,68 @@ slotsPerDay = parsed_data["SlotsPerDay"]
 primaryPrimaryDistance = parsed_data["PrimaryPrimaryDistance"]
 
 # Rooms
+rooms = parsed_data["Rooms"]
+roomManager = RoomManager()
+for room in rooms:
+    roomManager.add_room(room)
+
+# Rooms
 rooms = roomManager
+
+
+
+print("\n\n------\nGurobi\n------")
+# --- Define Model ---
+m = Model("Uni Exams")
+
+# ------ Sets ------
+# Events (one course can have multiple exam (events))
+E = {}
+
+# Periods
+NumDays = periods // slotsPerDay
+Days = list(range(NumDays))
+
+P = {}
+
+# Rooms
+R = {}
+
 
 # ------ Variables ------
 # X = 1 if event e is assigned to period p and room r, 0 else
-X = {(e, p, r): m.addVar(vtype=GRB.BINARY) for e in E for p in P for r in R}
+X = {(e, d, p, r): m.addVar(vtype=GRB.BINARY) for e in E for d in Days for p in P for r in R}
 
 # Y = 1 if event e is assigned to period p, 0 else (auxiliary variable)
-Y = {(e, p): m.addVar(vtype=GRB.BINARY) for e in E for p in P}
+Y = {(e, d, p): m.addVar(vtype=GRB.BINARY) for e in E for d in Days for p in P}
 
 # The ordinal (order) value of the period assigned to event e
 H = {e: m.addVar(vtype=GRB.INTEGER) for e in E}
+
+# ------ Constraints ------
+for constraint in constrManager:
+    print(constraint.type)
+    print(constraint.level)
+    print(constraint.exam)
+
+room_constraints = constrManager.get_room_constraints()
+event_constraints = constrManager.get_event_constraints()
+period_constraints = constrManager.get_period_constraints()
+course_list = constrManager.get_course_list()
+breakpoint()
+
+AssignEventToOnePeriod = {(e,d,p):
+    m.addConstr(quicksum(y[e,d,p] for d in Days for p in P)== 1)
+    for e in E}
+
+OneEventPerRoom = {(e,d,p,r):
+    m.addConstr(quicksum(X[e,d,p,r] for e in E)==1)
+    for d in Days for p in P for r in R
+    }
+
+EventPrecedence = {(e1,e2):
+    m.addConstr(H[e1]-H[e2] <= -1) for (e1,e2) in F
+    }
 
 # ------ Objective Function ------
 # m.setObjective(0, GRB.MAXIMIZE)
