@@ -27,7 +27,18 @@ class Period:
 
         return self.timeslot
 
-    def __lt__(self, other_period) -> bool:
+    def __eq__(self, other_period: "Period") -> bool:
+        """
+        Determines if this period is equal to another period.
+        Returns True if the periods are equal, False otherwise.
+        """
+        if isinstance(other_period, Period):
+            return (
+                self.day == other_period.day and self.timeslot == other_period.timeslot
+            )
+        return False
+
+    def __lt__(self, other_period: "Period") -> bool:
         """
         Determines if this period comes before another period.
         Returns True if this period is less than the other, False otherwise.
@@ -39,7 +50,7 @@ class Period:
         else:
             return False
 
-    def __gt__(self, other_period) -> bool:
+    def __gt__(self, other_period: "Period") -> bool:
         """
         Determines if this period comes after another period.
         Returns True if this period is greater than the other, False otherwise.
@@ -50,3 +61,8 @@ class Period:
             return True
         else:
             return False
+
+    def __repr__(self) -> str:
+        """Repr method for period"""
+
+        return f"({self.day}, {self.timeslot})"
