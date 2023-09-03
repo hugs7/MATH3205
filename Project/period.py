@@ -67,6 +67,12 @@ class Period:
 
         return f"({self.day}, {self.timeslot})"
 
+    def __hash__(self):
+        """
+        Hash function for Period objects.
+        """
+        return hash((self.day, self.timeslot))
+
     @staticmethod
     def from_period_number(period_number: int, slots_per_day: int) -> "Period":
         """
