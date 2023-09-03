@@ -11,6 +11,7 @@ from Course import Event
 
 ROOM_PERIOD_CONSTRAINT = "RoomPeriodConstraint"
 EVENT_PERIOD_CONSTRAINT = "EventPeriodConstraint"
+EVENT_ROOM_CONSTRAINT = "EventRoomConstraint"
 PERIOD_CONSTRAINT = "PeriodConstraint"
 FORBIDDEN = "Forbidden"
 UNDESIRED = "Undesired"
@@ -19,12 +20,8 @@ UNDESIRED = "Undesired"
 class Constraint(ABC):
     def __init__(self, constraint_data, slots_per_day: int):
         self.level = constraint_data.get("Level")
-        self.period: Period = Period.from_period_number(
-            constraint_data.get("Period"), slots_per_day
-        )
-        self.constr_type = constraint_data.get("Type")
 
-        self.part = constraint_data.get("Part")
+        self.constr_type = constraint_data.get("Type")
 
     # Getter method for 'Level' attribute
     def get_level(self) -> str:
@@ -34,15 +31,6 @@ class Constraint(ABC):
             Optional[str]: The 'Level' value or None if it doesn't exist.
         """
         return self.level
-
-    # Getter method for 'Period' attribute
-    def get_period(self) -> Period:
-        """
-        Get the 'Period' attribute.
-        Returns:
-            Optional[str]: The 'Period' value or None if it doesn't exist.
-        """
-        return self.period
 
     # Getter method for 'Type' attribute
     def get_constr_type(self) -> str:
@@ -77,12 +65,16 @@ class RoomPeriodConstraint(Constraint):
         super().__init__(constraint_data, slots_per_day)
 
         self.room = constraint_data.get("Room")
+        self.period: Period = Period.from_period_number(
+            constraint_data.get("Period"), slots_per_day
+        )
+        self.part = constraint_data.get("Part")
 
     def __repr__(self):
         return f"Forbidden Room {self.room} at Period {self.period}"
 
     # Getter method for 'Room' attribute
-    def get_room(self) -> Optional[str]:
+    def get_room(self) -> str:
         """
         Get the 'Room' attribute.
         Returns:
@@ -90,13 +82,33 @@ class RoomPeriodConstraint(Constraint):
         """
         return self.room
 
+    # Getter method for 'Period' attribute
+    def get_period(self) -> Period:
+        """
+        Get the 'Period' attribute.
+        Returns:
+            Optional[str]: The 'Period' value or None if it doesn't exist.
+        """
+        return self.period
+
+    # Getter method for 'Part' attribute
+    def get_part(self) -> Optional[str]:
+        """
+        Get the 'Part' attribute.
+        Returns:
+            Optional[str]: The 'Part' value or None if it doesn't exist.
+        """
+        return self.part
+
 
 class EventPeriodConstraint(Constraint):
     def __init__(self, constraint_data, slots_per_day: int):
         super().__init__(constraint_data, slots_per_day)
 
         self.course_name = constraint_data.get("Course")
-
+        self.period: Period = Period.from_period_number(
+            constraint_data.get("Period"), slots_per_day
+        )
         self.exam_ordinal = constraint_data.get("Exam")
 
     # Getter method for 'Course' attribute
@@ -113,6 +125,15 @@ class EventPeriodConstraint(Constraint):
             return f"{self.level} {self.course_name} Exam {self.exam_ordinal} - {self.part} at Period {self.period}"
         else:
             return f"{self.level} {self.course_name} Exam {self.exam_ordinal} at Period {self.period}"
+
+    # Getter method for 'Period' attribute
+    def get_period(self) -> Period:
+        """
+        Get the 'Period' attribute.
+        Returns:
+            Optional[str]: The 'Period' value or None if it doesn't exist.
+        """
+        return self.period
 
     # Getter method for 'Exam' attribute
     def get_exam_ordinal(self) -> int:
@@ -133,12 +154,61 @@ class EventPeriodConstraint(Constraint):
         return self.part
 
 
+class EventRoomConstraint(Constraint):
+    def __init__(self, constraint_data, slots_per_day: int):
+        super().__init__(constraint_data, slots_per_day)
+
+        self.room = constraint_data.get("Room")
+        self.part = constraint_data.get("Part")
+
+        # Getter method for 'Room' attribute
+
+    def get_room(self) -> Optional[str]:
+        """
+        Get the 'Room' attribute.
+        Returns:
+            Optional[str]: The 'Room' value or None if it doesn't exist.
+        """
+        return self.room
+
+    # Getter method for 'Period' attribute
+    def get_period(self) -> Period:
+        """
+        Get the 'Period' attribute.
+        Returns:
+            Optional[str]: The 'Period' value or None if it doesn't exist.
+        """
+        return self.period
+
+    # Getter method for 'Part' attribute
+    def get_part(self) -> Optional[str]:
+        """
+        Get the 'Part' attribute.
+        Returns:
+            Optional[str]: The 'Part' value or None if it doesn't exist.
+        """
+        return self.part
+
+
 class PeriodConstraint(Constraint):
     def __init__(self, constraint_data, slots_per_day: int):
         super().__init__(constraint_data, slots_per_day)
 
+        self.period: Period = Period.from_period_number(
+            constraint_data.get("Period"), slots_per_day
+        )
+
     def __repr__(self):
         return f"{self.level} at Period {self.period}"
+
+    # Getter method for 'Period' attribute
+    def get_period(self) -> Period:
+        """
+        Get the 'Period' attribute.
+        Returns:
+            Optional[str]: The 'Period' value or None if it doesn't exist.
+        """
+        return self.period
 
 
 class ConstraintManager:
@@ -152,9 +222,10 @@ class ConstraintManager:
             raise ValueError("Constraint type is missing in constraint_data")
 
         constraint_constructors = {
-            "RoomPeriodConstraint": RoomPeriodConstraint,
-            "EventPeriodConstraint": EventPeriodConstraint,
-            "PeriodConstraint": PeriodConstraint,
+            ROOM_PERIOD_CONSTRAINT: RoomPeriodConstraint,
+            EVENT_PERIOD_CONSTRAINT: EventPeriodConstraint,
+            EVENT_ROOM_CONSTRAINT: EventRoomConstraint,
+            PERIOD_CONSTRAINT: PeriodConstraint,
         }
 
         constraint_class = constraint_constructors.get(constraint_type)
