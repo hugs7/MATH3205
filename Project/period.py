@@ -73,6 +73,13 @@ class Period:
         """
         return hash((self.day, self.timeslot))
 
+    def get_ordinal_value(self, slots_per_day: int) -> int:
+        """
+        Returns period number as in the data. Day * Slots per day + timeslot
+        """
+
+        return self.day * slots_per_day + self.timeslot
+
     @staticmethod
     def from_period_number(period_number: int, slots_per_day: int) -> "Period":
         """
