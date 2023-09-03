@@ -111,9 +111,10 @@ NumDays = parsed_data["Periods"] // slots_per_day
 # Set of days
 Days = list(range(NumDays))
 
-# Set of Periods in each day
+# Set of Timeslots in each day
 Timeslots = list(range(slots_per_day))
 
+# Set of periods each day
 Periods = [Period(day, timeslot) for day in Days for timeslot in Timeslots]
 
 # Set of composite rooms
@@ -137,8 +138,6 @@ PA = {
     ]
     for event in Events
 }
-
-breakpoint()
 
 # -- Room availabilities --
 # Dictionary mapping events to a set of rooms in which it can be held
@@ -280,8 +279,7 @@ Precendences = {(e1, e2): m.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
 Unavailabilities = {
     (e, p): m.addConstr(M * Y[e, p] + quicksum(Y[e2, p] for e2 in HC[e]) <= M)
     for e in Events
-    for d in Days
-    for t in Timeslots
+    for p in Periods
 }
 
 # Soft Constraints
