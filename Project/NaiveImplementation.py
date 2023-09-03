@@ -16,7 +16,7 @@ from Room import RoomManager
 from Constraint import ConstraintManager
 from Course import CourseManager, Course, Event
 from Curriculum import CurriculaManager
-from period import Period
+from Period import Period
 
 
 # ------ Import data ------
