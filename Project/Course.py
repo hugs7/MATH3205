@@ -67,6 +67,9 @@ class CourseManager:
         new_course = Course(course_data)
         self.courses.append(new_course)
 
+    def get_courses(self):
+        return self.courses
+
     def __str__(self):
         return "\n".join([str(course) for course in self.courses])
 
