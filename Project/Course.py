@@ -42,17 +42,17 @@ class Course:
 
             # Initialise the course exams list with the written exam
             courseExams = [
-                Event(self.course, self.teacher, "Written", self.rooms_requested)
+                Event(self, self.course, self.teacher, "Written", self.rooms_requested)
             ]
 
             # If the oral exam has a room request, add the oral exam with room requested
             # to the courseExams list otherwise, add it with no preferred room
             if room_for_oral:
                 courseExams.append(
-                    Event(self.course, self.teacher, "Oral", self.rooms_requested)
+                    Event(self, self.course, self.teacher, "Oral", self.rooms_requested)
                 )
             else:
-                courseExams.append(Event(self.course, self.teacher, "Oral", None))
+                courseExams.append(Event(self, self.course, self.teacher, "Oral", None))
 
             # Return the list of courses (should be len = 2)
             return courseExams
@@ -82,7 +82,10 @@ class Event:
     Used in the Course.events() method, has members num_rooms and room_type
     """
 
-    def __init__(self, course_name, course_teacher, event_type, rooms_requested_dict):
+    def __init__(
+        self, course, course_name, course_teacher, event_type, rooms_requested_dict
+    ):
+        self.course: Course = course
         self.event_type = event_type
         self.course_name = course_name
         self.course_teacher = course_teacher
@@ -95,6 +98,13 @@ class Event:
                 self.room_type = rooms_requested_dict["Type"]
             else:
                 self.room_type = None
+
+    def get_course(self) -> Course:
+        """
+        Returns course that exam event belongs to
+        """
+
+        return self.course
 
     def __repr__(self):
         return f"(Course name: {self.course_name}, teacher: {self.course_teacher}, exam type: {self.event_type}, num rooms: {self.num_rooms}, type: {self.room_type})"
