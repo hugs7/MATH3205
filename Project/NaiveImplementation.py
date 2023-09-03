@@ -1,23 +1,26 @@
 """
 This file defines a naive implementation for the Exam timetabling problem
 
-Hugo Burton
+Hugo Burton, Anna Henderson, Mitchell Holt
 27/08/2023
 """
 
 import time
 from gurobipy import Model, quicksum, GRB
 import json  # For importing the data as JSON format
+import os
+from typing import Dict, List
 
+# Custom Imports
 from Room import RoomManager
 from Constraint import ConstraintManager
-from Course import CourseManager, Course, Event as CourseEvent
+from Course import CourseManager, Course, Event
 from Curriculum import CurriculaManager
-import os
-from typing import List
+from period import Period
+
 
 # ------ Import data ------
-data_file = os.path.join(".", "Project", "data", "D1-1-16.json")
+data_file = os.path.join(".", "Project", "data", "toy.json")
 
 with open(data_file, "r") as json_file:
     json_data = json_file.read()
@@ -26,9 +29,12 @@ with open(data_file, "r") as json_file:
 
 parsed_data = json.loads(json_data)
 
+# Timeslots per day
+slots_per_day = parsed_data["SlotsPerDay"]
+
 # Exam schedule constraints
 constrs = parsed_data["Constraints"]
-constrManager = ConstraintManager()
+constrManager = ConstraintManager(slots_per_day)
 for constraint in constrs:
     constrManager.add_constraint(constraint)
 
@@ -53,11 +59,19 @@ for examRoom in examRooms:
 # Cannot add any more rooms after this
 Rooms.construct_composite_map()
 
-room_constraints = constrManager.get_room_constraints()
-event_constraints = constrManager.get_event_constraints()
+
+room_constraints = constrManager.get_room_period_constraints()
+
+# Event period Constraints
+event_constraints = constrManager.get_event_period_constraints()
 period_constraints = constrManager.get_period_constraints()
-forbidden_period_constraints = constrManager.get_forbidden_period_constraints()
-course_list = constrManager.get_course_list()
+
+# Forbidden period constraints (any event any room)
+# Convert periods into day and timeslot tuples
+forbidden_period_constraints: List[Period] = [
+    period_constraint.get_period()
+    for period_constraint in constrManager.get_forbidden_period_constraints()
+]
 
 # ------ Sets ------
 # Some sets are already defined above
@@ -69,26 +83,41 @@ courses: list[Course] = courseManager.get_courses()
 
 # Extract exams from courses and store in one large list.
 # Can make this a frozen set in the future, though it's nice as a list for now.
-CourseEvents = {
-    course: [event for event in course.generate_events()] for course in courses
-}
+CourseEvents = {course: [event for event in course.get_events()] for course in courses}
 
-Events: List[CourseEvent] = []
+Events: List[Event] = []
 # Iterate through the CourseEvents dictionary and extend the Events list
 for event_list in CourseEvents.values():
     Events.extend(event_list)
 
+# Forbidden event period constraints. Dictionary of [CourseEvent: Period]
+forbidden_event_period_constraints: Dict[Event, List[Period]] = {}
+# Prepopulate dictionary with an empty list for each event
+for event in Events:
+    forbidden_event_period_constraints[event] = []
+
+# Iterate through forbidden_event_period_constraints and add to the right list as required
+for event_period_constraint in constrManager.get_forbidden_event_period_constraints():
+    course_name = event_period_constraint.get_course_name()
+    course = courseManager.get_course_by_name(course_name)
+    event = course.get_events()[event_period_constraint.get_exam_ordinal()]
+
+    forbidden_event_period_constraints[event].append(
+        event_period_constraint.get_period()
+    )
+
 # -- Periods --
 # Redefine set of periods into days and timeslots
 # Calculate number of days in exam period
-SlotsPerDay = parsed_data["SlotsPerDay"]
-NumDays = parsed_data["Periods"] // SlotsPerDay
+NumDays = parsed_data["Periods"] // slots_per_day
 
 # Set of days
 Days = list(range(NumDays))
 
 # Set of Periods in each day
-Timeslots = list(range(SlotsPerDay))
+Timeslots = list(range(slots_per_day))
+
+Periods = [Period(day, timeslot) for day in Days for timeslot in Timeslots]
 
 # Set of composite rooms
 CompositeRooms = Rooms.get_composite_rooms()
@@ -99,27 +128,22 @@ K = {}
 # Indexed by rc
 R0 = Rooms.get_overlapping_rooms()
 
-# -- Period Availabilities --
+# -- Period Availabilities (P_e in paper) --
 # Set of periods available for event e
 
-# Convert periods into day and timeslot tuples
-forbidden_dt_constraints = []
-for period in forbidden_period_constraints:
-    day = period % SlotsPerDay
-    timeslot = period - SlotsPerDay * day
-    day = -1
-    forbidden_dt_constraints.append((day, timeslot))
-
 PA = {
-    e: [
-        (day, timeslot)
-        for day in Days
-        for timeslot in Timeslots
-        if (day, timeslot) not in forbidden_dt_constraints
+    event: [
+        period
+        for period in Periods
+        if period not in forbidden_period_constraints
+        and period not in forbidden_event_period_constraints[event]
     ]
-    for e in Events
+    for event in Events
 }
 
+breakpoint()
+
+# -- Room availabilities --
 # Dictionary mapping events to a set of rooms in which it can be held
 RA = {}
 for event in Events:
@@ -184,23 +208,6 @@ for event in Events:
 
     HC[event] = conflict_set
 
-    # primary_curricula_courses = set(
-    #     sum(
-    #         (
-    #             c.primary_courses
-    #             for c in curriculaManager.curricula
-    #             if event in c.primary_courses and c != event
-    #         ),
-    #         [],
-    #     )
-    # )
-    # conflict_set = set(sum((c.events() for c in primary_curricula_courses), []))
-    # teacher_courses = set(
-    #     c for c in courseManager.courses if c.teacher == event.course_teacher
-    # )
-    # conflict_set |= set(sum((c.events() for c in teacher_courses), []))
-    # HC[event] = conflict_set
-
 # ------ Data ------
 
 # -- Teachers --
@@ -212,7 +219,7 @@ primaryPrimaryDistance = parsed_data["PrimaryPrimaryDistance"]
 
 print("------\nGurobi\n------")
 room_constraints = constrManager.get_room_constraints()
-event_constraints = constrManager.get_event_constraints()
+event_constraints = constrManager.get_event_period_constraints()
 period_constraints = constrManager.get_period_constraints()
 course_list = constrManager.get_course_list()
 # --- Define Model ---
@@ -222,20 +229,14 @@ m = Model("Uni Exams")
 # ------ Variables ------
 # X = 1 if event e is assigned to period p and room r, 0 else
 X = {
-    (e, d, t, r): m.addVar(vtype=GRB.BINARY)
+    (e, p, r): m.addVar(vtype=GRB.BINARY)
     for e in Events
-    for d in Days
-    for t in Timeslots
+    for p in Periods
     for r in Rooms
 }
 
 # Y = 1 if event e is assigned to day d and timeslot t, 0 else (auxiliary variable)
-Y = {
-    (e, d, t): m.addVar(vtype=GRB.BINARY)
-    for e in Events
-    for d in Days
-    for t in Timeslots
-}
+Y = {(e, p): m.addVar(vtype=GRB.BINARY) for e in Events for p in Periods}
 
 # The ordinal (order) value of the period assigned to event e
 H = {e: m.addVar(vtype=GRB.INTEGER) for e in Events}
@@ -250,18 +251,15 @@ H = {e: m.addVar(vtype=GRB.INTEGER) for e in Events}
 
 # Constraint 1: Each event assigned to an available period and room.
 RoomRequest = {
-    e: m.addConstr(
-        quicksum(X[e, d, t, r] for t in Timeslots for d in Days for r in Rooms) == 1
-    )
+    e: m.addConstr(quicksum(X[e, p, r] for p in Periods for r in Rooms) == 1)
     for e in Events
 }
 
 # Constraint 2: At most one event can use a room at once.
 RoomOccupation = {
-    (r, d, t): m.addConstr(quicksum(X[e, d, t, r] for e in Events) <= 1)
+    (r, p): m.addConstr(quicksum(X[e, p, r] for e in Events) <= 1)
     for r in Rooms
-    for t in Timeslots
-    for d in Days
+    for p in Periods
 }
 
 # Constraint 3: Two events must have different periods if they are in hard conflict
@@ -274,14 +272,13 @@ M = 1
 # ro is room-overlapping - Rooms that overlap in a composite room
 
 HardConflicts = {
-    (cr, d, t): m.addConstr(
-        M * quicksum(X[e, d, t, cr] for e in Events)
-        + quicksum(X[e, d, t, ro] for e in Events for ro in R0[cr])
+    (cr, p): m.addConstr(
+        M * quicksum(X[e, p, cr] for e in Events)
+        + quicksum(X[e, p, ro] for e in Events for ro in R0[cr])
         <= M
     )
     for cr in CompositeRooms
-    for d in Days
-    for t in Timeslots
+    for p in Periods
 }
 
 # Constraint 4: Some events must precede other events (hard constraint).
@@ -293,11 +290,11 @@ Precendences = {(e1, e2): m.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
 #             print("Event", event)
 #             for e2 in HC[event]:
 #                 print("Event2: ", e2, ", D:", d, ", T:", t)
-#                 print("Y e2", [Y[e2, d, t]])
+#                 print("Y e2", [Y[e2, p]])
 # breakpoint()
 # Constraint 5: Some rooms, day and timeslot configurations are unavailable.
 Unavailabilities = {
-    (e, d, t): m.addConstr(M * Y[e, d, t] + quicksum(Y[e2, d, t] for e2 in HC[e]) <= M)
+    (e, p): m.addConstr(M * Y[e, p] + quicksum(Y[e2, p] for e2 in HC[e]) <= M)
     for e in Events
     for d in Days
     for t in Timeslots
@@ -320,12 +317,11 @@ print("Time to optimise:", gurobi_time, "seconds")
 
 print("Objective Value:", m.ObjVal)
 
-# for d in Days:
-#     for t in Timeslots:
-#         for e in Events:
-#             for r in Rooms:
-#                 if X[e, d, t, r].x > 0.9:
-#                     print(f"Day {d}")
-#                     print(f"  Timeslot {t}")
-#                     print(f"    Exam {e} in room {r}")
-#                     print()
+for p in Periods:
+    for e in Events:
+        for r in Rooms:
+            if X[e, p, r].x > 0.9:
+                print(f"Day {p.get_day()}")
+                print(f"  Timeslot {p.get_timeslot()}")
+                print(f"    Exam {e} in room {r}")
+                print()
