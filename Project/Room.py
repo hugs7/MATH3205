@@ -4,6 +4,9 @@ Class for handing rooms in the problem
 
 # Constants
 
+from typing import Iterator
+
+
 COMPOSITE = "Composite"
 LARGE = "Large"
 SMALL = "Small"
@@ -31,7 +34,7 @@ class Room:
 
         return self.room
 
-    def get_type(self):
+    def get_type(self) -> str:
         """
         Returns type of room
         """
@@ -43,6 +46,9 @@ class Room:
         Returns members of the room as list of strings.
         If room is not composite, throws error
         """
+
+        if not self.is_composite():
+            raise Exception("Room is not composite")
 
         return self.members
 
@@ -72,14 +78,26 @@ class Room:
 
 
 class RoomManager:
+    """
+    RoomManager handles all the rooms for the exam scheduling problem. This includes small, large and composite rooms.
+    As well as the dummy room for exams not assigned a room
+    """
+
     def __init__(self):
-        # rooms is a list of Room objects; initialise collection of all rooms
-        # so that it contains the dummy room
+        """
+        Inititialisation method for RoomManager. No required arguments
+        """
+
+        # List of rooms the RoomManager Stores
         self.rooms: list[Room] = [Room()]
+
+        # Graph in the form of an ajacency list for storing joining rooms
         self.composite_map = {}
+
+        # Flag for if Composite room graph has been constructed
         self.constructed = False
 
-    def add_room(self, room_data) -> Room:
+    def add_room(self, room_data: any) -> Room:
         """
         Creates room and returns it to the caller
         """
@@ -96,37 +114,73 @@ class RoomManager:
         return new_room
 
     def get_rooms(self) -> list[Room]:
+        """
+        Gets list of rooms stored by the RoomManager
+        """
+
         return self.rooms
 
-    def get_room_by_name(self, room_name):
+    def get_room_by_name(self, room_name: str) -> Room | None:
+        """
+        Gets room by it's name
+        """
+
         for room in self.rooms:
             if room.get_room() == room_name:
                 return room
         return None
 
     def get_composite_rooms(self) -> list[Room]:
-        return [r for r in self.rooms if r.get_type() == COMPOSITE]
+        """
+        Gets list of composite rooms stored by the RoomManager
+        """
+
+        return [
+            r for r in self.rooms if r.get_type() == COMPOSITE and r.get_type != DUMMY
+        ]
 
     def get_single_rooms(self) -> list[Room]:
+        """
+        Gets list of non-composite (small and large) rooms stored by the RoomManager
+        """
+
         return [
             r for r in self.rooms if r.get_type() != COMPOSITE and r.get_type != DUMMY
         ]
 
-    def get_dummy_room(self):
+    def get_dummy_room(self) -> Room:
+        """
+        Returns dummy room
+        """
+
         for r in self.rooms:
             if r.get_type() == DUMMY:
                 return r
-        raise Exception("no dummy room big sad")
+        raise Exception("No dummy room big sad")
 
-    def construct_composite_map(self):
+    def construct_composite_map(self) -> dict[Room, list[Room]]:
+        """
+        Constructs graph in the form of an ajacency list to store
+        which rooms are composite and joining
+        """
+
         assert not self.constructed
+
+        # Iterate over all composite rooms stored by the RoomManager
+        for compRoom in self.get_composite_rooms():
+            # Get the members of compRoom (as string)
+            members = compRoom.get_members()
+
+            # Create ajacency list (a dictionary with values of a list[Room])
+            self.composite_map[compRoom] = frozenset(
+                self.get_room_by_name(r) for r in members
+            )
+
+        # Set the constructed flag to true
         self.constructed = True
-        for comp in self.get_rooms():
-            if comp.get_type() == COMPOSITE:
-                members = comp.get_members()
-                self.composite_map[comp] = frozenset(
-                    self.get_room_by_name(r) for r in members
-                )
+
+        # Return Composite Graph
+        return self.composite_map
 
     def get_room_overlap(self) -> list[str]:
         rooms = []
@@ -147,5 +201,5 @@ class RoomManager:
         return overlap
 
     # Implement the iterable functionality
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Room]:
         return iter(self.rooms)
