@@ -13,9 +13,10 @@ from Constraint import ConstraintManager
 from Course import CourseManager, Course, Event as CourseEvent
 from Curriculum import CurriculaManager
 import os
+from typing import List
 
 # ------ Import data ------
-data_file = os.path.join(".", "Project", "testData.json")
+data_file = os.path.join(".", "Project", "data", "D1-1-16.json")
 
 with open(data_file, "r") as json_file:
     json_data = json_file.read()
@@ -67,7 +68,14 @@ courses: list[Course] = courseManager.get_courses()
 
 # Extract exams from courses and store in one large list.
 # Can make this a frozen set in the future, though it's nice as a list for now.
-Events = [event for exam in courses for event in exam.events()]
+CourseEvents = {
+    course: [event for event in course.generate_events()] for course in courses
+}
+
+Events: List[CourseEvent] = []
+# Iterate through the CourseEvents dictionary and extend the Events list
+for event_list in CourseEvents.values():
+    Events.extend(event_list)
 
 # -- Periods --
 # Redefine set of periods into days and timeslots
@@ -113,17 +121,19 @@ PA = {
 
 # Dictionary mapping events to a set of rooms in which it can be held
 RA = {}
-for e in Events:
-    if e.num_rooms == 0:
-        RA[e] = set((Rooms.get_dummy_room(),))
-    elif e.num_rooms == 1:
-        RA[e] = set(r for r in Rooms.get_single_rooms() if r.get_type() == e.room_type)
+for event in Events:
+    if event.num_rooms == 0:
+        RA[event] = set((Rooms.get_dummy_room(),))
+    elif event.num_rooms == 1:
+        RA[event] = set(
+            r for r in Rooms.get_single_rooms() if r.get_type() == event.room_type
+        )
     else:
-        RA[e] = set(
+        RA[event] = set(
             r
             for r in Rooms.get_composite_rooms()
-            if len(r.get_members()) >= e.num_rooms
-            and next(iter(Rooms.composite_map[r])).get_type() == e.room_type
+            if len(r.get_members()) >= event.num_rooms
+            and next(iter(Rooms.composite_map[r])).get_type() == event.room_type
         )
 
 # The set of available room equivalence classes for event e
@@ -134,23 +144,61 @@ F = {}
 
 # dictionary mapping events e to the set of events in H3 hard conflict with e
 HC = {}  # type is dict[Event, Frozenset(Event)]
-for e in Events:
-    primary_curricula_courses = set(
-        sum(
-            (
-                c.primary_courses
-                for c in curriculaManager.curricula
-                if e in c.primary_courses
-            ),
-            [],
-        )
-    )
-    conflict_set = set(sum((c.events() for c in primary_curricula_courses), []))
-    teacher_courses = set(
-        c for c in courseManager.courses if c.teacher == e.course_teacher
-    )
-    conflict_set |= set(sum((c.events() for c in teacher_courses), []))
-    HC[e] = frozenset(conflict_set)
+for event in Events:
+    event_course = event.get_course()
+    event_course_name = event_course.get_course_name()
+    event_course_teacher = event_course.get_teacher()
+
+    overlapping_primary_curriculum_courses = []
+
+    for curriculum in curriculaManager.get_curricula():
+        primary_course_names = curriculum.get_primary_course_names()
+        if event_course_name not in primary_course_names:
+            continue
+
+        # This is the curricula contiaing the course
+        # Add all the courses from here into the overlapping_primary_curriculum
+        for primary_course_name in primary_course_names:
+            primary_course = courseManager.get_course_by_name(primary_course_name)
+            if primary_course not in overlapping_primary_curriculum_courses:
+                overlapping_primary_curriculum_courses.append(primary_course)
+
+    # Now convert all these courses into events using the CourseEvent dictionary
+    primary_curricula_events = []
+    for course in overlapping_primary_curriculum_courses:
+        primary_curricula_events.extend(CourseEvents.get(course))
+
+    # Find Teachers teaching the same course
+    same_teacher_courses: List[Course] = []
+    for course in courseManager.get_courses():
+        if course.get_teacher() == event_course_teacher:
+            same_teacher_courses.append(course)
+
+    # Now convert all those same teacher courses to events
+    same_teacher_events = []
+    for course in same_teacher_courses:
+        same_teacher_events.extend(CourseEvents.get(course))
+
+    conflict_set = set(primary_curricula_events).union(set(same_teacher_events))
+
+    HC[event] = conflict_set
+
+    # primary_curricula_courses = set(
+    #     sum(
+    #         (
+    #             c.primary_courses
+    #             for c in curriculaManager.curricula
+    #             if event in c.primary_courses and c != event
+    #         ),
+    #         [],
+    #     )
+    # )
+    # conflict_set = set(sum((c.events() for c in primary_curricula_courses), []))
+    # teacher_courses = set(
+    #     c for c in courseManager.courses if c.teacher == event.course_teacher
+    # )
+    # conflict_set |= set(sum((c.events() for c in teacher_courses), []))
+    # HC[event] = conflict_set
 
 # ------ Data ------
 
@@ -161,7 +209,7 @@ teachers = parsed_data["Teachers"]
 primaryPrimaryDistance = parsed_data["PrimaryPrimaryDistance"]
 
 
-print("\n\n------\nGurobi\n------")
+print("------\nGurobi\n------")
 room_constraints = constrManager.get_room_constraints()
 event_constraints = constrManager.get_event_constraints()
 period_constraints = constrManager.get_period_constraints()
@@ -225,7 +273,7 @@ M = 1
 # ro is room-overlapping - Rooms that overlap in a composite room
 
 HardConflicts = {
-    m.addConstr(
+    (cr, d, t): m.addConstr(
         M * quicksum(X[e, d, t, cr] for e in Events)
         + quicksum(X[e, d, t, ro] for e in Events for ro in R0[cr])
         <= M
@@ -236,11 +284,19 @@ HardConflicts = {
 }
 
 # Constraint 4: Some events must precede other events (hard constraint).
-Precendences = {m.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
+Precendences = {(e1, e2): m.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
 
+# for d in Days:
+#     for t in Timeslots:
+#         for event in Events:
+#             print("Event", event)
+#             for e2 in HC[event]:
+#                 print("Event2: ", e2, ", D:", d, ", T:", t)
+#                 print("Y e2", [Y[e2, d, t]])
+# breakpoint()
 # Constraint 5: Some rooms, day and timeslot configurations are unavailable.
 Unavailabilities = {
-    m.addConstr(M * Y[e, d, t] + quicksum(Y[e2, d, t] for e2 in HC[e]) <= M)
+    (e, d, t): m.addConstr(M * Y[e, d, t] + quicksum(Y[e2, d, t] for e2 in HC[e]) <= M)
     for e in Events
     for d in Days
     for t in Timeslots
@@ -251,6 +307,19 @@ Unavailabilities = {
 # ------ Objective Function ------
 # m.setObjective(0, GRB.MAXIMIZE)
 
+# ------ Optimise -------
+m.optimize()
+
 # ------ Print output ------
 
-# print("Objective Value:", m.ObjVal)
+print("Objective Value:", m.ObjVal)
+
+for d in Days:
+    for t in Timeslots:
+        for e in Events:
+            for r in Rooms:
+                if X[e, d, t, r].x > 0.9:
+                    print(f"Day {d}")
+                    print(f"  Timeslot {t}")
+                    print(f"    Exam {e} in room {r}")
+                    print()
