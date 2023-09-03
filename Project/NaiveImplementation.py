@@ -5,6 +5,7 @@ Hugo Burton
 27/08/2023
 """
 
+import time
 from gurobipy import Model, quicksum, GRB
 import json  # For importing the data as JSON format
 
@@ -308,18 +309,23 @@ Unavailabilities = {
 # m.setObjective(0, GRB.MAXIMIZE)
 
 # ------ Optimise -------
+g_start_time = time.time()
 m.optimize()
+g_finish_time = time.time()
+
+gurobi_time = g_finish_time - g_start_time
+print("Time to optimise:", gurobi_time, "seconds")
 
 # ------ Print output ------
 
 print("Objective Value:", m.ObjVal)
 
-for d in Days:
-    for t in Timeslots:
-        for e in Events:
-            for r in Rooms:
-                if X[e, d, t, r].x > 0.9:
-                    print(f"Day {d}")
-                    print(f"  Timeslot {t}")
-                    print(f"    Exam {e} in room {r}")
-                    print()
+# for d in Days:
+#     for t in Timeslots:
+#         for e in Events:
+#             for r in Rooms:
+#                 if X[e, d, t, r].x > 0.9:
+#                     print(f"Day {d}")
+#                     print(f"  Timeslot {t}")
+#                     print(f"    Exam {e} in room {r}")
+#                     print()
