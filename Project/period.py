@@ -67,7 +67,7 @@ class Period:
 
         return f"({self.day}, {self.timeslot})"
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         """
         Hash function for Period objects.
         """
