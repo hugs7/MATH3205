@@ -13,7 +13,6 @@ from Constraint import ConstraintManager
 from Course import CourseManager, Course, Event as CourseEvent
 from Curriculum import CurriculaManager
 import os
-from typing import List
 
 # ------ Import data ------
 data_file = os.path.join(".", "Project", "testData.json")
@@ -65,7 +64,6 @@ course_list = constrManager.get_course_list()
 
 # Get courses
 courses: list[Course] = courseManager.get_courses()
-print(courses)
 
 # Extract exams from courses and store in one large list.
 # Can make this a frozen set in the future, though it's nice as a list for now.
@@ -90,7 +88,7 @@ K = {}
 
 # The set of overlapping rooms of composite room
 # Indexed by rc
-R0 = {cr: Rooms.get_overlap(cr) for cr in CompositeRooms}
+R0 = Rooms.get_overlapping_rooms()
 
 # -- Period Availabilities --
 # Set of periods available for event e
@@ -211,7 +209,7 @@ RoomRequest = {
 
 # Constraint 2: At most one event can use a room at once.
 RoomOccupation = {
-    (r, d, t): m.addConstr(quicksum(X[e, d, t] for e in Events) <= 1)
+    (r, d, t): m.addConstr(quicksum(X[e, d, t, r] for e in Events) <= 1)
     for r in Rooms
     for t in Timeslots
     for d in Days
@@ -225,6 +223,7 @@ RoomOccupation = {
 M = 1
 # rc is room-composite   - Rooms that are composite
 # ro is room-overlapping - Rooms that overlap in a composite room
+
 HardConflicts = {
     m.addConstr(
         M * quicksum(X[e, d, t, cr] for e in Events)
