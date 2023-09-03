@@ -21,6 +21,8 @@ class Course:
         self.teacher = course_data.get("Teacher")
         self.written_oral_specs = course_data.get("WrittenOralSpecs")
 
+        self.events = self._generate_events()
+
     def get_course_name(self) -> str:
         """
         Returns the name of the course
@@ -50,10 +52,13 @@ class Course:
 
         return self.min_distance_between_exams
 
+    def get_events(self) -> List["Event"]:
+        return self.events
+
     def __repr__(self):
         return f"(Course: {self.course_name}, Exam Type: {self.exam_type}, Teacher: {self.teacher})\n"
 
-    def generate_events(self):
+    def _generate_events(self):
         """
         Create a list of (exam) events for this course, where each event is a
         RoomRequest object
