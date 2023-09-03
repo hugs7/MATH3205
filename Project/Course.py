@@ -2,6 +2,8 @@
 This class handles Courses in the problem
 """
 
+from typing import List
+
 
 class Course:
     def __init__(self, course_data):
@@ -61,7 +63,7 @@ class Course:
 
 class CourseManager:
     def __init__(self):
-        self.courses = []
+        self.courses: List[Course] = []
 
     def add_course(self, course_data):
         new_course = Course(course_data)
