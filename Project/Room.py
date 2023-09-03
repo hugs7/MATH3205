@@ -2,8 +2,6 @@
 Class for handing rooms in the problem
 """
 
-from typing import List
-
 
 class Room:
     def __init__(self, room_data=None):
@@ -33,11 +31,15 @@ class RoomManager:
     def __init__(self):
         # rooms is a list of Room objects; initialise collection of all rooms
         # so that it contains the dummy room
-        self.rooms: List[Room] = [Room()]
+        self.rooms: list[Room] = [Room()]
         self.composite_map = {}
         self.constructed = False
 
-    def add_room(self, room_data):
+    def add_room(self, room_data) -> Room:
+        """
+        Creates room and returns it to the caller
+        """
+
         assert not self.constructed
         # Check if room already exists
         existing_room = self.get_room_by_name(room_data.get("Room"))
@@ -47,7 +49,9 @@ class RoomManager:
         new_room = Room(room_data)
         self.rooms.append(new_room)
 
-    def get_rooms(self):
+        return new_room
+
+    def get_rooms(self) -> list[Room]:
         return self.rooms
 
     def get_room_by_name(self, room_name):
@@ -56,10 +60,10 @@ class RoomManager:
                 return room
         return None
 
-    def get_composite_rooms(self):
+    def get_composite_rooms(self) -> list[Room]:
         return [r for r in self.rooms if r.get_type() == "Composite"]
 
-    def get_single_rooms(self):
+    def get_single_rooms(self) -> list[Room]:
         return [
             r
             for r in self.rooms
@@ -82,7 +86,7 @@ class RoomManager:
                     self.get_room_by_name(r) for r in members
                 )
 
-    def get_room_overlap(self) -> List[str]:
+    def get_room_overlap(self) -> list[str]:
         rooms = []
         overlap = []
         for comp_room in self.get_composite_rooms():
@@ -93,7 +97,7 @@ class RoomManager:
                     rooms.append(room)
         return overlap
 
-    def get_overlap(self, Room: Room) -> List[Room]:
+    def get_overlap(self, Room: Room) -> list[Room]:
         overlap = []
         for room in Room.get_members():
             if room in self.get_room_overlap():
