@@ -25,7 +25,7 @@ class Room:
             self.members = room_data.get("Members", [])
 
     def __repr__(self) -> str:
-        return f"Room {self.room} - Type: {self.room_type}, Members: {', '.join(self.members)}\n"
+        return f"{self.room} ({self.room_type})"
 
     def get_room(self) -> str:
         """
