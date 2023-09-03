@@ -16,7 +16,7 @@ class Course:
         self.written_oral_specs = course_data.get("WrittenOralSpecs")
 
     def __repr__(self):
-        return f"Course: {self.course}, Exam Type: {self.exam_type}, Teacher: {self.teacher}"
+        return f"(Course: {self.course}, Exam Type: {self.exam_type}, Teacher: {self.teacher})\n"
 
     def events(self):
         """
@@ -63,13 +63,13 @@ class Course:
 
 class CourseManager:
     def __init__(self):
-        self.courses: List[Course] = []
+        self.courses: list[Course] = []
 
     def add_course(self, course_data):
         new_course = Course(course_data)
         self.courses.append(new_course)
 
-    def get_courses(self):
+    def get_courses(self) -> list[Course]:
         return self.courses
 
     def __str__(self):
@@ -97,4 +97,4 @@ class Event:
                 self.room_type = None
 
     def __repr__(self):
-        return f"course name: {self.course_name}, teacher: {self.course_teacher}, exam type: {self.event_type}, num rooms: {self.num_rooms}, type: {self.room_type}"
+        return f"(Course name: {self.course_name}, teacher: {self.course_teacher}, exam type: {self.event_type}, num rooms: {self.num_rooms}, type: {self.room_type})"

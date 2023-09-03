@@ -10,9 +10,10 @@ import json  # For importing the data as JSON format
 
 from Room import RoomManager
 from Constraint import ConstraintManager
-from Course import CourseManager
+from Course import CourseManager, Course, Event as CourseEvent
 from Curriculum import CurriculaManager
 import os
+from typing import List
 
 # ------ Import data ------
 data_file = os.path.join(".", "Project", "testData.json")
@@ -61,7 +62,14 @@ course_list = constrManager.get_course_list()
 # Some sets are already defined above
 # -- Events --
 # (one course can have multiple exam (events))
-Events = frozenset(r for r in sum((x.events() for x in courseManager.courses), []))
+
+# Get courses
+courses: list[Course] = courseManager.get_courses()
+print(courses)
+
+# Extract exams from courses and store in one large list.
+# Can make this a frozen set in the future, though it's nice as a list for now.
+Events = [event for exam in courses for event in exam.events()]
 
 # -- Periods --
 # Redefine set of periods into days and timeslots
@@ -147,14 +155,6 @@ for e in Events:
     HC[e] = frozenset(conflict_set)
 
 # ------ Data ------
-# -- Constraints --
-constraints = constrManager
-
-# -- Courses --
-courses = courseManager
-
-# -- Curricula --
-curricula = curriculaManager
 
 # -- Teachers --
 teachers = parsed_data["Teachers"]
