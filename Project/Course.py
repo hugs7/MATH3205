@@ -31,16 +31,29 @@ class Course:
             # I'm not sure if this will always hold in larger data sets so this
             # will make the program crash if we need to fix this bit of the
             # code
+
+            # Check number of exams is 2. Given good data, this should never fail
             assert self.num_of_exams == 2
+
+            # Get what room the oral exam is in
             room_for_oral = self.written_oral_specs["RoomForOral"]
-            res = [Event(self.course, self.teacher, "Written", self.rooms_requested)]
+
+            # Initialise the course exams list with the written exam
+            courseExams = [
+                Event(self.course, self.teacher, "Written", self.rooms_requested)
+            ]
+
+            # If the oral exam has a room request, add the oral exam with room requested
+            # to the courseExams list otherwise, add it with no preferred room
             if room_for_oral:
-                res.append(
+                courseExams.append(
                     Event(self.course, self.teacher, "Oral", self.rooms_requested)
                 )
             else:
-                res.append(Event(self.course, self.teacher, "Oral", None))
-            return res
+                courseExams.append(Event(self.course, self.teacher, "Oral", None))
+
+            # Return the list of courses (should be len = 2)
+            return courseExams
         else:
             # There is a case that was not matched rip
             raise Exception("could not match exam type", self.exam_type)
@@ -60,6 +73,7 @@ class CourseManager:
 
 class Event:
     """
+    A single Course can have multiple exams. These are defined as "Events"
     Used in the Course.events() method, has members num_rooms and room_type
     """
 
