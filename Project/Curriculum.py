@@ -1,23 +1,54 @@
+from typing import List
+
+
 class Curriculum:
     def __init__(self, curriculum_data):
         self.name = curriculum_data.get("Curriculum")
-        self.primary_courses = curriculum_data.get("PrimaryCourses", [])
-        self.secondary_courses = curriculum_data.get("SecondaryCourses", [])
+        self.primary_course_names = curriculum_data.get("PrimaryCourses", [])
+        self.secondary_course_names = curriculum_data.get("SecondaryCourses", [])
 
     def __repr__(self):
-        return f"Curriculum: {self.name}\nPrimary Courses: {', '.join(self.primary_courses)}\nSecondary Courses: {', '.join(self.secondary_courses)}"
+        return f"Curriculum: {self.name}\nPrimary Courses: {', '.join(self.primary_course_names)}\nSecondary Courses: {', '.join(self.secondary_course_names)}"
 
     def get_courses(self):
-        return self.primary_courses + self.secondary_courses
+        return self.primary_course_names + self.secondary_course_names
+
+    def get_primary_course_names(self) -> List[str]:
+        """
+        Returns list of primary courses as list of strings
+        """
+
+        return self.primary_course_names
+
+    def get_secondary_course_names(self) -> List[str]:
+        """
+        Returns list of secondary courses as list of strings
+        """
+
+        return self.secondary_course_names
 
 
 class CurriculaManager:
     def __init__(self):
-        self.curricula = []
+        self.curricula: List[Curriculum] = []
 
-    def add_curriculum(self, curriculum_data):
+    def add_curriculum(self, curriculum_data) -> Curriculum:
+        """
+        Creates Curriculum and adds it to the CurriculaManager
+        Returns new curriculum
+        """
+
         new_curriculum = Curriculum(curriculum_data)
         self.curricula.append(new_curriculum)
+
+        return new_curriculum
+
+    def get_curricula(self) -> List[Curriculum]:
+        """
+        Returns curricula as list of Curriculum
+        """
+
+        return self.curricula
 
     def __str__(self):
         return "\n\n".join([str(curriculum) for curriculum in self.curricula])
