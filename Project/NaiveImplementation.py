@@ -9,7 +9,7 @@ import time
 from gurobipy import Model, quicksum, GRB
 import json  # For importing the data as JSON format
 import os
-from typing import Dict, List
+from typing import Dict, List, Set, Tuple
 
 # Custom Imports
 from Room import RoomManager
@@ -20,7 +20,7 @@ from period import Period
 
 
 # ------ Import data ------
-data_file = os.path.join(".", "Project", "data", "toy.json")
+data_file = os.path.join(".", "Project", "data", "D7-2-17.json")
 
 with open(data_file, "r") as json_file:
     json_data = json_file.read()
@@ -117,7 +117,7 @@ Timeslots = list(range(slots_per_day))
 # Set of periods each day
 Periods = [Period(day, timeslot) for day in Days for timeslot in Timeslots]
 
-# Set of composite rooms
+# Set of composite rooms (R^C) in paper)
 CompositeRooms = Rooms.get_composite_rooms()
 # -- Room Equivalence Class --
 K = {}
@@ -161,7 +161,19 @@ for event in Events:
 KE = {}
 
 # F = the set of examination pairs with precendence constraints
-F = {}
+F: Set[Tuple[Event, Event]] = {}
+for e1 in Events:
+    for e2 in Events:
+        if e1 == e2:
+            continue
+
+        e1_period_availabilities = PA[e1]
+        e2_period_availabilities = PA[e2]
+
+        if min(e2_period_availabilities) > max(e1_period_availabilities):
+            # e1 must preceed e2
+            F.add((e1, e2))
+print("F", F)
 
 # dictionary mapping events e to the set of events in H3 hard conflict with e
 HC = {}  # type is dict[Event, Frozenset(Event)]
@@ -214,10 +226,10 @@ primaryPrimaryDistance = parsed_data["PrimaryPrimaryDistance"]
 
 
 print("------\nGurobi\n------")
-room_constraints = constrManager.get_room_constraints()
+room_constraints = constrManager.get_room_period_constraints()
 event_constraints = constrManager.get_event_period_constraints()
 period_constraints = constrManager.get_period_constraints()
-course_list = constrManager.get_course_list()
+
 # --- Define Model ---
 m = Model("Uni Exams")
 
@@ -257,16 +269,15 @@ RoomOccupation = {
 # Occurs in the following cases:
 #   - They are part of the same primary curriculum
 #   - They have the same teacher
-# M: Number of elements in the overlapping rooms sum
-M = 1
+# M: Number of elements (rooms maybe - confirm with Michael) in the overlapping rooms sum
 # rc is room-composite   - Rooms that are composite
 # ro is room-overlapping - Rooms that overlap in a composite room
 
 HardConflicts = {
     (cr, p): m.addConstr(
-        M * quicksum(X[e, p, cr] for e in Events)
+        len(R0[cr]) * quicksum(X[e, p, cr] for e in Events)
         + quicksum(X[e, p, ro] for e in Events for ro in R0[cr])
-        <= M
+        <= len(R0[cr])
     )
     for cr in CompositeRooms
     for p in Periods
@@ -277,9 +288,26 @@ Precendences = {(e1, e2): m.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
 
 # Constraint 5: Some rooms, day and timeslot configurations are unavailable.
 Unavailabilities = {
-    (e, p): m.addConstr(M * Y[e, p] + quicksum(Y[e2, p] for e2 in HC[e]) <= M)
+    (e, p): m.addConstr(
+        len(HC[e]) * Y[e, p] + quicksum(Y[e2, p] for e2 in HC[e]) <= len(HC[e])
+    )
     for e in Events
-    for p in Periods
+    for p in PA[e]
+}
+
+# Constraint 6: Set values of Y_(e,p)
+setY = {
+    m.addConstr(Y[e, p] - quicksum(X[e, p, r] for r in RA[e]) == 0)
+    for e in Events
+    for p in PA[e]
+}
+
+# Constraint 7: Set values of H_e
+setH = {
+    m.addConstr(
+        quicksum(p.get_ordinal_value(slots_per_day) * Y[e, p] for p in PA[e]) == H[e]
+    )
+    for e in Events
 }
 
 # Soft Constraints
