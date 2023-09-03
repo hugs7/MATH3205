@@ -7,7 +7,7 @@ from typing import List
 
 class Course:
     def __init__(self, course_data):
-        self.course = course_data.get("Course")
+        self.course_name = course_data.get("Course")
         self.exam_type = course_data.get("ExamType")
         self.min_distance_between_exams = course_data.get("MinimumDistanceBetweenExams")
         self.num_of_exams = course_data.get("NumberOfExams")
@@ -15,8 +15,15 @@ class Course:
         self.teacher = course_data.get("Teacher")
         self.written_oral_specs = course_data.get("WrittenOralSpecs")
 
+    def get_course_name(self) -> str:
+        """
+        Returns the name of the course
+        """
+
+        return self.course_name
+
     def __repr__(self):
-        return f"(Course: {self.course}, Exam Type: {self.exam_type}, Teacher: {self.teacher})\n"
+        return f"(Course: {self.course_name}, Exam Type: {self.exam_type}, Teacher: {self.teacher})\n"
 
     def events(self):
         """
@@ -26,7 +33,9 @@ class Course:
         if self.exam_type == "Written" or self.exam_type == "Oral":
             # All the exams are the same
             return [
-                Event(self.course, self.teacher, self.exam_type, self.rooms_requested)
+                Event(
+                    self.course_name, self.teacher, self.exam_type, self.rooms_requested
+                )
                 for _ in range(self.num_of_exams)
             ]
         elif self.exam_type == "WrittenAndOral":
@@ -42,17 +51,31 @@ class Course:
 
             # Initialise the course exams list with the written exam
             courseExams = [
-                Event(self, self.course, self.teacher, "Written", self.rooms_requested)
+                Event(
+                    self,
+                    self.course_name,
+                    self.teacher,
+                    "Written",
+                    self.rooms_requested,
+                )
             ]
 
             # If the oral exam has a room request, add the oral exam with room requested
             # to the courseExams list otherwise, add it with no preferred room
             if room_for_oral:
                 courseExams.append(
-                    Event(self, self.course, self.teacher, "Oral", self.rooms_requested)
+                    Event(
+                        self,
+                        self.course_name,
+                        self.teacher,
+                        "Oral",
+                        self.rooms_requested,
+                    )
                 )
             else:
-                courseExams.append(Event(self, self.course, self.teacher, "Oral", None))
+                courseExams.append(
+                    Event(self, self.course_name, self.teacher, "Oral", None)
+                )
 
             # Return the list of courses (should be len = 2)
             return courseExams
@@ -71,6 +94,17 @@ class CourseManager:
 
     def get_courses(self) -> list[Course]:
         return self.courses
+
+    def get_course_by_name(self, course_name: str) -> Course:
+        """
+        Finds course by name and returns course instance
+        """
+
+        for course in self.courses:
+            if course.get_course_name() == course_name:
+                return course
+
+        raise Exception("Course not found!")
 
     def __str__(self):
         return "\n".join([str(course) for course in self.courses])
