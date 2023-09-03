@@ -4,7 +4,7 @@ Class for handing rooms in the problem
 
 # Constants
 
-from typing import Iterator
+from typing import Iterator, Dict, List
 
 
 COMPOSITE = "Composite"
@@ -58,7 +58,7 @@ class Room:
         False otherwise
         """
 
-        return self.type == COMPOSITE
+        return self.room_type == COMPOSITE
 
     def is_small(self) -> bool:
         """
@@ -66,7 +66,7 @@ class Room:
         False otherwise
         """
 
-        return self.type == SMALL
+        return self.room_type == SMALL
 
     def is_large(self) -> bool:
         """
@@ -74,7 +74,7 @@ class Room:
         False otherwise
         """
 
-        return self.type == LARGE
+        return self.room_type == LARGE
 
 
 class RoomManager:
@@ -158,7 +158,7 @@ class RoomManager:
                 return r
         raise Exception("No dummy room big sad")
 
-    def construct_composite_map(self) -> dict[Room, list[Room]]:
+    def construct_composite_map(self) -> Dict[Room, List[Room]]:
         """
         Constructs graph in the form of an ajacency list to store
         which rooms are composite and joining
@@ -167,14 +167,14 @@ class RoomManager:
         assert not self.constructed
 
         # Iterate over all composite rooms stored by the RoomManager
-        for compRoom in self.get_composite_rooms():
+        for comp_room in self.get_composite_rooms():
             # Get the members of compRoom (as string)
-            members = compRoom.get_members()
+            members = comp_room.get_members()
 
             # Create ajacency list (a dictionary with values of a list[Room])
-            self.composite_map[compRoom] = frozenset(
+            self.composite_map[comp_room]: Dict[Room, List[Room]] = [
                 self.get_room_by_name(r) for r in members
-            )
+            ]
 
         # Set the constructed flag to true
         self.constructed = True
@@ -182,23 +182,56 @@ class RoomManager:
         # Return Composite Graph
         return self.composite_map
 
-    def get_room_overlap(self) -> list[str]:
-        rooms = []
-        overlap = []
-        for comp_room in self.get_composite_rooms():
-            for room in comp_room.get_members():
-                if room in rooms:
-                    overlap.append(room)
-                else:
-                    rooms.append(room)
-        return overlap
+    def get_overlapping_rooms(self) -> Dict[Room, List[Room]]:
+        """
+        Returns a dictionary with composite rooms as keys and
+        a list of overlapping rooms as values.
+        """
 
-    def get_overlap(self, Room: Room) -> list[Room]:
-        overlap = []
-        for room in Room.get_members():
-            if room in self.get_room_overlap():
-                overlap.append(room)
-        return overlap
+        if not self.constructed:
+            self.construct_composite_map()
+
+        overlapping_rooms: Dict[Room, List[Room]] = {}
+
+        visited_regions = []
+        for comp_room, members in self.composite_map.items():
+            rooms_in_connected_region = [comp_room]
+            if comp_room in visited_regions:
+                continue
+            visited_regions.append(comp_room)
+
+            connected_region: Dict[Room, List[Room]] = {}
+            connected_region[comp_room] = members
+
+            for other_comp_room, other_members in self.composite_map.items():
+                if comp_room == other_comp_room:
+                    continue
+
+                connected = False
+                for other_member in other_members:
+                    if other_member in members:
+                        connected = True
+                        break
+
+                if not connected:
+                    continue
+
+                rooms_in_connected_region.append(other_comp_room)
+                visited_regions.append(other_comp_room)
+                connected_region[other_comp_room] = other_members
+
+            connected_region_set_of_members = [
+                set(members) for members in connected_region.values()
+            ]
+
+            intersection = connected_region_set_of_members[0]
+            for cr in connected_region_set_of_members[1:]:
+                intersection = intersection.intersection(cr)
+
+            for room in rooms_in_connected_region:
+                overlapping_rooms[room] = list(intersection)
+
+        return overlapping_rooms
 
     # Implement the iterable functionality
     def __iter__(self) -> Iterator[Room]:
