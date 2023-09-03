@@ -2,29 +2,73 @@
 Class for handing rooms in the problem
 """
 
+# Constants
+
+COMPOSITE = "Composite"
+LARGE = "Large"
+SMALL = "Small"
+DUMMY = "Dummy"
+
 
 class Room:
     def __init__(self, room_data=None):
         if room_data is None:
-            self.room = "Dummy"
-            self.room_type = "Dummy"
+            self.room = DUMMY
+            self.room_type = DUMMY
             self.members = []
         else:
             self.room = room_data.get("Room")
             self.room_type = room_data.get("Type")
             self.members = room_data.get("Members", [])
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Room {self.room} - Type: {self.room_type}, Members: {', '.join(self.members)}\n"
 
-    def get_room(self):
+    def get_room(self) -> str:
+        """
+        Returns name of room
+        """
+
         return self.room
 
     def get_type(self):
+        """
+        Returns type of room
+        """
+
         return self.room_type
 
-    def get_members(self):
+    def get_members(self) -> list[str]:
+        """
+        Returns members of the room as list of strings.
+        If room is not composite, throws error
+        """
+
         return self.members
+
+    def is_composite(self) -> bool:
+        """
+        Returns true if room is composite
+        False otherwise
+        """
+
+        return self.type == COMPOSITE
+
+    def is_small(self) -> bool:
+        """
+        Returns true if room is small
+        False otherwise
+        """
+
+        return self.type == SMALL
+
+    def is_large(self) -> bool:
+        """
+        Returns true if room is large
+        False otherwise
+        """
+
+        return self.type == LARGE
 
 
 class RoomManager:
@@ -61,18 +105,16 @@ class RoomManager:
         return None
 
     def get_composite_rooms(self) -> list[Room]:
-        return [r for r in self.rooms if r.get_type() == "Composite"]
+        return [r for r in self.rooms if r.get_type() == COMPOSITE]
 
     def get_single_rooms(self) -> list[Room]:
         return [
-            r
-            for r in self.rooms
-            if r.get_type() != "Composite" and r.get_type != "Dummy"
+            r for r in self.rooms if r.get_type() != COMPOSITE and r.get_type != DUMMY
         ]
 
     def get_dummy_room(self):
         for r in self.rooms:
-            if r.get_type() == "Dummy":
+            if r.get_type() == DUMMY:
                 return r
         raise Exception("no dummy room big sad")
 
@@ -80,7 +122,7 @@ class RoomManager:
         assert not self.constructed
         self.constructed = True
         for comp in self.get_rooms():
-            if comp.get_type() == "Composite":
+            if comp.get_type() == COMPOSITE:
                 members = comp.get_members()
                 self.composite_map[comp] = frozenset(
                     self.get_room_by_name(r) for r in members
