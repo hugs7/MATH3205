@@ -9,7 +9,13 @@ class Course:
     def __init__(self, course_data):
         self.course_name = course_data.get("Course")
         self.exam_type = course_data.get("ExamType")
-        self.min_distance_between_exams = course_data.get("MinimumDistanceBetweenExams")
+
+        if course_data.get("MinimumDistanceBetweenExams") is not None:
+            self.min_distance_between_exams = int(
+                course_data.get("MinimumDistanceBetweenExams")
+            )
+        else:
+            self.min_distance_between_exams = None
         self.num_of_exams = course_data.get("NumberOfExams")
         self.rooms_requested = course_data.get("RoomsRequested")
         self.teacher = course_data.get("Teacher")
@@ -22,10 +28,32 @@ class Course:
 
         return self.course_name
 
+    def get_teacher(self) -> str:
+        """
+        Returns the teacher of the course
+        """
+
+        return self.teacher
+
+    def get_exam_type(self) -> str:
+        """
+        Returns the exam type of the course
+        Either Written, Oral, or WrittenAndOral
+        """
+
+        return self.exam_type
+
+    def get_min_distance_between_exams(self) -> int:
+        """
+        Returns the number of timeslots between exams
+        """
+
+        return self.min_distance_between_exams
+
     def __repr__(self):
         return f"(Course: {self.course_name}, Exam Type: {self.exam_type}, Teacher: {self.teacher})\n"
 
-    def events(self):
+    def generate_events(self):
         """
         Create a list of (exam) events for this course, where each event is a
         RoomRequest object
@@ -34,7 +62,11 @@ class Course:
             # All the exams are the same
             return [
                 Event(
-                    self.course_name, self.teacher, self.exam_type, self.rooms_requested
+                    self,
+                    self.course_name,
+                    self.teacher,
+                    self.exam_type,
+                    self.rooms_requested,
                 )
                 for _ in range(self.num_of_exams)
             ]
@@ -141,4 +173,4 @@ class Event:
         return self.course
 
     def __repr__(self):
-        return f"(Course name: {self.course_name}, teacher: {self.course_teacher}, exam type: {self.event_type}, num rooms: {self.num_rooms}, type: {self.room_type})"
+        return f"{self.course_name} ({self.event_type})"
