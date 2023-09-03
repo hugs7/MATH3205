@@ -25,7 +25,7 @@ data_file = os.path.join(".", "Project", "data", "toy.json")
 with open(data_file, "r") as json_file:
     json_data = json_file.read()
 
-# ------ Separate out data ------
+# ------ Parse data with JSON ------
 
 parsed_data = json.loads(json_data)
 
@@ -33,21 +33,18 @@ parsed_data = json.loads(json_data)
 slots_per_day = parsed_data["SlotsPerDay"]
 
 # Exam schedule constraints
-constrs = parsed_data["Constraints"]
 constrManager = ConstraintManager(slots_per_day)
-for constraint in constrs:
+for constraint in parsed_data["Constraints"]:
     constrManager.add_constraint(constraint)
 
 # Courses
-crces = parsed_data["Courses"]
 courseManager = CourseManager()
-for course in crces:
+for course in parsed_data["Courses"]:
     courseManager.add_course(course)
 
 # Curricula
-curicla = parsed_data["Curricula"]
 curriculaManager = CurriculaManager()
-for curriculum in curicla:
+for curriculum in parsed_data["Curricula"]:
     curriculaManager.add_curriculum(curriculum)
 
 # Rooms
@@ -58,7 +55,6 @@ for examRoom in examRooms:
 
 # Cannot add any more rooms after this
 Rooms.construct_composite_map()
-
 
 room_constraints = constrManager.get_room_period_constraints()
 
@@ -81,10 +77,11 @@ forbidden_period_constraints: List[Period] = [
 # Get courses
 courses: list[Course] = courseManager.get_courses()
 
-# Extract exams from courses and store in one large list.
-# Can make this a frozen set in the future, though it's nice as a list for now.
+# Lookup dictionary of events for a given course
 CourseEvents = {course: [event for event in course.get_events()] for course in courses}
 
+# Extract exams from CourseList and store in one large list.
+# Can make this a frozen set in the future, though it's nice as a list for now.
 Events: List[Event] = []
 # Iterate through the CourseEvents dictionary and extend the Events list
 for event_list in CourseEvents.values():
@@ -243,11 +240,6 @@ H = {e: m.addVar(vtype=GRB.INTEGER) for e in Events}
 
 
 # ------ Constraints ------
-# for constraint in constrManager:
-#     print(constraint.type)
-#     print(constraint.level)
-#     print(constraint.exam)
-
 
 # Constraint 1: Each event assigned to an available period and room.
 RoomRequest = {
@@ -284,14 +276,6 @@ HardConflicts = {
 # Constraint 4: Some events must precede other events (hard constraint).
 Precendences = {(e1, e2): m.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
 
-# for d in Days:
-#     for t in Timeslots:
-#         for event in Events:
-#             print("Event", event)
-#             for e2 in HC[event]:
-#                 print("Event2: ", e2, ", D:", d, ", T:", t)
-#                 print("Y e2", [Y[e2, p]])
-# breakpoint()
 # Constraint 5: Some rooms, day and timeslot configurations are unavailable.
 Unavailabilities = {
     (e, p): m.addConstr(M * Y[e, p] + quicksum(Y[e2, p] for e2 in HC[e]) <= M)
