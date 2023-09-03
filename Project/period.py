@@ -66,3 +66,18 @@ class Period:
         """Repr method for period"""
 
         return f"({self.day}, {self.timeslot})"
+
+    @staticmethod
+    def from_period_number(period_number: int, slots_per_day: int) -> "Period":
+        """
+        Static method to create a Period object from a period number and slots per day.
+        Args:
+            period_number (int): The period number.
+            slots_per_day (int): The number of slots per day.
+        Returns:
+            Period: The Period object corresponding to the period number.
+        """
+        day = (period_number - 1) // slots_per_day
+        timeslot = (period_number - 1) % slots_per_day
+
+        return Period(day, timeslot)
