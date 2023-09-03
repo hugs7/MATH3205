@@ -18,6 +18,7 @@ from Course import CourseManager, Course, Event
 from Curriculum import CurriculaManager
 from Period import Period
 
+previous_time = time.time()
 
 # ------ Import data ------
 data_file = os.path.join(".", "Project", "data", "D7-2-17.json")
@@ -68,6 +69,9 @@ forbidden_period_constraints: List[Period] = [
     period_constraint.get_period()
     for period_constraint in constrManager.get_forbidden_period_constraints()
 ]
+
+print("Data import:", time.time() - previous_time, "seconds")
+previous_time = time.time()
 
 # ------ Sets ------
 # Some sets are already defined above
@@ -216,8 +220,11 @@ for event in Events:
 
     HC[event] = conflict_set
 
-# ------ Data ------
 
+print("Calculating Sets:", time.time() - previous_time, "seconds")
+previous_time = time.time()
+
+# ------ Data ------
 # -- Teachers --
 teachers = parsed_data["Teachers"]
 
@@ -315,23 +322,23 @@ setH = {
 # ------ Objective Function ------
 # m.setObjective(0, GRB.MAXIMIZE)
 
-# ------ Optimise -------
-g_start_time = time.time()
-m.optimize()
-g_finish_time = time.time()
 
-gurobi_time = g_finish_time - g_start_time
-print("Time to optimise:", gurobi_time, "seconds")
+print("Define Gurobi Model:", time.time() - previous_time, "seconds")
+previous_time = time.time()
+# ------ Optimise -------
+m.optimize()
+print("Optimise Gurobi Model:", time.time() - previous_time, "seconds")
+previous_time = time.time()
 
 # ------ Print output ------
 
 print("Objective Value:", m.ObjVal)
 
-for p in Periods:
-    for e in Events:
-        for r in Rooms:
-            if X[e, p, r].x > 0.9:
-                print(f"Day {p.get_day()}")
-                print(f"  Timeslot {p.get_timeslot()}")
-                print(f"    Exam {e} in room {r}")
-                print()
+# for p in Periods:
+#     for e in Events:
+#         for r in Rooms:
+#             if X[e, p, r].x > 0.9:
+#                 print(f"Day {p.get_day()}")
+#                 print(f"  Timeslot {p.get_timeslot()}")
+#                 print(f"    Exam {e} in room {r}")
+#                 print()
