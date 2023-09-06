@@ -3,7 +3,7 @@ from gurobipy import Model, quicksum, GRB
 P = range(200, 355, 5)
 T = range(500, 805, 5)
 
-m = Model()
+m = Model("Cafe")
 
 X = {p: m.addVar(vtype=GRB.BINARY) for p in P}
 Y = {(p, t): m.addVar(vtype=GRB.BINARY) for p in P for t in T}
