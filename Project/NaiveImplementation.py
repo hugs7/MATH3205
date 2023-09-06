@@ -21,7 +21,7 @@ from Period import Period
 previous_time = time.time()
 
 # ------ Import data ------
-data_file = os.path.join(".", "Project", "data", "D7-2-17.json")
+data_file = os.path.join(".", "Project", "data", "toy.json")
 
 with open(data_file, "r") as json_file:
     json_data = json_file.read()
@@ -334,11 +334,11 @@ previous_time = time.time()
 
 print("Objective Value:", m.ObjVal)
 
-# for p in Periods:
-#     for e in Events:
-#         for r in Rooms:
-#             if X[e, p, r].x > 0.9:
-#                 print(f"Day {p.get_day()}")
-#                 print(f"  Timeslot {p.get_timeslot()}")
-#                 print(f"    Exam {e} in room {r}")
-#                 print()
+for p in Periods:
+    for e in Events:
+        for r in Rooms:
+            if X[e, p, r].x > 0.9:
+                print(f"Day {p.get_day()}")
+                print(f"  Timeslot {p.get_timeslot()}")
+                print(f"    Exam {e} in room {r}")
+                print()
