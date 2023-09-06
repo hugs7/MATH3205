@@ -164,7 +164,8 @@ class RoomManager:
         which rooms are composite and joining
         """
 
-        assert not self.constructed
+        if self.constructed:
+            return self.composite_map
 
         # Iterate over all composite rooms stored by the RoomManager
         for comp_room in self.get_composite_rooms():
