@@ -254,7 +254,10 @@ X = {
 Y = {(e, p): m.addVar(vtype=GRB.BINARY) for e in Events for p in Periods}
 
 # The ordinal (order) value of the period assigned to event e
-H = {e: m.addVar(vtype=GRB.INTEGER) for e in Events}
+H = {
+    e: m.addVar(vtype=GRB.INTEGER, ub=Periods[-1].get_ordinal_value(slots_per_day))
+    for e in Events
+}
 
 
 # ------ Constraints ------
@@ -316,6 +319,9 @@ setH = {
     )
     for e in Events
 }
+
+# Constraint 7a. Limit only 1 sum p of Y[e, p] to be turned on for each event
+oneP = {m.addConstr(quicksum(Y[e, p] for p in PA[e]) == 1) for e in Events}
 
 # Soft Constraints
 
