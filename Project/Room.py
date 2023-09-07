@@ -120,7 +120,7 @@ class RoomManager:
 
         return self.rooms
 
-    def get_room_by_name(self, room_name: str) -> Room | None:
+    def get_room_by_name(self, room_name: str) -> Room:
         """
         Gets room by it's name
         """

@@ -54,7 +54,7 @@ class Course:
 
     def get_events(self) -> List["Event"]:
         return self.events
-
+    
     def __repr__(self):
         return f"(Course: {self.course_name}, Exam Type: {self.exam_type}, Teacher: {self.teacher})\n"
 

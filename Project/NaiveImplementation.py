@@ -16,7 +16,7 @@ from Room import RoomManager
 from Constraint import ConstraintManager
 from Course import CourseManager, Course, Event
 from Curriculum import CurriculaManager
-from Period import Period
+from period import Period
 
 previous_time = time.time()
 
@@ -82,7 +82,7 @@ previous_time = time.time()
 courses: list[Course] = courseManager.get_courses()
 
 # Lookup dictionary of events for a given course
-CourseEvents = {course: [event for event in course.get_events()] for course in courses}
+CourseEvents: Dict[Course,Event] = {course: [event for event in course.get_events()] for course in courses}
 
 # Extract exams from CourseList and store in one large list.
 # Can make this a frozen set in the future, though it's nice as a list for now.
@@ -165,19 +165,10 @@ for event in Events:
 KE = {}
 
 # F = the set of examination pairs with precendence constraints
-F: Set[Tuple[Event, Event]] = {}
-for e1 in Events:
-    for e2 in Events:
-        if e1 == e2:
-            continue
-
-        e1_period_availabilities = PA[e1]
-        e2_period_availabilities = PA[e2]
-
-        if min(e2_period_availabilities) > max(e1_period_availabilities):
-            # e1 must preceed e2
-            F.add((e1, e2))
-print("F", F)
+F = set()
+for course in CourseEvents:
+    if len(course.get_events())>1 and course.get_exam_type() == "WrittenAndOral":
+        F.add(tuple(course.get_events()))
 
 # dictionary mapping events e to the set of events in H3 hard conflict with e
 HC = {}  # type is dict[Event, Frozenset(Event)]
