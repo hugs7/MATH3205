@@ -368,26 +368,19 @@ SSS = {(e, p): m.addVar(vtype=GRB.INTEGER) for e in Events for p in Periods}
 
 # Variables for S3 soft constraints
 # Abs distances between assignment of e1 and e2
-D = {(e1, e2): m.addVar(vtype=GRB.INTEGER, lb=0) for e1 in Events for e2 in Events}
+D = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events}
 # Actual distances between assignments of e1 and e2
-DD = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events}
+DD = {
+    (e1, e2): m.addVar(vtype=GRB.INTEGER, lb=GRB.INFINITY)
+    for e1 in Events
+    for e2 in Events
+}
 # 1 if DD[e1,e2] is positive
 G = {(e1, e2): m.addVar(vtype=GRB.BINARY) for e1 in Events for e2 in Events}
 # Abs Val of DD[e1,e2] or Zero
-DAbs1 = {(e1, e2): m.addVar(vtype=GRB.INTEGER, lb=0) for e1 in Events for e2 in Events}
+DAbs1 = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events}
 # Abs value of DD[e1,e2] or Zero
-DAbs2 = {(e1, e2): m.addVar(vtype=GRB.INTEGER, lb=0) for e1 in Events for e2 in Events}
-
-# Constraint 11:
-DistanceBetweenTwoEvents = {
-    (e1, e2): m.addConstr(DD[e1, e2] == H[e2] - H[e1]) for (e1, e2) in DPUndirected
-}
-
-# Constraint 12:
-Constraint12 = {
-    (e1, e2): m.addConstr(DD[e1, e2] <= Periods * G[e1, e2])
-    for (e1, e2) in DPUndirected
-}
+DAbs2 = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events}
 
 # ------ Constraints ------
 
@@ -514,9 +507,56 @@ Preferences = {
 
 # Constraint 10 (S3): DirectedDistances
 DirectedDistances = {}
+Constraint10 = {
+    (e1, e2): m.addConstr(D[e1, e2] == H[e2] - H[e1]) for (e1, e2) in DPDirected
+}
 
 # Constraint 11: (S4): UndirectedDifferences
-UndirectedDifferences = {}
+# Constraint 11:
+Constraint11 = {
+    (e1, e2): m.addConstr(DD[e1, e2] == H[e2] - H[e1]) for (e1, e2) in DPUndirected
+}
+
+# Constraint 12:
+Constraint12 = {
+    (e1, e2): m.addConstr(DD[e1, e2] <= len(Periods) * G[e1, e2])
+    for (e1, e2) in DPUndirected
+}
+
+Constraint13 = {
+    (e1, e2): m.addConstr(DD[e1, e2] >= -len(Periods) * (1 - G[e1, e2]))
+    for (e1, e2) in DPUndirected
+}
+
+Constraint14 = {
+    (e1, e2): m.addConstr(DAbs1[e1, e2] <= len(Periods) * G[e1, e2])
+    for (e1, e2) in DPUndirected
+}
+
+Constraint15 = {
+    (e1, e2): m.addConstr(DAbs1[e1, e2] >= len(Periods) * G[e1, e2])
+    for (e1, e2) in DPUndirected
+}
+
+Constraint16 = {
+    (e1, e2): m.addConstr(DAbs1[e1, e2] <= DD[e1, e2] + len(Periods) * (1 - G[e1, e2]))
+    for (e1, e2) in DPUndirected
+}
+
+Constraint17 = {
+    (e1, e2): m.addConstr(DAbs1[e1, e2] >= DD[e1, e2] - len(Periods) * (1 - G[e1, e2]))
+    for (e1, e2) in DPUndirected
+}
+
+Constraint18 = {
+    (e1, e2): m.addConstr(DAbs2[e1, e2] == DAbs1[e1, e2] - DD[e1, e2])
+    for (e1, e2) in DPUndirected
+}
+
+Constraint19 = {
+    (e1, e2): m.addConstr(D[e1, e2] == DAbs1[e1, e2] + DAbs2[e1, e2])
+    for (e1, e2) in DPUndirected
+}
 
 
 # ------ Objective Function ------
