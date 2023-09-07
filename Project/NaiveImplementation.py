@@ -22,7 +22,7 @@ from Utils import concat
 previous_time = time.time()
 
 # ------ Import data ------
-data_file = os.path.join(".", "Project", "data", "toy.json")
+data_file = os.path.join(".", "Project", "data", "D1-1-16.json")
 
 with open(data_file, "r") as json_file:
     json_data = json_file.read()
@@ -94,7 +94,9 @@ UD_PRIMARY_SECONDARY = 2
 courses: list[Course] = courseManager.get_courses()
 
 # Lookup dictionary of events for a given course
-CourseEvents: Dict[Course,Event] = {course: [event for event in course.get_events()] for course in courses}
+CourseEvents: Dict[Course, Event] = {
+    course: [event for event in course.get_events()] for course in courses
+}
 
 # Extract exams from CourseList and store in one frozenset
 Events: Set[Event] = frozenset(concat(CourseEvents.values()))
@@ -175,7 +177,7 @@ KE = {}
 # F = the set of examination pairs with precendence constraints
 F = set()
 for course in CourseEvents:
-    if len(course.get_events())>1 and course.get_exam_type() == "WrittenAndOral":
+    if len(course.get_events()) > 1 and course.get_exam_type() == "WrittenAndOral":
         F.add(tuple(course.get_events()))
 
 # dictionary mapping events e to the set of events in H3 hard conflict with e
@@ -273,6 +275,36 @@ room_constraints = constrManager.get_room_period_constraints()
 event_constraints = constrManager.get_event_period_constraints()
 period_constraints = constrManager.get_period_constraints()
 
+# Soft constraint undesired period violation cost for event e to be assigned to
+# period p
+UndesiredPeriodCost = {}
+for e in Events:
+    undesired_periods = [
+        c.get_period()
+        for c in constrManager.get_undesired_event_period_constraints()
+        if c.get_course_name() == e.course_name
+    ]
+    for p in PA[e]:
+        if p in undesired_periods:
+            UndesiredPeriodCost[e, p] = P_UNDESIRED_PERIOD
+        else:
+            UndesiredPeriodCost[e, p] = 0
+
+# Soft constraint undesired room violation cost for event e to be assigned to
+# period p
+UndesiredRoomCost = {}
+for e in Events:
+    undesired_rooms = [
+        c.get_room()
+        for c in constrManager.get_undesired_event_room_constraints()
+        if c.get_course_name == e.course_name
+    ]
+    for r in RA[e]:
+        if r in undesired_rooms:
+            UndesiredRoomCost[e, r] = P_UNDESIRED_ROOM
+        else:
+            UndesiredRoomCost[e, r] = 0
+
 # --- Define Model ---
 m = Model("Uni Exams")
 
@@ -295,12 +327,8 @@ H = {
     for e in Events
 }
 
-SPS  = {(e,p):
-        m.addVar(vtype=GRB.INTEGER) for e in Events for p in Periods
-    }
-SSS  = {(e,p):
-        m.addVar(vtype=GRB.INTEGER) for e in Events for p in Periods
-    }
+SPS = {(e, p): m.addVar(vtype=GRB.INTEGER) for e in Events for p in Periods}
+SSS = {(e, p): m.addVar(vtype=GRB.INTEGER) for e in Events for p in Periods}
 
 # ------ Constraints ------
 
@@ -368,7 +396,20 @@ oneP = {m.addConstr(quicksum(Y[e, p] for p in PA[e]) == 1) for e in Events}
 # Soft Constraints
 
 # ------ Objective Function ------
-# m.setObjective(0, GRB.MAXIMIZE)
+m.setObjective(
+    # Cost S1
+    SC_PRIMARY_SECONDARY * quicksum(SPS[e, p] for e in Events for p in PA[e])
+    + SC_SECONDARY_SECONDARY * quicksum(SSS[e, p] for e in Events for p in PA[e])
+    # Cost S2
+    + quicksum(UndesiredPeriodCost[e, p] * Y[e, p] for e in Events for p in PA[e])
+    + quicksum(
+        UndesiredRoomCost[e, r] * X[e, p, r]
+        for e in Events
+        for p in PA[e]
+        for r in RA[e]
+    )
+    # Cost S3
+)
 
 
 print("Define Gurobi Model:", time.time() - previous_time, "seconds")
