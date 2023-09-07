@@ -94,7 +94,9 @@ UD_PRIMARY_SECONDARY = 2
 courses: list[Course] = courseManager.get_courses()
 
 # Lookup dictionary of events for a given course
-CourseEvents: Dict[Course,Event] = {course: [event for event in course.get_events()] for course in courses}
+CourseEvents: Dict[Course, Event] = {
+    course: [event for event in course.get_events()] for course in courses
+}
 
 # Extract exams from CourseList and store in one frozenset
 Events: Set[Event] = frozenset(concat(CourseEvents.values()))
@@ -175,7 +177,7 @@ KE = {}
 # F = the set of examination pairs with precendence constraints
 F = set()
 for course in CourseEvents:
-    if len(course.get_events())>1 and course.get_exam_type() == "WrittenAndOral":
+    if len(course.get_events()) > 1 and course.get_exam_type() == "WrittenAndOral":
         F.add(tuple(course.get_events()))
 
 # dictionary mapping events e to the set of events in H3 hard conflict with e
@@ -295,12 +297,31 @@ H = {
     for e in Events
 }
 
-SPS  = {(e,p):
-        m.addVar(vtype=GRB.INTEGER) for e in Events for p in Periods
-    }
-SSS  = {(e,p):
-        m.addVar(vtype=GRB.INTEGER) for e in Events for p in Periods
-    }
+SPS = {(e, p): m.addVar(vtype=GRB.INTEGER) for e in Events for p in Periods}
+SSS = {(e, p): m.addVar(vtype=GRB.INTEGER) for e in Events for p in Periods}
+
+# Variables for S3 soft constraints
+# Abs distances between assignment of e1 and e2
+D = {(e1, e2): m.addVar(vtype=GRB.INTEGER, lb=0) for e1 in Events for e2 in Events}
+# Actual distances between assignments of e1 and e2
+DD = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events}
+# 1 if DD[e1,e2] is positive
+G = {(e1, e2): m.addVar(vtype=GRB.BINARY) for e1 in Events for e2 in Events}
+# Abs Val of DD[e1,e2] or Zero
+DAbs1 = {(e1, e2): m.addVar(vtype=GRB.INTEGER, lb=0) for e1 in Events for e2 in Events}
+# Abs value of DD[e1,e2] or Zero
+DAbs2 = {(e1, e2): m.addVar(vtype=GRB.INTEGER, lb=0) for e1 in Events for e2 in Events}
+
+# Constraint 11:
+DistanceBetweenTwoEvents = {
+    (e1, e2): m.addConstr(DD[e1, e2] == H[e2] - H[e1]) for (e1, e2) in DPUndirected
+}
+
+# Constraint 12:
+Constraint12 = {
+    (e1, e2): m.addConstr(DD[e1, e2] <= Periods * G[e1, e2])
+    for (e1, e2) in DPUndirected
+}
 
 # ------ Constraints ------
 
