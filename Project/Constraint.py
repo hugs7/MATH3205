@@ -13,6 +13,7 @@ ROOM_PERIOD_CONSTRAINT = "RoomPeriodConstraint"
 EVENT_PERIOD_CONSTRAINT = "EventPeriodConstraint"
 EVENT_ROOM_CONSTRAINT = "EventRoomConstraint"
 PERIOD_CONSTRAINT = "PeriodConstraint"
+
 FORBIDDEN = "Forbidden"
 UNDESIRED = "Undesired"
 
