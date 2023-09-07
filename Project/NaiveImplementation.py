@@ -385,7 +385,7 @@ DistanceBetweenTwoEvents = {
 
 # Constraint 12:
 Constraint12 = {
-    (e1, e2): m.addConstr(DD[e1, e2] <= Periods * G[e1, e2])
+    (e1, e2): m.addConstr(DD[e1, e2] <= len(Periods) * G[e1, e2])
     for (e1, e2) in DPUndirected
 }
 
@@ -457,27 +457,10 @@ oneP = {e: m.addConstr(quicksum(Y[e, p] for p in PA[e]) == 1) for e in Events}
 # Constraint 8 (S1): Soft Conflicts
 SoftConflicts = {
     (e, p): m.addConstr(
-        len(
-            {
-                e2
-                for e2 in SCPS[e]
-                if p.get_ordinal_value(e) < p.get_ordinal_value(e2) and p in PA[e2]
-            }
-        )
-        * Y[e, p]
-        + quicksum(
-            Y[e2, p]
-            for e2 in SCPS[e]
-            if p.get_ordinal_value(e) < p.get_ordinal_value(e2)
-        )
+        len({e2 for e2 in SCPS[e] if (e, e2) in DPDirected and p in PA[e2]}) * Y[e, p]
+        + quicksum(Y[e2, p] for e2 in SCPS[e] if (e, e2) in DPDirected)
         <= SPS[e, p]
-        + len(
-            {
-                e2
-                for e2 in SCPS[e]
-                if p.get_ordinal_value(e) < p.get_ordinal_value(e2) and p in PA[e2]
-            }
-        )
+        + len({e2 for e2 in SCPS[e] if (e, e2) in DPDirected and p in PA[e2]})
     )
     for e in Events
     for p in PA[e]
@@ -486,27 +469,10 @@ SoftConflicts = {
 # Constraint 9 (S2): Preferences
 Preferences = {
     (e, p): m.addConstr(
-        len(
-            {
-                e2
-                for e2 in SCSS[e]
-                if p.get_ordinal_value(e) < p.get_ordinal_value(e2) and p in PA[e2]
-            }
-        )
-        * Y[e, p]
-        + quicksum(
-            Y[e2, p]
-            for e2 in SCSS[e]
-            if p.get_ordinal_value(e) < p.get_ordinal_value(e2)
-        )
+        len({e2 for e2 in SCSS[e] if (e, e2) in DPDirected and p in PA[e2]}) * Y[e, p]
+        + quicksum(Y[e2, p] for e2 in SCSS[e] if (e, e2) in DPDirected)
         <= SSS[e, p]
-        + len(
-            {
-                e2
-                for e2 in SCSS[e]
-                if p.get_ordinal_value(e) < p.get_ordinal_value(e2) and p in PA[e2]
-            }
-        )
+        + len({e2 for e2 in SCSS[e] if (e, e2) in DPDirected and p in PA[e2]})
     )
     for e in Events
     for p in PA[e]
