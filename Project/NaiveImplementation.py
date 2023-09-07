@@ -74,6 +74,17 @@ forbidden_period_constraints: List[Period] = [
 print("Data import:", time.time() - previous_time, "seconds")
 previous_time = time.time()
 
+# Weights of Soft Constraints
+SC_PRIMARY_SECONDARY = 5
+SC_SECONDARY_SECONDARY = 1
+P_UNDESIRED_PERIOD = 10
+P_NOT_PREFERED_ROOM = 2
+P_UNDESIRED_ROOM = 5
+DD_SAME_EXAMINATION = 15
+DD_SAME_COURSE = 12
+UD_PRIMARY_PRIMARY = 2
+UD_PRIMARY_SECONDARY = 2
+
 # ------ Sets ------
 # Some sets are already defined above
 # -- Events --
@@ -284,6 +295,12 @@ H = {
     for e in Events
 }
 
+SPS  = {(e,p):
+        m.addVar(vtype=GRB.INTEGER) for e in Events for p in Periods
+    }
+SSS  = {(e,p):
+        m.addVar(vtype=GRB.INTEGER) for e in Events for p in Periods
+    }
 
 # ------ Constraints ------
 
