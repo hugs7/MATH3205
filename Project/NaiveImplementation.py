@@ -393,19 +393,33 @@ oneP = {e: m.addConstr(quicksum(Y[e, p] for p in PA[e]) == 1) for e in Events}
 # Soft Constraints
 
 # Constraint 8 (S1): Soft Conflicts
-SoftConflicts = {
-    (e, p): m.addConstr(
-        len(
-            {
-                e2
-                for e2 in SCPS[e]
-                if p.get_ordinal_value(e) < p.get_ordinal_value(e2) and p in PA[e2]
-            }
-        )
-    )
-    for e in Events
-    for p in PA[e]
-}
+# SoftConflicts = {
+#     (e, p): m.addConstr(
+#         len(
+#             {
+#                 e2
+#                 for e2 in SCPS[e]
+#                 if p.get_ordinal_value(e) < p.get_ordinal_value(e2) and p in PA[e2]
+#             }
+#         )
+#         * Y[e, p]
+#         + quicksum(
+#             Y[e2, p]
+#             for e2 in SCPS[e]
+#             if p.get_ordinal_value(e) < p.get_ordinal_value(e2)
+#         )
+#         <= SSS[e, p]
+#         + len(
+#             {
+#                 e2
+#                 for e2 in SCPS[e]
+#                 if p.get_ordinal_value(e) < p.get_ordinal_value(e2) and p in PA[e2]
+#             }
+#         )
+#     )
+#     for e in Events
+#     for p in PA[e]
+# }
 
 # Constraint 9 (S2): Preferences
 Preferences = {}
