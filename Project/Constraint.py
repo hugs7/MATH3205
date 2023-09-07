@@ -5,7 +5,7 @@ Class for handing constraints (hard and soft) in the problem
 from abc import ABC
 from typing import List, Optional
 
-from Period import Period
+from period import Period
 from Course import Event
 
 
