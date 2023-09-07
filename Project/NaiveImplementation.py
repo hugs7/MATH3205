@@ -17,6 +17,7 @@ from Constraint import ConstraintManager
 from Course import CourseManager, Course, Event
 from Curriculum import CurriculaManager
 from Period import Period
+from Utils import concat
 
 previous_time = time.time()
 
@@ -84,12 +85,8 @@ courses: list[Course] = courseManager.get_courses()
 # Lookup dictionary of events for a given course
 CourseEvents = {course: [event for event in course.get_events()] for course in courses}
 
-# Extract exams from CourseList and store in one large list.
-# Can make this a frozen set in the future, though it's nice as a list for now.
-Events: List[Event] = []
-# Iterate through the CourseEvents dictionary and extend the Events list
-for event_list in CourseEvents.values():
-    Events.extend(event_list)
+# Extract exams from CourseList and store in one frozenset
+Events: frozenset[Event] = frozenset(concat(CourseEvents.values()))
 
 # Forbidden event period constraints. Dictionary of [CourseEvent: Period]
 forbidden_event_period_constraints: Dict[Event, List[Period]] = {}
@@ -221,6 +218,17 @@ for event in Events:
     HC[event] = conflict_set
 
 
+# The set of event pairs with a directed soft distance constraint.
+# Assume that the ONLY pairs of events that can have such a constraint are
+# (written, oral) pairs from a single course where the oral exam does NOT
+# require a room
+DPDirected = {}
+# The set of event pairs with an undirected soft distance constraint
+DPUndirected = {}
+for event in Events:
+    exit()
+
+
 print("Calculating Sets:", time.time() - previous_time, "seconds")
 previous_time = time.time()
 
@@ -276,7 +284,7 @@ RoomOccupation = {
 # Occurs in the following cases:
 #   - They are part of the same primary curriculum
 #   - They have the same teacher
-# M: Number of elements (rooms maybe - confirm with Michael) in the overlapping rooms sum
+# M: Number of elements (rooms maybe - confirm with Michael) in the overlapping roomconcat
 # rc is room-composite   - Rooms that are composite
 # ro is room-overlapping - Rooms that overlap in a composite room
 
