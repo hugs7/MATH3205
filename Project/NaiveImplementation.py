@@ -258,7 +258,7 @@ for c in courses:
         course_events.reverse()
         DPUndirected.add(tuple(course_events))
 
-# Set SCPS
+# SCPS
 # Dictionary mapping each primary event to the set of secondary
 # courses in the same curriculum
 SCPS = {}  # type is dict[Event, set(Event)]
@@ -447,7 +447,7 @@ SoftConflicts = {
             for e2 in SCPS[e]
             if p.get_ordinal_value(e) < p.get_ordinal_value(e2)
         )
-        <= SSS[e, p]
+        <= SPS[e, p]
         + len(
             {
                 e2
@@ -461,7 +461,33 @@ SoftConflicts = {
 }
 
 # Constraint 9 (S2): Preferences
-Preferences = {}
+Preferences = {
+    (e, p): m.addConstr(
+        len(
+            {
+                e2
+                for e2 in SCSS[e]
+                if p.get_ordinal_value(e) < p.get_ordinal_value(e2) and p in PA[e2]
+            }
+        )
+        * Y[e, p]
+        + quicksum(
+            Y[e2, p]
+            for e2 in SCSS[e]
+            if p.get_ordinal_value(e) < p.get_ordinal_value(e2)
+        )
+        <= SSS[e, p]
+        + len(
+            {
+                e2
+                for e2 in SCSS[e]
+                if p.get_ordinal_value(e) < p.get_ordinal_value(e2) and p in PA[e2]
+            }
+        )
+    )
+    for e in Events
+    for p in PA[e]
+}
 
 # Constraint 10 (S3): DirectedDistances
 DirectedDistances = {}
