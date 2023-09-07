@@ -16,7 +16,8 @@ from Room import RoomManager
 from Constraint import ConstraintManager
 from Course import CourseManager, Course, Event
 from Curriculum import CurriculaManager
-from period import Period
+from Period import Period
+from Utils import concat
 
 previous_time = time.time()
 
@@ -84,12 +85,8 @@ courses: list[Course] = courseManager.get_courses()
 # Lookup dictionary of events for a given course
 CourseEvents: Dict[Course,Event] = {course: [event for event in course.get_events()] for course in courses}
 
-# Extract exams from CourseList and store in one large list.
-# Can make this a frozen set in the future, though it's nice as a list for now.
-Events: List[Event] = []
-# Iterate through the CourseEvents dictionary and extend the Events list
-for event_list in CourseEvents.values():
-    Events.extend(event_list)
+# Extract exams from CourseList and store in one frozenset
+Events: Set[Event] = frozenset(concat(CourseEvents.values()))
 
 # Forbidden event period constraints. Dictionary of [CourseEvent: Period]
 forbidden_event_period_constraints: Dict[Event, List[Period]] = {}
@@ -212,6 +209,43 @@ for event in Events:
     HC[event] = conflict_set
 
 
+# The set of event pairs with a directed soft distance constraint.
+# The ONLY pairs of events that can have such a constraint are (written, oral)
+# pairs from a single course where the oral exam does NOT require a room
+DPDirected = set()
+# The set of event pairs with an undirected soft distance constraint.
+# If (e1, e2) in DPUndirected, then (e2, e1) is also.
+DPUndirected = set()
+for c in courses:
+    if (
+        c.get_exam_type() == "WrittenAndOral"
+        and not c.written_oral_specs["RoomForOral"]
+        and c.min_distance_between_exams is not None
+    ):
+        # find the actual written and oral events
+        writtenEvent = None
+        oralEvent = None
+        for event in Events:
+            if event.course is not c:
+                continue
+            if event.event_type == "Written":
+                writtenEvent = event
+            elif event.event_type == "Oral":
+                oralEvent = event
+            else:
+                raise Exception("course-event mismatch on course ", c)
+            # We might be able to exit early
+            if writtenEvent is not None and oralEvent is not None:
+                break
+        DPDirected.add((writtenEvent, oralEvent))
+    elif c.num_of_exams > 1 and c.min_distance_between_exams is not None:
+        course_events = [e for e in Events if e.course is c]
+        assert len(course_events) == c.num_of_exams
+        DPUndirected.add(tuple(course_events))
+        course_events.reverse()
+        DPUndirected.add(tuple(course_events))
+
+
 print("Calculating Sets:", time.time() - previous_time, "seconds")
 previous_time = time.time()
 
@@ -270,7 +304,7 @@ RoomOccupation = {
 # Occurs in the following cases:
 #   - They are part of the same primary curriculum
 #   - They have the same teacher
-# M: Number of elements (rooms maybe - confirm with Michael) in the overlapping rooms sum
+# M: Number of elements (rooms maybe - confirm with Michael) in the overlapping roomconcat
 # rc is room-composite   - Rooms that are composite
 # ro is room-overlapping - Rooms that overlap in a composite room
 
