@@ -16,12 +16,12 @@ from Room import RoomManager
 from Constraint import ConstraintManager
 from Course import CourseManager, Course, Event
 from Curriculum import CurriculaManager
-from Period import Period
+from period import Period
 
 previous_time = time.time()
 
 # ------ Import data ------
-data_file = os.path.join(".", "Project", "data", "D7-2-17.json")
+data_file = os.path.join(".", "Project", "data", "toy.json")
 
 with open(data_file, "r") as json_file:
     json_data = json_file.read()
@@ -82,7 +82,7 @@ previous_time = time.time()
 courses: list[Course] = courseManager.get_courses()
 
 # Lookup dictionary of events for a given course
-CourseEvents = {course: [event for event in course.get_events()] for course in courses}
+CourseEvents: Dict[Course,Event] = {course: [event for event in course.get_events()] for course in courses}
 
 # Extract exams from CourseList and store in one large list.
 # Can make this a frozen set in the future, though it's nice as a list for now.
@@ -165,19 +165,10 @@ for event in Events:
 KE = {}
 
 # F = the set of examination pairs with precendence constraints
-F: Set[Tuple[Event, Event]] = {}
-for e1 in Events:
-    for e2 in Events:
-        if e1 == e2:
-            continue
-
-        e1_period_availabilities = PA[e1]
-        e2_period_availabilities = PA[e2]
-
-        if min(e2_period_availabilities) > max(e1_period_availabilities):
-            # e1 must preceed e2
-            F.add((e1, e2))
-print("F", F)
+F = set()
+for course in CourseEvents:
+    if len(course.get_events())>1 and course.get_exam_type() == "WrittenAndOral":
+        F.add(tuple(course.get_events()))
 
 # dictionary mapping events e to the set of events in H3 hard conflict with e
 HC = {}  # type is dict[Event, Frozenset(Event)]
@@ -254,7 +245,10 @@ X = {
 Y = {(e, p): m.addVar(vtype=GRB.BINARY) for e in Events for p in Periods}
 
 # The ordinal (order) value of the period assigned to event e
-H = {e: m.addVar(vtype=GRB.INTEGER) for e in Events}
+H = {
+    e: m.addVar(vtype=GRB.INTEGER, ub=Periods[-1].get_ordinal_value(slots_per_day))
+    for e in Events
+}
 
 
 # ------ Constraints ------
@@ -317,6 +311,9 @@ setH = {
     for e in Events
 }
 
+# Constraint 7a. Limit only 1 sum p of Y[e, p] to be turned on for each event
+oneP = {m.addConstr(quicksum(Y[e, p] for p in PA[e]) == 1) for e in Events}
+
 # Soft Constraints
 
 # ------ Objective Function ------
@@ -334,11 +331,11 @@ previous_time = time.time()
 
 print("Objective Value:", m.ObjVal)
 
-# for p in Periods:
-#     for e in Events:
-#         for r in Rooms:
-#             if X[e, p, r].x > 0.9:
-#                 print(f"Day {p.get_day()}")
-#                 print(f"  Timeslot {p.get_timeslot()}")
-#                 print(f"    Exam {e} in room {r}")
-#                 print()
+for p in Periods:
+    for e in Events:
+        for r in Rooms:
+            if X[e, p, r].x > 0.9:
+                print(f"Day {p.get_day()}")
+                print(f"  Timeslot {p.get_timeslot()}")
+                print(f"    Exam {e} in room {r}")
+                print()

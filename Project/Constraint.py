@@ -5,7 +5,7 @@ Class for handing constraints (hard and soft) in the problem
 from abc import ABC
 from typing import List, Optional
 
-from Period import Period
+from period import Period
 from Course import Event
 
 
@@ -13,6 +13,7 @@ ROOM_PERIOD_CONSTRAINT = "RoomPeriodConstraint"
 EVENT_PERIOD_CONSTRAINT = "EventPeriodConstraint"
 EVENT_ROOM_CONSTRAINT = "EventRoomConstraint"
 PERIOD_CONSTRAINT = "PeriodConstraint"
+
 FORBIDDEN = "Forbidden"
 UNDESIRED = "Undesired"
 

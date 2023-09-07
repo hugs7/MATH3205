@@ -120,7 +120,7 @@ class RoomManager:
 
         return self.rooms
 
-    def get_room_by_name(self, room_name: str) -> Room | None:
+    def get_room_by_name(self, room_name: str) -> Room:
         """
         Gets room by it's name
         """
@@ -164,7 +164,8 @@ class RoomManager:
         which rooms are composite and joining
         """
 
-        assert not self.constructed
+        if self.constructed:
+            return self.composite_map
 
         # Iterate over all composite rooms stored by the RoomManager
         for comp_room in self.get_composite_rooms():

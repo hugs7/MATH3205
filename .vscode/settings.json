@@ -6,5 +6,8 @@
     "editor.stickyTabStops": true,
     "terminal.integrated.tabStopWidth": 4,
     "prettier.tabWidth": 4,
-    "latex-workshop.bibtex-format.tab": "4 spaces"
+    "latex-workshop.bibtex-format.tab": "4 spaces",
+    "python.analysis.extraPaths": [
+        "./Project"
+    ]
 }
