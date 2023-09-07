@@ -94,7 +94,9 @@ UD_PRIMARY_SECONDARY = 2
 courses: list[Course] = courseManager.get_courses()
 
 # Lookup dictionary of events for a given course
-CourseEvents: Dict[Course,Event] = {course: [event for event in course.get_events()] for course in courses}
+CourseEvents: Dict[Course, Event] = {
+    course: [event for event in course.get_events()] for course in courses
+}
 
 # Extract exams from CourseList and store in one frozenset
 Events: Set[Event] = frozenset(concat(CourseEvents.values()))
@@ -175,7 +177,7 @@ KE = {}
 # F = the set of examination pairs with precendence constraints
 F = set()
 for course in CourseEvents:
-    if len(course.get_events())>1 and course.get_exam_type() == "WrittenAndOral":
+    if len(course.get_events()) > 1 and course.get_exam_type() == "WrittenAndOral":
         F.add(tuple(course.get_events()))
 
 # dictionary mapping events e to the set of events in H3 hard conflict with e
@@ -192,7 +194,7 @@ for event in Events:
         if event_course_name not in primary_course_names:
             continue
 
-        # This is the curricula contiaing the course
+        # This curricula containing the course in the primary section
         # Add all the courses from here into the overlapping_primary_curriculum
         for primary_course_name in primary_course_names:
             primary_course = courseManager.get_course_by_name(primary_course_name)
@@ -256,6 +258,72 @@ for c in courses:
         course_events.reverse()
         DPUndirected.add(tuple(course_events))
 
+# Set SCPS
+# Dictionary mapping each primary event to the set of secondary
+# courses in the same curriculum
+SCPS = {}  # type is dict[Event, set(Event)]
+for event in Events:
+    event_course = event.get_course()
+    event_course_name = event_course.get_course_name()
+
+    overlapping_secondary_curriculum_courses = []
+
+    for curriculum in curriculaManager.get_curricula():
+        primary_course_names = curriculum.get_primary_course_names()
+        secondary_course_names = curriculum.get_secondary_course_names()
+
+        # If the course isn't primary, we shouldn't add any of the secondary courses
+        if event_course_name not in primary_course_names:
+            continue
+
+        # This curricula containing the course in the primary section
+        # Add all the courses from the secondary part of the course into the overlapping_secondary_curriculum
+        for secondary_course_name in secondary_course_names:
+            secondary_course = courseManager.get_course_by_name(secondary_course_name)
+            if secondary_course not in overlapping_secondary_curriculum_courses:
+                overlapping_secondary_curriculum_courses.append(secondary_course)
+
+    # Now convert all these courses into events using the CourseEvent dictionary
+    secondary_curricula_events = []
+    for course in overlapping_secondary_curriculum_courses:
+        secondary_curricula_events.extend(CourseEvents.get(course))
+
+    SCPS[event] = set(secondary_curricula_events)
+
+# SCSS
+# Dictionary mapping each secondary event to the set of other
+# secondary courses in the same curriculum
+SCSS = {}  # tySe is dict[Event, set(Event)]
+for event in Events:
+    event_course = event.get_course()
+    event_course_name = event_course.get_course_name()
+
+    overlapping_secondary_curriculum_courses = []
+
+    for curriculum in curriculaManager.get_curricula():
+        secondary_course_names = curriculum.get_secondary_course_names()
+
+        # If the course isn't secondary, we shouldn't add any of the secondary courses
+        if event_course_name not in secondary_course_names:
+            continue
+
+        # This curricula containing the course in the secondary section
+        # Add all the courses from the secondary part of the course into the overlapping_secondary_curriculum
+        # Exclude the event_course_name
+        for secondary_course_name in secondary_course_names:
+            secondary_course = courseManager.get_course_by_name(secondary_course_name)
+            if (
+                secondary_course not in overlapping_secondary_curriculum_courses
+                and secondary_course != event_course
+            ):
+                overlapping_secondary_curriculum_courses.append(secondary_course)
+
+    # Now convert all these courses into events using the CourseEvent dictionary
+    secondary_curricula_events = []
+    for course in overlapping_secondary_curriculum_courses:
+        secondary_curricula_events.extend(CourseEvents.get(course))
+
+    SCSS[event] = set(secondary_curricula_events)
 
 print("Calculating Sets:", time.time() - previous_time, "seconds")
 previous_time = time.time()
@@ -295,12 +363,8 @@ H = {
     for e in Events
 }
 
-SPS  = {(e,p):
-        m.addVar(vtype=GRB.INTEGER) for e in Events for p in Periods
-    }
-SSS  = {(e,p):
-        m.addVar(vtype=GRB.INTEGER) for e in Events for p in Periods
-    }
+SPS = {(e, p): m.addVar(vtype=GRB.INTEGER) for e in Events for p in Periods}
+SSS = {(e, p): m.addVar(vtype=GRB.INTEGER) for e in Events for p in Periods}
 
 # ------ Constraints ------
 
@@ -349,23 +413,62 @@ Unavailabilities = {
 
 # Constraint 6: Set values of Y_(e,p)
 setY = {
-    m.addConstr(Y[e, p] - quicksum(X[e, p, r] for r in RA[e]) == 0)
+    (e, p): m.addConstr(Y[e, p] - quicksum(X[e, p, r] for r in RA[e]) == 0)
     for e in Events
     for p in PA[e]
 }
 
 # Constraint 7: Set values of H_e
 setH = {
-    m.addConstr(
+    e: m.addConstr(
         quicksum(p.get_ordinal_value(slots_per_day) * Y[e, p] for p in PA[e]) == H[e]
     )
     for e in Events
 }
 
-# Constraint 7a. Limit only 1 sum p of Y[e, p] to be turned on for each event
-oneP = {m.addConstr(quicksum(Y[e, p] for p in PA[e]) == 1) for e in Events}
+# Constraint 7a: Limit only 1 sum p of Y[e, p] to be turned on for each event
+oneP = {e: m.addConstr(quicksum(Y[e, p] for p in PA[e]) == 1) for e in Events}
 
 # Soft Constraints
+
+# Constraint 8 (S1): Soft Conflicts
+SoftConflicts = {
+    (e, p): m.addConstr(
+        len(
+            {
+                e2
+                for e2 in SCPS[e]
+                if p.get_ordinal_value(e) < p.get_ordinal_value(e2) and p in PA[e2]
+            }
+        )
+        * Y[e, p]
+        + quicksum(
+            Y[e2, p]
+            for e2 in SCPS[e]
+            if p.get_ordinal_value(e) < p.get_ordinal_value(e2)
+        )
+        <= SSS[e, p]
+        + len(
+            {
+                e2
+                for e2 in SCPS[e]
+                if p.get_ordinal_value(e) < p.get_ordinal_value(e2) and p in PA[e2]
+            }
+        )
+    )
+    for e in Events
+    for p in PA[e]
+}
+
+# Constraint 9 (S2): Preferences
+Preferences = {}
+
+# Constraint 10 (S3): DirectedDistances
+DirectedDistances = {}
+
+# Constraint 11: (S4): UndirectedDifferences
+UndirectedDifferences = {}
+
 
 # ------ Objective Function ------
 # m.setObjective(0, GRB.MAXIMIZE)
