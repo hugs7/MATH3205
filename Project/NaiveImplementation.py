@@ -197,7 +197,7 @@ for event in Events:
         if event_course_name not in primary_course_names:
             continue
 
-        # This is the curricula contiaing the course
+        # This curricula containing the course in the primary section
         # Add all the courses from here into the overlapping_primary_curriculum
         for primary_course_name in primary_course_names:
             primary_course = courseManager.get_course_by_name(primary_course_name)
@@ -262,6 +262,72 @@ for c in courses:
         course_events.reverse()
         DPUndirected.add(tuple(course_events))
 
+# SCPS
+# Dictionary mapping each primary event to the set of secondary
+# courses in the same curriculum
+SCPS = {}  # type is dict[Event, set(Event)]
+for event in Events:
+    event_course = event.get_course()
+    event_course_name = event_course.get_course_name()
+
+    overlapping_secondary_curriculum_courses = []
+
+    for curriculum in curriculaManager.get_curricula():
+        primary_course_names = curriculum.get_primary_course_names()
+        secondary_course_names = curriculum.get_secondary_course_names()
+
+        # If the course isn't primary, we shouldn't add any of the secondary courses
+        if event_course_name not in primary_course_names:
+            continue
+
+        # This curricula containing the course in the primary section
+        # Add all the courses from the secondary part of the course into the overlapping_secondary_curriculum
+        for secondary_course_name in secondary_course_names:
+            secondary_course = courseManager.get_course_by_name(secondary_course_name)
+            if secondary_course not in overlapping_secondary_curriculum_courses:
+                overlapping_secondary_curriculum_courses.append(secondary_course)
+
+    # Now convert all these courses into events using the CourseEvent dictionary
+    secondary_curricula_events = []
+    for course in overlapping_secondary_curriculum_courses:
+        secondary_curricula_events.extend(CourseEvents.get(course))
+
+    SCPS[event] = set(secondary_curricula_events)
+
+# SCSS
+# Dictionary mapping each secondary event to the set of other
+# secondary courses in the same curriculum
+SCSS = {}  # tySe is dict[Event, set(Event)]
+for event in Events:
+    event_course = event.get_course()
+    event_course_name = event_course.get_course_name()
+
+    overlapping_secondary_curriculum_courses = []
+
+    for curriculum in curriculaManager.get_curricula():
+        secondary_course_names = curriculum.get_secondary_course_names()
+
+        # If the course isn't secondary, we shouldn't add any of the secondary courses
+        if event_course_name not in secondary_course_names:
+            continue
+
+        # This curricula containing the course in the secondary section
+        # Add all the courses from the secondary part of the course into the overlapping_secondary_curriculum
+        # Exclude the event_course_name
+        for secondary_course_name in secondary_course_names:
+            secondary_course = courseManager.get_course_by_name(secondary_course_name)
+            if (
+                secondary_course not in overlapping_secondary_curriculum_courses
+                and secondary_course != event_course
+            ):
+                overlapping_secondary_curriculum_courses.append(secondary_course)
+
+    # Now convert all these courses into events using the CourseEvent dictionary
+    secondary_curricula_events = []
+    for course in overlapping_secondary_curriculum_courses:
+        secondary_curricula_events.extend(CourseEvents.get(course))
+
+    SCSS[event] = set(secondary_curricula_events)
 
 # The sets containing pairs to be considered for the S3 soft constraint
 # constraints and objective contribution
@@ -371,6 +437,22 @@ PMaxWO = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for (e1, e2) in DPWrittenOral}
 PMinPP = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for (e1, e2) in DPPrimaryPrimary}
 PMinPS = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for (e1, e2) in DPPrimarySecondary}
 
+# Variables for S3 soft constraints
+# Abs distances between assignment of e1 and e2
+D = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events}
+# Actual distances between assignments of e1 and e2
+DD = {
+    (e1, e2): m.addVar(vtype=GRB.INTEGER, lb=GRB.INFINITY)
+    for e1 in Events
+    for e2 in Events
+}
+# 1 if DD[e1,e2] is positive
+G = {(e1, e2): m.addVar(vtype=GRB.BINARY) for e1 in Events for e2 in Events}
+# Abs Val of DD[e1,e2] or Zero
+DAbs1 = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events}
+# Abs value of DD[e1,e2] or Zero
+DAbs2 = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events}
+
 # ------ Constraints ------
 
 # Constraint 1: Each event assigned to an available period and room.
@@ -418,23 +500,101 @@ Unavailabilities = {
 
 # Constraint 6: Set values of Y_(e,p)
 setY = {
-    m.addConstr(Y[e, p] - quicksum(X[e, p, r] for r in RA[e]) == 0)
+    (e, p): m.addConstr(Y[e, p] - quicksum(X[e, p, r] for r in RA[e]) == 0)
     for e in Events
     for p in PA[e]
 }
 
 # Constraint 7: Set values of H_e
 setH = {
-    m.addConstr(
+    e: m.addConstr(
         quicksum(p.get_ordinal_value(slots_per_day) * Y[e, p] for p in PA[e]) == H[e]
     )
     for e in Events
 }
 
-# Constraint 7a. Limit only 1 sum p of Y[e, p] to be turned on for each event
-oneP = {m.addConstr(quicksum(Y[e, p] for p in PA[e]) == 1) for e in Events}
+# Constraint 7a: Limit only 1 sum p of Y[e, p] to be turned on for each event
+oneP = {e: m.addConstr(quicksum(Y[e, p] for p in PA[e]) == 1) for e in Events}
 
 # Soft Constraints
+
+# Constraint 8 (S1): Soft Conflicts
+SoftConflicts = {
+    (e, p): m.addConstr(
+        len({e2 for e2 in SCPS[e] if (e, e2) in DPDirected and p in PA[e2]}) * Y[e, p]
+        + quicksum(Y[e2, p] for e2 in SCPS[e] if (e, e2) in DPDirected)
+        <= SPS[e, p]
+        + len({e2 for e2 in SCPS[e] if (e, e2) in DPDirected and p in PA[e2]})
+    )
+    for e in Events
+    for p in PA[e]
+}
+
+# Constraint 9 (S2): Preferences
+Preferences = {
+    (e, p): m.addConstr(
+        len({e2 for e2 in SCSS[e] if (e, e2) in DPDirected and p in PA[e2]}) * Y[e, p]
+        + quicksum(Y[e2, p] for e2 in SCSS[e] if (e, e2) in DPDirected)
+        <= SSS[e, p]
+        + len({e2 for e2 in SCSS[e] if (e, e2) in DPDirected and p in PA[e2]})
+    )
+    for e in Events
+    for p in PA[e]
+}
+
+# Constraint 10 (S3): DirectedDistances
+DirectedDistances = {}
+Constraint10 = {
+    (e1, e2): m.addConstr(D[e1, e2] == H[e2] - H[e1]) for (e1, e2) in DPDirected
+}
+
+# Constraint 11: (S4): UndirectedDifferences
+# Constraint 11:
+Constraint11 = {
+    (e1, e2): m.addConstr(DD[e1, e2] == H[e2] - H[e1]) for (e1, e2) in DPUndirected
+}
+
+# Constraint 12:
+Constraint12 = {
+    (e1, e2): m.addConstr(DD[e1, e2] <= len(Periods) * G[e1, e2])
+    for (e1, e2) in DPUndirected
+}
+
+Constraint13 = {
+    (e1, e2): m.addConstr(DD[e1, e2] >= -len(Periods) * (1 - G[e1, e2]))
+    for (e1, e2) in DPUndirected
+}
+
+Constraint14 = {
+    (e1, e2): m.addConstr(DAbs1[e1, e2] <= len(Periods) * G[e1, e2])
+    for (e1, e2) in DPUndirected
+}
+
+Constraint15 = {
+    (e1, e2): m.addConstr(DAbs1[e1, e2] >= len(Periods) * G[e1, e2])
+    for (e1, e2) in DPUndirected
+}
+
+Constraint16 = {
+    (e1, e2): m.addConstr(DAbs1[e1, e2] <= DD[e1, e2] + len(Periods) * (1 - G[e1, e2]))
+    for (e1, e2) in DPUndirected
+}
+
+Constraint17 = {
+    (e1, e2): m.addConstr(DAbs1[e1, e2] >= DD[e1, e2] - len(Periods) * (1 - G[e1, e2]))
+    for (e1, e2) in DPUndirected
+}
+
+Constraint18 = {
+    (e1, e2): m.addConstr(DAbs2[e1, e2] == DAbs1[e1, e2] - DD[e1, e2])
+    for (e1, e2) in DPUndirected
+}
+
+Constraint19 = {
+    (e1, e2): m.addConstr(D[e1, e2] == DAbs1[e1, e2] + DAbs2[e1, e2])
+    for (e1, e2) in DPUndirected
+}
+
 
 # ------ Objective Function ------
 m.setObjective(
