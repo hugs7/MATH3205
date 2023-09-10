@@ -75,11 +75,14 @@ print("Data import:", time.time() - previous_time, "seconds")
 previous_time = time.time()
 
 # Weights of Soft Constraints
+# S1 soft conflicts
 SC_PRIMARY_SECONDARY = 5
 SC_SECONDARY_SECONDARY = 1
+# S2 preferences
 P_UNDESIRED_PERIOD = 10
 P_NOT_PREFERED_ROOM = 2
 P_UNDESIRED_ROOM = 5
+# S3 directed and undirected distance
 DD_SAME_EXAMINATION = 15
 DD_SAME_COURSE = 12
 UD_PRIMARY_PRIMARY = 2
@@ -229,6 +232,7 @@ DPDirected = set()
 # The set of event pairs with an undirected soft distance constraint.
 # If (e1, e2) in DPUndirected, then (e2, e1) is also.
 DPUndirected = set()
+
 for c in courses:
     if (
         c.get_exam_type() == "WrittenAndOral"
@@ -247,7 +251,7 @@ for c in courses:
                 oralEvent = event
             else:
                 raise Exception("course-event mismatch on course ", c)
-            # We might be able to exit early
+            # Done?
             if writtenEvent is not None and oralEvent is not None:
                 break
         DPDirected.add((writtenEvent, oralEvent))
@@ -257,6 +261,33 @@ for c in courses:
         DPUndirected.add(tuple(course_events))
         course_events.reverse()
         DPUndirected.add(tuple(course_events))
+
+
+# The sets containing pairs to be considered for the S3 soft constraint
+# constraints and objective contribution
+DPWrittenOral = DPDirected  # will need to change this is DPDirected is changed
+DPSameCourse = (
+    set()
+)  # TODO honestly not sure how to implement this one rip. Should it be undirected?
+
+# Undirected so add both (ordered) pairs
+DPPrimaryPrimary = set()
+DPPrimarySecondary = set()
+# Construct DPPrimaryPrimary and DPPrimarySecondary
+for c in curriculaManager.get_curricula():
+    primary_courses = [
+        courseManager.get_course_by_name(name) for name in c.get_primary_course_names()
+    ]
+    secondary_courses = [
+        courseManager.get_course_by_name(name)
+        for name in c.get_secondary_course_names()
+    ]
+    for p1 in primary_courses:
+        for p2 in primary_courses:
+            DPPrimaryPrimary.add((p1, p2))
+        for s in secondary_courses:
+            DPPrimarySecondary.add((p1, s))
+            DPPrimarySecondary.add((s, p1))
 
 
 print("Calculating Sets:", time.time() - previous_time, "seconds")
@@ -274,6 +305,10 @@ print("------\nGurobi\n------")
 room_constraints = constrManager.get_room_period_constraints()
 event_constraints = constrManager.get_event_period_constraints()
 period_constraints = constrManager.get_period_constraints()
+
+# --- Define Model ---
+m = Model("Uni Exams")
+
 
 # Soft constraint undesired period violation cost for event e to be assigned to
 # period p
@@ -305,9 +340,6 @@ for e in Events:
         else:
             UndesiredRoomCost[e, r] = 0
 
-# --- Define Model ---
-m = Model("Uni Exams")
-
 
 # ------ Variables ------
 # X = 1 if event e is assigned to period p and room r, 0 else
@@ -327,8 +359,17 @@ H = {
     for e in Events
 }
 
+# Soft constraint counting variables. The paper claims that all of these may be
+# relaxed to be continuous.
+# S1
 SPS = {(e, p): m.addVar(vtype=GRB.INTEGER) for e in Events for p in Periods}
 SSS = {(e, p): m.addVar(vtype=GRB.INTEGER) for e in Events for p in Periods}
+# S3
+PMinE = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for (e1, e2) in DPSameCourse}
+PMinWO = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for (e1, e2) in DPWrittenOral}
+PMaxWO = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for (e1, e2) in DPWrittenOral}
+PMinPP = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for (e1, e2) in DPPrimaryPrimary}
+PMinPS = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for (e1, e2) in DPPrimarySecondary}
 
 # ------ Constraints ------
 
@@ -409,6 +450,12 @@ m.setObjective(
         for r in RA[e]
     )
     # Cost S3
+    + DD_SAME_COURSE * quicksum(PMinE[e1, e2] for (e1, e2) in DPSameCourse)
+    + DD_SAME_EXAMINATION
+    * quicksum(PMinWO[e1, e2] + PMaxWO[e1, e2] for (e1, e2) in DPWrittenOral)
+    # are we double counting UD_PRIMARY_PRIMARY constraints?
+    + UD_PRIMARY_PRIMARY * quicksum(PMinPP[e1, e2] for (e1, e2) in DPPrimaryPrimary)
+    + UD_PRIMARY_SECONDARY * quicksum(PMinPS[e1, e2] for (e1, e2) in DPPrimarySecondary)
 )
 
 
