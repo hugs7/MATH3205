@@ -149,7 +149,6 @@ ConserveFlow = {
 m.setObjective(quicksum(X[a] for a in Arcs if a[FROM] == Depot), GRB.MINIMIZE)
 m.setParam("MIPGap", 0)
 m.optimize()
-# exit()
 
 # Fix number of vehicles
 print("Fixing vehicles to", round(m.objVal))
