@@ -88,5 +88,15 @@ Chance constraint for small values of $\alpha$
 \[ pr\left(\sum_{i \in N} r_i x_i \ge 1\right) \ge (1 - \alpha) \]
 
 This turns into 
-\[ (F^{-1} (1 - \alpha))^2 x^\top W x \le \left(1 - \sum_{i \ in N} r_i x_i \right)^2 \]
+\[ \left(F^{-1} \left(1 - \alpha \right)\right)^2 x^\top W x \le \left(1 - \sum_{i \ in N} r_i x_i \right)^2 \]
+
+
+What if the data is not normally distribted
+
+We can generate a lot of samples.
+Use Campi & Garatti formula to calculate $k$: the numnber of failures permitted for a given sample size
+$\alpha$ and degrees of freedom. Replace $W$ with the sample variance and $r$ with the sample average returns. 
+
+Treat $F^{-1}(1-\alpha)$ as a parameter above, and repeatedly solve and count the number of failures, 
+aiming to get exactly $k$ failures (via line search/interpolation techniques).
 
