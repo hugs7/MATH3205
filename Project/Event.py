@@ -30,12 +30,21 @@ class Event:
 
     def get_num_rooms(self) -> int:
         """
-        Returns the number of rooms required by the event
+        Returns the number of rooms requested by the event
         """
 
         event_course = self.examination.get_course()
         written_oral_specs = event_course.get_written_oral_specs()
         return written_oral_specs.get_num_rooms()
+
+    def get_room_type(self) -> str:
+        """
+        Returns the room type requested by the event
+        """
+
+        event_course = self.examination.get_course()
+        written_oral_specs = event_course.get_written_oral_specs()
+        return written_oral_specs.get_type()
 
     def __repr__(self) -> str:
         """
