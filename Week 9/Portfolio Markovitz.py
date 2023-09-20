@@ -2,6 +2,7 @@ from gurobipy import quicksum, Model, GRB
 import numpy as np
 import csv
 import os
+from matplotlib import pyplot as plt
 
 with open(os.path.join("Week 9", "CovMatrixNorm.csv"), "r") as f:
     reader = csv.reader(f, delimiter=",")
@@ -110,4 +111,5 @@ for l in range(1 - 1, 100 + 1):
 
     # Optimise
 
-    print(m.objVal)
+plt.plot(Ret, Var)
+plt.show()
