@@ -30,10 +30,6 @@ ROOMS_REQUESTED = "RoomsRequested"
 TEACHER = "Teacher"
 TEACHERS = "Teachers"
 
-# Rooms Requested
-NUMBER = "Number"
-TYPE = "Type"
-
 
 # Written Oral Specs
 MAX_DISTANCE = "MaxDistance"
@@ -48,7 +44,18 @@ SLOTS_PER_DAY = "SlotsPerDay"
 PRIMARY_PRIMARY_DISTANCE = "PrimaryPrimaryDistance"
 PRIMARY_SSECONDARY_DISTANCE = "PrimarySecondaryDistance"
 
+# --- Rooms ---
 
+ROOM = "Room"
+COMPOSITE = "Composite"
+LARGE = "Large"
+SMALL = "Small"
+DUMMY = "Dummy"
+MEMBERS = "Members"
+
+# Rooms Requested
+NUMBER = "Number"
+TYPE = "Type"
 # ------ Weights of Soft Constraints ------
 # S1 soft conflicts
 SC_PRIMARY_SECONDARY = 5
