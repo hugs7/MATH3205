@@ -34,6 +34,9 @@ parsed_data = json.loads(json_data)
 # Timeslots per day
 slots_per_day = parsed_data["SlotsPerDay"]
 
+# Primary Primary Distance
+primary_primary_distance = parsed_data["PrimaryPrimaryDistance"]
+
 # Exam schedule constraints
 constrManager = ConstraintManager(slots_per_day)
 for constraint in parsed_data["Constraints"]:
@@ -350,10 +353,14 @@ for c in curriculaManager.get_curricula():
     ]
     for p1 in primary_courses:
         for p2 in primary_courses:
-            DPPrimaryPrimary.add((p1, p2))
+            for e1 in p1.events:
+                for e2 in p2.events:
+                    DPPrimaryPrimary.add((e1, e2))
         for s in secondary_courses:
-            DPPrimarySecondary.add((p1, s))
-            DPPrimarySecondary.add((s, p1))
+            for e1 in p1.events:
+                for e2 in s.events:
+                    DPPrimarySecondary.add((e1, e2))
+                    DPPrimarySecondary.add((e2, e1))
 
 
 print("Calculating Sets:", time.time() - previous_time, "seconds")
@@ -442,7 +449,7 @@ PMinPS = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for (e1, e2) in DPPrimarySeconda
 D = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events}
 # Actual distances between assignments of e1 and e2
 DD = {
-    (e1, e2): m.addVar(vtype=GRB.INTEGER, lb=GRB.INFINITY)
+    (e1, e2): m.addVar(vtype=GRB.INTEGER, lb=-GRB.INFINITY)
     for e1 in Events
     for e2 in Events
 }
@@ -514,7 +521,9 @@ setH = {
 }
 
 # Constraint 7a: Limit only 1 sum p of Y[e, p] to be turned on for each event
-oneP = {e: m.addConstr(quicksum(Y[e, p] for p in PA[e]) == 1) for e in Events}
+oneP = {e: m.addConstr(quicksum(Y[e, p] for p in Periods) == 1) for e in Events}
+# for p in PA[e]
+# oneP = {e: m.addConstr(quicksum(Y[e, p] for p in PA[e]) == 1) for e in Events}
 
 # Soft Constraints
 
@@ -595,6 +604,39 @@ Constraint19 = {
     for (e1, e2) in DPUndirected
 }
 
+Constraint20 = {
+    (e1, e2): m.addConstr(
+        PMinE[e1, e2] + D[e1, e2] >= courseManager.get_course_min_distance(e1, e2)
+    )
+    for (e1, e2) in DPSameCourse
+}
+
+Constraint21 = {
+    (e1, e2): m.addConstr(
+        PMinWO[e1, e2] + D[e1, e2] >= courseManager.get_course_min_distance(e1, e2)
+    )
+    for (e1, e2) in DPWrittenOral
+}
+
+Constraint22 = {
+    (e1, e2): m.addConstr(
+        D[e1, e2] - PMaxWO[e1, e2] <= courseManager.get_course_max_distance(e1, e2)
+    )
+    for (e1, e2) in DPWrittenOral
+}
+
+Constraint23 = {
+    (e1, e2): m.addConstr(PMinPP[e1, e2] + D[e1, e2] >= primary_primary_distance)
+    for (e1, e2) in DPPrimaryPrimary
+}
+
+Constraint24 = {
+    (e1, e2): m.addConstr(
+        PMinPS[e1, e2] + D[e1, e2]
+        >= primary_primary_distance  ## TODO: primary_secondary_distance
+    )
+    for (e1, e2) in DPPrimarySecondary
+}
 
 # ------ Objective Function ------
 m.setObjective(
@@ -629,12 +671,23 @@ previous_time = time.time()
 # ------ Print output ------
 
 print("Objective Value:", m.ObjVal)
+# for p in Periods:
+#     for e in Events:
+#         for r in Rooms:
+#             if X[e, p, r].x > 0.9:
+#                 print(f"Day {p.get_day()}")
+#                 print(f"  Timeslot {p.get_timeslot()}")
+#                 print(f"    Exam {e} in room {r}")
+#                 # print()
 
-for p in Periods:
-    for e in Events:
-        for r in Rooms:
-            if X[e, p, r].x > 0.9:
-                print(f"Day {p.get_day()}")
-                print(f"  Timeslot {p.get_timeslot()}")
-                print(f"    Exam {e} in room {r}")
-                print()
+# for d in Days:
+#     print("Day ",d)
+#     for t in Timeslots:
+#         print("  Timeslot ", t)
+#         for p in Periods:
+#             if p.get_day() == d and p.get_timeslot()==t:
+#                 print("  Period ", p)
+#                 for e in Events:
+#                     for r in Rooms:
+#                         if X[e, p, r].x > 0.9:
+#                             print(f"    Exam {e} in room {r}")

@@ -143,6 +143,26 @@ class CourseManager:
 
         raise Exception("Course not found!")
 
+    def get_course_min_distance(self, e1, e2) -> int:
+        for course in self.courses:
+            if e1 in course.events and e2 in course.events:
+                return course.written_oral_specs["MinDistance"]
+
+    def get_course_max_distance(self, e1, e2) -> int:
+        for course in self.courses:
+            if e1 in course.events and e2 in course.events:
+                return course.written_oral_specs["MaxDistance"]
+
+    def get_course_room_for_oral(self, e1, e2) -> int:
+        for course in self.courses:
+            if e1 in course.events and e2 in course.events:
+                return course.written_oral_specs["RoomForOral"]
+
+    def get_course_same_day(self, e1, e2) -> int:
+        for course in self.courses:
+            if e1 in course.events and e2 in course.events:
+                return course.written_oral_specs["SameDay"]
+
     def __str__(self):
         return "\n".join([str(course) for course in self.courses])
 
