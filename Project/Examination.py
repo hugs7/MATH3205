@@ -37,6 +37,9 @@ class Examination:
         # Initialise the events list
         self.events: List[Event] = []
 
+        # Generate the examination's events upon instantiation
+        self._generate_events()
+
     def get_course(self) -> Course:
         """
         Returns the course instance the examination belongs to
@@ -57,6 +60,13 @@ class Examination:
         """
 
         return self.exam_type
+
+    def get_events(self) -> List[Event]:
+        """
+        Returns the events that comprise the examination
+        """
+
+        return self.events
 
     def _generate_events(self) -> None:
         """
