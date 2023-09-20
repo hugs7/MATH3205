@@ -80,7 +80,7 @@ np.random.seed(95)
 # Generate a random sample
 RS = np.random.multivariate_normal(R, W, len(S)).tolist()
 
-N = Names
+N = range(len(Names))
 
 m = Model("Markowitz")
 
@@ -108,7 +108,6 @@ for l in range(1 - 1, 100 + 1):
     Ret.append(sum(R[i] * X[i].x for i in N))
     Var.append(sum(W[i][j] * X[i].x * X[j].x for i in N for j in N))
 
+    # Optimise
 
-# Optimise
-
-print(m.objVal)
+    print(m.objVal)
