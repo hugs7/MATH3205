@@ -115,7 +115,9 @@ CourseEvents: Dict[Course, Examination] = {
 Examinations: Set[Examination] = frozenset(concat(CourseEvents.values()))
 
 # Extract Events from the set of Examinations
-Events: Set[Event] = [examination.get_events() for examination in Examinations]
+Events: Set[Event] = frozenset(
+    [event for examination in Examinations for event in examination.get_events()]
+)
 
 # Forbidden event period constraints. Dictionary of [CourseEvent: Period]
 forbidden_event_period_constraints: Dict[Event, List[Period]] = {}
