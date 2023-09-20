@@ -213,46 +213,51 @@ class Course:
 
 
 class CourseManager:
-    def __init__(self):
-        self.courses: list[Course] = []
+    """
+    Manages the courses the university runs
+    """
 
-    def add_course(self, course_data):
+    def __init__(self) -> None:
+        self.courses: List[Course] = []
+
+    def add_course(self, course_data) -> Course:
+        """
+        Adds a course to the course manager and returns the course
+        """
+
         new_course = Course(course_data)
         self.courses.append(new_course)
 
-    def get_courses(self) -> list[Course]:
+        return new_course
+
+    def get_courses(self) -> List[Course]:
+        """
+        Returns a list of the courses the CourseManager manages
+        """
+
         return self.courses
 
     def get_course_by_name(self, course_name: str) -> Course:
         """
         Finds course by name and returns course instance
+        Raises a CourseNotFoundException if the course is not managed by
+        this CourseManager
         """
 
         for course in self.courses:
             if course.get_course_name() == course_name:
                 return course
 
-        raise Exception("Course not found!")
-
-    def get_course_min_distance(self, e1, e2) -> int:
-        for course in self.courses:
-            if e1 in course.events and e2 in course.events:
-                return course.written_oral_specs["MinDistance"]
-
-    def get_course_max_distance(self, e1, e2) -> int:
-        for course in self.courses:
-            if e1 in course.events and e2 in course.events:
-                return course.written_oral_specs["MaxDistance"]
-
-    def get_course_room_for_oral(self, e1, e2) -> int:
-        for course in self.courses:
-            if e1 in course.events and e2 in course.events:
-                return course.written_oral_specs["RoomForOral"]
-
-    def get_course_same_day(self, e1, e2) -> int:
-        for course in self.courses:
-            if e1 in course.events and e2 in course.events:
-                return course.written_oral_specs["SameDay"]
+        raise CourseNotFoundException("Course not found!")
 
     def __str__(self):
         return "\n".join([str(course) for course in self.courses])
+
+
+class CourseNotFoundException(Exception):
+    """
+    Defines an exception for course not found
+    """
+
+    def __init__(self, exp_msg: str) -> None:
+        super().__init__(exp_msg)

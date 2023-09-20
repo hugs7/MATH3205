@@ -69,6 +69,54 @@ class Examination:
             single_event = Event(self, self.exam_type)
             self.events.append(single_event)
 
+    def get_max_distance(self) -> int:
+        """
+        If the Examination is of type WRITTEN_AND_ORAL, return the
+        maximum distance between the written and oral components.
+        Else return None.
+        """
+
+        if self.exam_type == WRITTEN_AND_ORAL:
+            return self.course.get_written_oral_specs().get_max_distance()
+
+        return None
+
+    def get_min_distance(self) -> int:
+        """
+        If the Examination is of type WRITTEN_AND_ORAL, return the
+        minimum distance between the written and oral components.
+        Else return None.
+        """
+
+        if self.exam_type == WRITTEN_AND_ORAL:
+            return self.course.get_written_oral_specs().get_min_distance()
+
+        return None
+
+    def get_room_for_oral(self) -> bool:
+        """
+        If the Examination is of type WRITTEN_AND_ORAL, return True
+        if the oral component of the examination requires a dedicated room
+        Else return None.
+        """
+
+        if self.exam_type == WRITTEN_AND_ORAL:
+            return self.course.get_written_oral_specs().get_room_for_oral()
+
+        return None
+
+    def get_same_day(self) -> bool:
+        """
+        If the Examination is of type WRITTEN_AND_ORAL, return True
+        if the written and oral events must occur on the same day (hard constraint)
+        Else return None.
+        """
+
+        if self.exam_type == WRITTEN_AND_ORAL:
+            return self.course.get_written_oral_specs().same_day()
+
+        return None
+
     def __repr__(self) -> str:
         """
         Defines repr method for Examinations
