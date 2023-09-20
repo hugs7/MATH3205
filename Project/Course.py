@@ -161,6 +161,13 @@ class Course:
 
         return None
 
+    def get_rooms_requested(self) -> RoomsRequested:
+        """
+        Returns the rooms requested of the Course
+        """
+
+        return self.rooms_requested
+
     def get_examinations(self) -> List[Examination]:
         """
         Returns the list of examinations the course has set
