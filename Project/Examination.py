@@ -16,14 +16,16 @@ class Examination:
     A course can have a number of examinations
     """
 
-    def __init__(self, course: Course) -> None:
+    def __init__(self, course: Course, index: int) -> None:
         """
         Args:
             course: Course object which the examination belongs to
+            index: Order that the examination was created in (may be hepful later)
 
         """
 
         self.course = course
+        self.index = index
 
         if self.course.is_oral():
             self.exam_type = ORAL
@@ -41,6 +43,13 @@ class Examination:
         """
 
         return self.course
+
+    def get_index(self) -> int:
+        """
+        Returns the index of the course
+        """
+
+        return self.index
 
     def get_exam_type(self) -> str:
         """

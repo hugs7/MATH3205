@@ -207,66 +207,9 @@ class Course:
         All examinations for each course have the same type.
         """
 
-        # Consider the cases for WRITTEN OR ORAL separately from WRITTEN_AND_ORAL
-
-        if self.exam_type == WRITTEN or self.exam_type == ORAL:
-            # All the exams are the same
-            return [
-                Examination(
-                    self,
-                    self.course_name,
-                    self.teacher,
-                    self.exam_type,
-                    self.rooms_requested,
-                )
-                for _ in range(self.num_of_exams)
-            ]
-        elif self.exam_type == WRITTEN_AND_ORAL:
-            # I'm not sure if this will always hold in larger data sets so this
-            # will make the program crash if we need to fix this bit of the
-            # code
-
-            # Check number of exams is 2. Given good data, this should never fail
-            if self.num_of_exams != 2:
-                print(self.num_of_exams)
-            assert self.num_of_exams == 2
-
-            # Get what room the oral exam is in
-            room_for_oral = self.written_oral_specs["RoomForOral"]
-
-            # Initialise the course exams list with the written exam
-            courseExams = [
-                Event(
-                    self,
-                    self.course_name,
-                    self.teacher,
-                    "Written",
-                    self.rooms_requested,
-                )
-            ]
-
-            # If the oral exam has a room request, add the oral exam with room requested
-            # to the courseExams list otherwise, add it with no preferred room
-            if room_for_oral:
-                courseExams.append(
-                    Event(
-                        self,
-                        self.course_name,
-                        self.teacher,
-                        "Oral",
-                        self.rooms_requested,
-                    )
-                )
-            else:
-                courseExams.append(
-                    Event(self, self.course_name, self.teacher, "Oral", None)
-                )
-
-            # Return the list of courses (should be len = 2)
-            return courseExams
-        else:
-            # There is a case that was not matched rip
-            raise Exception("could not match exam type", self.exam_type)
+        # Create an Examination object for the number of exams specified
+        for exam_index in range(self.num_of_exams):
+            self.examinations.append(Examination(self, exam_index))
 
 
 class CourseManager:
