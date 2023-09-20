@@ -1,0 +1,41 @@
+Markowitz or Mean/Variance Models
+
+Sets
+$N$ assets we want to invest in
+
+Data
+$r_i$ return on asset $i \in N$
+Typically these are slightly greater than 1.
+
+$W$ Covariance Matrix
+
+We assume the returns have a multivariate normal distribution
+
+Variables
+
+$x_i$ is the fraction of our portfolio investged in each asset
+
+Maximise return
+
+\[\max (\lambda sum_{i\in N} r_i x_i - (1-\lambda) x^T w X)\]
+
+with
+$\lambda \in (0,1)$
+
+subject to
+
+\[\sum_{i\in N} x_i = 1\]
+
+---
+
+General second order cone constraint
+
+\[\boldsymbol{x}^\top W \boldsymbol{x} \le z\]
+
+Where $x\ge 0$ and $z \ge 0$ are variables and $W$ is a positive semi-definite matrix.
+
+
+
+Gurobi can do second order cone constraints because the Barrier algorithm turns regular constraints into these.
+Solvable in polynomial time
+
