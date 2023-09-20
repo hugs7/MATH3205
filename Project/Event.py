@@ -1,0 +1,34 @@
+from Constants import *
+from Examination import Examination
+
+
+class Event:
+    """
+    A single Course can have multiple exams. An Exam can have one or more events
+    that comprise it. This is what this class defines.
+    """
+
+    def __init__(self, examination: Examination, event_type: str) -> None:
+        self.examination: Examination = examination
+        self.event_type: str = event_type
+
+    def get_examination(self) -> Examination:
+        """
+        Returns course that exam event belongs to
+        """
+
+        return self.examination
+
+    def get_event_type(self) -> str:
+        """
+        Returns the type of event
+        """
+
+        return self.event_type
+
+    def __repr__(self) -> str:
+        """
+        Defines repr method for events
+        """
+
+        return f"Event from Examination {self.examination} of type {self.event_type}"
