@@ -18,11 +18,12 @@ from Course import CourseManager, Course, Event
 from Curriculum import CurriculaManager
 from Period import Period
 from Utils import concat
+from Constants import *
 
 previous_time = time.time()
 
 # ------ Import data ------
-data_file = os.path.join(".", "Project", "data", "D1-1-16.json")
+data_file = os.path.join(".", "Project", "data", "D5-2-17.json")
 
 with open(data_file, "r") as json_file:
     json_data = json_file.read()
@@ -237,26 +238,34 @@ DPDirected = set()
 DPUndirected = set()
 
 for c in courses:
+    print(c.get_exam_type())
+    if c.get_exam_type() != WRITTEN_AND_ORAL:
+        continue
+    print(c)
     if (
-        c.get_exam_type() == "WrittenAndOral"
+        c.get_exam_type() == WRITTEN_AND_ORAL
         and not c.written_oral_specs["RoomForOral"]
         and c.min_distance_between_exams is not None
     ):
-        # find the actual written and oral events
+        print("here")
+        # Find the actual written and oral events
         writtenEvent = None
         oralEvent = None
         for event in Events:
-            if event.course is not c:
+            if event.course != c:
                 continue
-            if event.event_type == "Written":
+
+            if event.event_type == WRITTEN:
                 writtenEvent = event
-            elif event.event_type == "Oral":
+            elif event.event_type == ORAL:
                 oralEvent = event
             else:
                 raise Exception("course-event mismatch on course ", c)
             # Done?
             if writtenEvent is not None and oralEvent is not None:
                 break
+
+        print("Adding directed event", writtenEvent, ",", oralEvent)
         DPDirected.add((writtenEvent, oralEvent))
     elif c.num_of_exams > 1 and c.min_distance_between_exams is not None:
         course_events = [e for e in Events if e.course is c]
@@ -264,7 +273,7 @@ for c in courses:
         DPUndirected.add(tuple(course_events))
         course_events.reverse()
         DPUndirected.add(tuple(course_events))
-
+exit()
 # SCPS
 # Dictionary mapping each primary event to the set of secondary
 # courses in the same curriculum
@@ -334,6 +343,7 @@ for event in Events:
 
 # The sets containing pairs to be considered for the S3 soft constraint
 # constraints and objective contribution
+
 DPWrittenOral = DPDirected  # will need to change this is DPDirected is changed
 DPSameCourse = (
     set()
@@ -521,7 +531,7 @@ setH = {
 }
 
 # Constraint 7a: Limit only 1 sum p of Y[e, p] to be turned on for each event
-oneP = {e: m.addConstr(quicksum(Y[e, p] for p in Periods) == 1) for e in Events}
+# oneP = {e: m.addConstr(quicksum(Y[e, p] for p in Periods) == 1) for e in Events}
 # for p in PA[e]
 # oneP = {e: m.addConstr(quicksum(Y[e, p] for p in PA[e]) == 1) for e in Events}
 
@@ -678,16 +688,14 @@ print("Objective Value:", m.ObjVal)
 #                 print(f"Day {p.get_day()}")
 #                 print(f"  Timeslot {p.get_timeslot()}")
 #                 print(f"    Exam {e} in room {r}")
-#                 # print()
+#                 print()
 
 # for d in Days:
-#     print("Day ",d)
-#     for t in Timeslots:
-#         print("  Timeslot ", t)
-#         for p in Periods:
-#             if p.get_day() == d and p.get_timeslot()==t:
-#                 print("  Period ", p)
-#                 for e in Events:
-#                     for r in Rooms:
-#                         if X[e, p, r].x > 0.9:
-#                             print(f"    Exam {e} in room {r}")
+#     print("Day ", d)
+#     for p in Periods:
+#         if p.get_day() == d:
+#             print("  Period ", p)
+#             for e in Events:
+#                 for r in Rooms:
+#                     if X[e, p, r].x > 0.9:
+#                         print(f"    Exam {e} in room {r}")
