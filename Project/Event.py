@@ -14,6 +14,8 @@ class Event:
         self.examination: Examination = examination
         self.event_type: str = event_type
 
+        self.course: Course = examination.get_course()
+
     def get_examination(self) -> "Examination":
         """
         Returns course that exam event belongs to
@@ -40,25 +42,23 @@ class Event:
         Returns the number of rooms requested by the event
         """
 
-        event_course = self.examination.get_course()
-        written_oral_specs = event_course.get_written_oral_specs()
-        return written_oral_specs.get_num_rooms()
+        rooms_requested = self.course.get_rooms_requested()
+        return rooms_requested.get_number()
 
     def get_room_type(self) -> str:
         """
         Returns the room type requested by the event
         """
 
-        event_course = self.examination.get_course()
-        written_oral_specs = event_course.get_written_oral_specs()
-        return written_oral_specs.get_type()
+        rooms_requested = self.course.get_rooms_requested()
+        return rooms_requested.get_type()
 
     def __repr__(self) -> str:
         """
         Defines repr method for events
         """
 
-        return f"Event from Examination {self.examination} of type {self.event_type}"
+        return f"Event from Examination {self.examination.course.get_course_name()} of type {self.event_type}\n"
 
 
 Examination = ForwardRef("Examination.Examination")
