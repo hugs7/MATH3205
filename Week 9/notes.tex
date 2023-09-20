@@ -39,3 +39,38 @@ Where $x\ge 0$ and $z \ge 0$ are variables and $W$ is a positive semi-definite m
 Gurobi can do second order cone constraints because the Barrier algorithm turns regular constraints into these.
 Solvable in polynomial time
 
+---
+
+Value at Risk and Conditional Value at Risk
+(VaR) (CVaR)
+
+Sample average approximation (SAA)
+
+Assume we want VaR and CVaR at the $\alpha$ level (e.g. the bottom $5\%$).
+
+Sets
+$S$ samples
+
+Data
+$r_{is}$ return for investment $i \in N$ in sample $s \in S$
+
+Variables
+$\beta_s$ return of sample $s \in S$.
+$\text{Var}$ estimate of VaR from samples
+$\text{CVar}$ esstimate of CVaR from samples
+$\beta^{-}$ the amount by which the return of scenario $s \in S$ is below $\text{Var}$
+
+Objective
+
+\[ \max \frac{\lambda}{|S|} \sum_{s \in S} + (1 - \lambda)\text{CVar} \beta_s \]
+
+Subject to
+
+\[ \sum_{i\in N} x_i = 1 \]
+
+\[ \beta_s = \sum_{ i \in N } r_{is} X_i, \hspace{1cm} \forall s \in S \]
+
+\[ \beta_s + \beta_s^{-} \ge \text{Var}, \hspace{1cm} \forall s \ in S \]
+
+\[ \text{CVar} = \text{Var} - \frac{1}{\alpha |S|} \sum_{s \in S} \beta^{-} \]
+

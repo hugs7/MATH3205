@@ -1,8 +1,9 @@
 from gurobipy import quicksum, Model, GRB
-import numpy
+import numpy as np
 import csv
+import os
 
-with open("CovMatrixNorm.csv", "r") as f:
+with open(os.path.join("Week 9", "CovMatrixNorm.csv"), "r") as f:
     reader = csv.reader(f, delimiter=",")
     temp1 = list(reader)
 
@@ -74,7 +75,40 @@ Names = [
 ]
 
 S = range(10000)
-numpy.random.seed(95)
+np.random.seed(95)
 
 # Generate a random sample
-RS = numpy.random.multivariate_normal(R, W, len(S)).tolist()
+RS = np.random.multivariate_normal(R, W, len(S)).tolist()
+
+N = Names
+
+m = Model("Markowitz")
+
+# Create Gurobi variables
+X = {i: m.addVar() for i in N}
+
+# Constraints
+investAll = m.addConstr(quicksum(X[i] for i in N) == 1)
+
+Ret = []
+Var = []
+m.setParam("OutputFlag", 0)
+
+# Objective
+for l in range(1 - 1, 100 + 1):
+    Lambda = 0.01 * l
+
+    m.setObjective(
+        Lambda * quicksum(R[i] * X[i] for i in N)
+        - (1 - Lambda) * quicksum(X[i] * X[j] * W[i][j] for i in N for j in N),
+        GRB.MAXIMIZE,
+    )
+
+    m.optimize()
+    Ret.append(sum(R[i] * X[i].x for i in N))
+    Var.append(sum(W[i][j] * X[i].x * X[j].x for i in N for j in N))
+
+
+# Optimise
+
+print(m.objVal)
