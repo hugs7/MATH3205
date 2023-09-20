@@ -1,27 +1,122 @@
 """
 This class handles Courses in the problem
+Courses are part of curriculums
+Courses have examinations
+Examinations have Events within them, either Oral, Written or WrittenAndOral
 """
 
 from typing import List
 
+from Examination import Examination
+from Constants import *
+from Event import Event
+
+
+class RoomsRequested:
+    """
+    The RoomsRequested class handles the data about the rooms
+    the course has requested for it's exams
+    """
+
+    def __init__(self, rooms_requested_data) -> None:
+        self.number = rooms_requested_data.get(NUMBER)
+        self.type = rooms_requested_data.get(TYPE)
+
+    def get_number(self) -> int:
+        """
+        Returns the number of rooms requested for each exam
+        """
+
+        return self.number
+
+    def get_type(self) -> int:
+        """
+        Returns the type of the room requested
+        """
+
+        return self.type
+
+
+class WrittenOralSpecs:
+    """
+    A class to handle the specifications for courses with written and oral examinations
+    """
+
+    def __init__(self, written_oral_specs) -> None:
+        self.max_distance: int = int(written_oral_specs.get(MAX_DISTANCE))
+        self.min_distance: int = int(written_oral_specs.get(MIN_DISTANCE))
+        self.room_for_oral: bool = bool(written_oral_specs.get(ROOM_FOR_ORAL))
+        self.same_day: bool = bool(written_oral_specs.get(SAME_DAY))
+
+    def get_max_distance(self) -> int:
+        """
+        Returns the maximum distance between the written and oral events within the examination
+        """
+
+        return self.max_distance
+
+    def get_min_distance(self) -> int:
+        """
+        Returns the maximum distance between the written and oral events within the examination
+        """
+
+        return self.min_distance
+
+    def get_room_for_oral(self) -> bool:
+        """
+        Returns true if the oral event of the examination requires a room
+        """
+
+        return self.room_for_oral
+
+    def get_same_day(self) -> bool:
+        """
+        Returns true if the oral event of the examination must occur on the same
+        day as the written event of the same examination
+        """
+
+        return self.same_day
+
 
 class Course:
-    def __init__(self, course_data):
-        self.course_name = course_data.get("Course")
-        self.exam_type = course_data.get("ExamType")
+    """
+    The Course class defines the course object for each course
+    taught by the university.
+    """
 
-        if course_data.get("MinimumDistanceBetweenExams") is not None:
+    def __init__(self, course_data) -> None:
+        # Course name
+        self.course_name = course_data.get(COURSE)
+
+        # Exam type of course
+        self.exam_type = course_data.get(EXAM_TYPE)
+
+        # Number of exams the course has
+        self.num_of_exams = course_data.get(NUMBER_OF_EXAMS)
+
+        # If NUMBER_OF_EXAMS is more than 1, get MINIMUM_DISTANCE_BETWEEN_EXAMS
+        self.min_distance_between_exams = None
+        if self.num_of_exams > 1:
             self.min_distance_between_exams = int(
-                course_data.get("MinimumDistanceBetweenExams")
+                course_data.get(MINIMUM_DISTANCE_BETWEEN_EXAMS)
             )
-        else:
-            self.min_distance_between_exams = None
-        self.num_of_exams = course_data.get("NumberOfExams")
-        self.rooms_requested = course_data.get("RoomsRequested")
-        self.teacher = course_data.get("Teacher")
-        self.written_oral_specs = course_data.get("WrittenOralSpecs")
 
-        self.events = self._generate_events()
+        # Rooms requested
+        self.rooms_requested: RoomsRequested = RoomsRequested(
+            course_data.get(ROOMS_REQUESTED)
+        )
+
+        # Teacher
+        self.teacher = course_data.get(TEACHER)
+
+        # For courses which have WRITTEN_AND_ORAL exams, get this data
+        self.written_oral_specs = None
+        if self.is_written_and_oral():
+            self.written_oral_specs: WrittenOralSpecs = WrittenOralSpecs(
+                course_data.get(WRITTEN_ORAL_SPECS)
+            )
+
+        self.examinations: List[Examination] = self._generate_examinations()
 
     def get_course_name(self) -> str:
         """
@@ -40,7 +135,7 @@ class Course:
     def get_exam_type(self) -> str:
         """
         Returns the exam type of the course
-        Either Written, Oral, or WrittenAndOral
+        Either WRITTEN, ORAL, or WRITTEN_AND_ORAL
         """
 
         return self.exam_type
@@ -48,25 +143,76 @@ class Course:
     def get_min_distance_between_exams(self) -> int:
         """
         Returns the number of timeslots between exams
+        Returns None if the course has only 1 exam.
         """
+
+        if self.num_of_exams == 1:
+            return None
 
         return self.min_distance_between_exams
 
-    def get_events(self) -> List["Event"]:
-        return self.events
-
-    def __repr__(self):
-        return f"(Course: {self.course_name}, Exam Type: {self.exam_type}, Teacher: {self.teacher})\n"
-
-    def _generate_events(self):
+    def get_written_oral_specs(self) -> WrittenOralSpecs:
         """
-        Create a list of (exam) events for this course, where each event is a
-        RoomRequest object
+        Returns written_oral_specs if the exam type is WRITTEN_AND_ORAL.
+        Otherwise returns None.
         """
-        if self.exam_type == "Written" or self.exam_type == "Oral":
+
+        if self.is_written_and_oral():
+            return self.written_oral_specs
+
+        return None
+
+    def get_examinations(self) -> List[Examination]:
+        """
+        Returns the list of examinations the course has set
+        """
+
+        return self.examinations
+
+    def is_written(self) -> bool:
+        """
+        Returns true if the course's exams have written events only
+        """
+
+        return self.exam_type == WRITTEN
+
+    def is_oral(self) -> bool:
+        """
+        Returns true if the course's exams have oral events only
+        """
+
+        return self.exam_type == ORAL
+
+    def is_written_and_oral(self) -> bool:
+        """
+        Returns true if the course's exams have written and oral events
+        """
+
+        return self.exam_type == WRITTEN_AND_ORAL
+
+    def __repr__(self) -> str:
+        """
+        repr method for printing out the course's details
+        """
+
+        return f"(Course: {self.course_name}, Exam Type: {self.exam_type},  Teacher: {self.teacher})\n"
+
+    def _generate_examinations(self) -> None:
+        """
+        Create a list of examinations for this course.
+        Note that examinations are made up of events.
+        Events can be ORAL or WRITTEN.
+        Some Examinations have both WRITTEN and ORAL events (strictly in that order)
+        while others simple have WRITTEN or ORAL only.
+        All examinations for each course have the same type.
+        """
+
+        # Consider the cases for WRITTEN OR ORAL separately from WRITTEN_AND_ORAL
+
+        if self.exam_type == WRITTEN or self.exam_type == ORAL:
             # All the exams are the same
             return [
-                Event(
+                Examination(
                     self,
                     self.course_name,
                     self.teacher,
@@ -75,12 +221,14 @@ class Course:
                 )
                 for _ in range(self.num_of_exams)
             ]
-        elif self.exam_type == "WrittenAndOral":
+        elif self.exam_type == WRITTEN_AND_ORAL:
             # I'm not sure if this will always hold in larger data sets so this
             # will make the program crash if we need to fix this bit of the
             # code
 
             # Check number of exams is 2. Given good data, this should never fail
+            if self.num_of_exams != 2:
+                print(self.num_of_exams)
             assert self.num_of_exams == 2
 
             # Get what room the oral exam is in
@@ -165,37 +313,3 @@ class CourseManager:
 
     def __str__(self):
         return "\n".join([str(course) for course in self.courses])
-
-
-class Event:
-    """
-    A single Course can have multiple exams. These are defined as "Events"
-    Used in the Course.events() method, has members num_rooms and room_type
-    """
-
-    def __init__(
-        self, course, course_name, course_teacher, event_type, rooms_requested_dict
-    ):
-        self.course: Course = course
-        self.event_type = event_type
-        self.course_name = course_name
-        self.course_teacher = course_teacher
-        if rooms_requested_dict is None:
-            self.num_rooms = 0
-            self.room_type = None
-        else:
-            self.num_rooms = rooms_requested_dict["Number"]
-            if "Type" in rooms_requested_dict:
-                self.room_type = rooms_requested_dict["Type"]
-            else:
-                self.room_type = None
-
-    def get_course(self) -> Course:
-        """
-        Returns course that exam event belongs to
-        """
-
-        return self.course
-
-    def __repr__(self):
-        return f"{self.course_name} ({self.event_type})"
