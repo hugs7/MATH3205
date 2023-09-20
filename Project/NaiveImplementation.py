@@ -80,22 +80,6 @@ forbidden_period_constraints: List[Period] = [
 print("Data import:", time.time() - previous_time, SECONDS)
 previous_time = time.time()
 
-# ------ Weights of Soft Constraints ------
-# S1 soft conflicts
-SC_PRIMARY_SECONDARY = 5
-SC_SECONDARY_SECONDARY = 1
-
-# S2 preferences
-P_UNDESIRED_PERIOD = 10
-P_NOT_PREFERED_ROOM = 2
-P_UNDESIRED_ROOM = 5
-
-# S3 directed and undirected distance
-DD_SAME_EXAMINATION = 15
-DD_SAME_COURSE = 12
-UD_PRIMARY_PRIMARY = 2
-UD_PRIMARY_SECONDARY = 2
-
 # ------ Sets ------
 # Some sets are already defined above
 # -- Events --
@@ -135,7 +119,7 @@ for event_period_constraint in constrManager.get_forbidden_event_period_constrai
         event_period_constraint.get_period()
     )
 
-# -- Periods --
+# ----- Periods -----
 # Redefine set of periods into days and timeslots
 # Calculate number of days in exam period
 NumDays = parsed_data[PERIODS] // slots_per_day
@@ -248,7 +232,7 @@ DPDirected = set()
 # If (e1, e2) in DPUndirected, then (e2, e1) is also.
 DPUndirected = set()
 
-for c in courses:
+for c in Course:
     print(c.get_exam_type())
     if not c.is_written_and_oral():
         continue
@@ -285,7 +269,6 @@ for c in courses:
         course_events.reverse()
         DPUndirected.add(tuple(course_events))
 
-exit()
 # SCPS
 # Dictionary mapping each primary event to the set of secondary
 # courses in the same curriculum
@@ -385,24 +368,24 @@ for c in curriculaManager.get_curricula():
                     DPPrimarySecondary.add((e2, e1))
 
 
-print("Calculating Sets:", time.time() - previous_time, "seconds")
+print("Calculating Sets:", time.time() - previous_time, SECONDS)
 previous_time = time.time()
 
 # ------ Data ------
 # -- Teachers --
-teachers = parsed_data["Teachers"]
+teachers = parsed_data[TEACHERS]
 
 # -- Exam Distance --
-primaryPrimaryDistance = parsed_data["PrimaryPrimaryDistance"]
+primaryPrimaryDistance = parsed_data[PRIMARY_PRIMARY_DISTANCE]
 
 
-print("------\nGurobi\n------")
+print(f"------\n{GUROBI}\n------")
 room_constraints = constrManager.get_room_period_constraints()
 event_constraints = constrManager.get_event_period_constraints()
 period_constraints = constrManager.get_period_constraints()
 
 # --- Define Model ---
-m = Model("Uni Exams")
+m = Model(UNIVERSITY_EXAMINATIONS)
 
 
 # Soft constraint undesired period violation cost for event e to be assigned to
@@ -683,11 +666,11 @@ m.setObjective(
 )
 
 
-print("Define Gurobi Model:", time.time() - previous_time, "seconds")
+print("Define Gurobi Model:", time.time() - previous_time, SECONDS)
 previous_time = time.time()
 # ------ Optimise -------
 m.optimize()
-print("Optimise Gurobi Model:", time.time() - previous_time, "seconds")
+print("Optimise Gurobi Model:", time.time() - previous_time, SECONDS)
 previous_time = time.time()
 
 # ------ Print output ------
