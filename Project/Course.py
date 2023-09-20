@@ -196,6 +196,22 @@ class Course:
 
         return f"(Course: {self.course_name}, Exam Type: {self.exam_type},  Teacher: {self.teacher})\n"
 
+    def __hash__(self):
+        """
+        Compute the hash value of the Course object based on the course_name.
+        """
+
+        return hash(self.course_name)
+
+    def __eq__(self, other):
+        """
+        Compare two Course objects for equality based on the course_name.
+        """
+
+        if isinstance(other, Course):
+            return self.course_name == other.course_name
+        return False
+
     def _generate_examinations(self) -> None:
         """
         Create a list of examinations for this course.
