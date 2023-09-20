@@ -96,10 +96,10 @@ CourseExaminations: Dict[Course, List[Examination]] = {
 }
 
 # Extract examinations from CourseList and store in one frozenset
-Examinations: Set[Examination] = frozenset(concat(CourseExaminations.values()))
+Examinations: Set[Examination] = set(concat(CourseExaminations.values()))
 
 # Extract Events from the set of Examinations
-Events: Set[Event] = frozenset(
+Events: Set[Event] = set(
     [event for examination in Examinations for event in examination.get_events()]
 )
 
@@ -206,7 +206,7 @@ KE = {}
 # and they are part of two consecutive examinations of the same course
 
 F: Set[Tuple[Examination, Examination]] = set()
-for course, examinations in CourseExaminations.values():
+for course, examinations in CourseExaminations.items():
     course: Course
     examinations: List[Examination]
 
@@ -216,12 +216,15 @@ for course, examinations in CourseExaminations.values():
     for examination in examinations:
         F.add((examination.get_written_event(), examination.get_oral_event()))
 
+
 # dictionary mapping events e to the set of events in H3 hard conflict with e
-HC: Dict[Event, frozenset[Event]] = {}
-for event in Events:
-    event_course: Course = event.get_course()
-    event_course_name = event_course.get_course_name()
-    event_course_teacher = event_course.get_teacher()
+# HC_e in paper
+HC: Dict[Event, set[Event]] = {}
+
+for course, examinations in CourseExaminations.items():
+    course: Course
+    event_course_name = course.get_course_name()
+    event_course_teacher = course.get_teacher()
 
     overlapping_primary_curriculum_courses = []
 
@@ -255,8 +258,10 @@ for event in Events:
 
     conflict_set = set(primary_curricula_events).union(set(same_teacher_events))
 
-    HC[event] = conflict_set
+    for event in CourseEvents[course]:
+        HC[event] = conflict_set
 
+# TODO up to here in checking
 
 # The set of event pairs with a directed soft distance constraint.
 # The ONLY pairs of events that can have such a constraint are (written, oral)
@@ -266,11 +271,7 @@ DPDirected = set()
 # If (e1, e2) in DPUndirected, then (e2, e1) is also.
 DPUndirected = set()
 
-for c in Course:
-    print(c.get_exam_type())
-    if not c.is_written_and_oral():
-        continue
-    print(c)
+for c in Courses:
     if (
         c.is_written_and_oral()
         and not c.written_oral_specs[ROOM_FOR_ORAL]
