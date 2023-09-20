@@ -3,6 +3,7 @@ import numpy as np
 import csv
 import os
 from matplotlib import pyplot as plt
+from scipy.stats import norm
 
 with open(os.path.join("Week 9", "CovMatrixNorm.csv"), "r") as f:
     reader = csv.reader(f, delimiter=",")
@@ -75,59 +76,42 @@ Names = [
     "CSH",
 ]
 
-S = range(10000)
-np.random.seed(95)
 
-# Generate a random sample
-RS = np.random.multivariate_normal(R, W, len(S)).tolist()
-alpha = 0.05
-
+LowReturn = 0.95
+alpha = 0.95
+FInv = norm.ppf(alpha)
+print(FInv)
 N = range(len(Names))
 
-m = Model("CVAR")
+m = Model("Normal Chance")
 
 # Create Gurobi variables
 X = {i: m.addVar() for i in N}
-Beta = {s: m.addVar() for s in S}
-BetaMinus = {s: m.addVar() for s in S}
-Var = m.addVar()
-CVar = m.addVar()
 
 # Constraints
 investAll = m.addConstr(quicksum(X[i] for i in N) == 1)
 
-SetBeta = {s: m.addConstr(Beta[s] == quicksum(RS[s][i] * X[i] for i in N)) for s in S}
-SetBetaMinus = {s: m.addConstr(Beta[s] + BetaMinus[s] >= Var) for s in S}
-SetCVar = m.addConstr(
-    CVar == Var - 1 / (alpha * len(S)) * quicksum(BetaMinus[s] for s in S)
-)
+m.setObjective(quicksum(R[i] * X[i] for i in N), GRB.MAXIMIZE)
 
-# Plotting
-Ret = []
-CV = []
-LV = []
-Obj = []
-m.setParam("OutputFlag", 0)
+Z = m.addVar()
 
-for l in range(0, 101):
-    Lambda = l * 0.01
+m.addConstr(Z == quicksum(R[i] * X[i] for i in N) - LowReturn)
 
-    m.setObjective(
-        (Lambda / len(S)) * quicksum(Beta[s] for s in S) + (1 - Lambda) * CVar,
-        GRB.MAXIMIZE,
-    )
+m.addConstr(FInv**2 * quicksum(W[i][j] * X[i] * X[j] for i in N for j in N) <= Z**2)
+m.optimize()
 
-    m.optimize()
 
-    LV.append(Lambda)
-    Ret.append(sum(Beta[s].x for s in S) / len(S))
-    CV.append(CVar.x)
-    Obj.append(m.objVal)
+S = range(10000000)
+np.random.seed(95)
 
-plt.plot(LV, Ret)
-plt.plot(LV, CV)
-plt.plot(LV, Obj)
-plt.show()
+# Generate a random sample
+RS = np.random.multivariate_normal(R, W, len(S)).tolist()
+Alloc = [X[i].x for i in N]
+# Fail = [s for s in S if sum(RS[s][i] * Alloc[i] for i in N) < LowReturn]
+# print(f"Failed: {len(Fail)/len(S)}")
+
+nFail = sum(np.less(np.matmul(RS, Alloc), LowReturn))
+print(f"Failed n: {nFail/len(S)}")
 
 
 # Optimise
