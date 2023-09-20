@@ -42,7 +42,7 @@ class Examination:
         # Generate the examination's events upon instantiation
         self._generate_events()
 
-    def get_course(self) -> "Course":
+    def get_course(self):
         """
         Returns the course instance the examination belongs to
         """
