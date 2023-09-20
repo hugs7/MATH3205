@@ -25,7 +25,7 @@ from Constants import *
 previous_time = time.time()
 
 # ------ Import data ------
-data_file = os.path.join(".", "Project", "data", "D5-2-17.json")
+data_file = os.path.join(".", "Project", "data", "D5-3-18.json")
 
 with open(data_file, "r") as json_file:
     json_data = json_file.read()
@@ -89,23 +89,34 @@ previous_time = time.time()
 # Get courses
 Courses: List[Course] = courseManager.get_courses()
 
-# Lookup dictionary of events for a given course
-CourseEvents: Dict[Course, Examination] = {
+# Lookup dictionary of examinations for a given course
+CourseExaminations: Dict[Course, List[Examination]] = {
     course: [examination for examination in course.get_examinations()]
     for course in Courses
 }
 
 # Extract examinations from CourseList and store in one frozenset
-Examinations: Set[Examination] = frozenset(concat(CourseEvents.values()))
+Examinations: Set[Examination] = frozenset(concat(CourseExaminations.values()))
 
 # Extract Events from the set of Examinations
 Events: Set[Event] = frozenset(
     [event for examination in Examinations for event in examination.get_events()]
 )
 
+# Lookup dictionary of events for a given course
+CourseEvents: Dict[Course, List[Event]] = {
+    course: [
+        event for examination in Examinations for event in examination.get_events()
+    ]
+    for course in Courses
+}
+
+# ------- Constraints -------
+
 # Forbidden event period constraints. Dictionary of [CourseEvent: Period]
 forbidden_event_period_constraints: Dict[Event, List[Period]] = {}
-# Prepopulate dictionary with an empty list for each event
+
+# Initialise dictionary with an empty list for each event
 for event in Events:
     forbidden_event_period_constraints[event] = []
 
@@ -113,11 +124,11 @@ for event in Events:
 for event_period_constraint in constrManager.get_forbidden_event_period_constraints():
     course_name = event_period_constraint.get_course_name()
     course = courseManager.get_course_by_name(course_name)
-    event = course.get_events()[event_period_constraint.get_exam_ordinal()]
-
-    forbidden_event_period_constraints[event].append(
-        event_period_constraint.get_period()
-    )
+    events = CourseEvents.get(course)
+    for event in events:
+        forbidden_event_period_constraints[event].append(
+            event_period_constraint.get_period()
+        )
 
 # ----- Periods -----
 # Redefine set of periods into days and timeslots
@@ -135,7 +146,9 @@ Periods = [Period(day, timeslot) for day in Days for timeslot in Timeslots]
 
 # Set of composite rooms (R^C) in paper)
 CompositeRooms = Rooms.get_composite_rooms()
+
 # -- Room Equivalence Class --
+# TODO Yet to determine what this is
 K = {}
 
 # The set of overlapping rooms of composite room
@@ -159,7 +172,7 @@ PA = {
 # Dictionary mapping events to a set of rooms in which it can be held
 RA = {}
 for event in Events:
-    if event.num_rooms == 0:
+    if event.get_num_rooms == 0:
         RA[event] = set((Rooms.get_dummy_room(),))
     elif event.num_rooms == 1:
         RA[event] = set(
