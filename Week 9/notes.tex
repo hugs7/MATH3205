@@ -74,3 +74,19 @@ Subject to
 
 \[ \text{CVar} = \text{Var} - \frac{1}{\alpha |S|} \sum_{s \in S} \beta^{-} \]
 
+---
+
+Chance constrained portfolio Models
+\[ \max \sum_{i \in N} r_i x_i \]
+
+Subject to
+
+\[ \sum_{i \in N} = 1 \]
+
+Chance constraint for small values of $\alpha$
+
+\[ pr\left(\sum_{i \in N} r_i x_i \ge 1\right) \ge (1 - \alpha) \]
+
+This turns into 
+\[ (F^{-1} (1 - \alpha))^2 x^\top W x \le \left(1 - \sum_{i \ in N} r_i x_i \right)^2 \]
+
