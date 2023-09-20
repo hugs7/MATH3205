@@ -21,6 +21,13 @@ class Event:
 
         return self.examination
 
+    def get_course(self) -> "Course":
+        """
+        Returns the course the event belongs to
+        """
+
+        return self.examination.get_course()
+
     def get_event_type(self) -> str:
         """
         Returns the type of event
@@ -55,3 +62,4 @@ class Event:
 
 
 Examination = ForwardRef("Examination.Examination")
+Course = ForwardRef("Course.Course")

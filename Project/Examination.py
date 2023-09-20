@@ -36,6 +36,9 @@ class Examination:
         # Initialise the events list
         self.events: List[Event] = []
 
+        self.written_event: Event = None
+        self.oral_event: Event = None
+
         # Generate the examination's events upon instantiation
         self._generate_events()
 
@@ -67,6 +70,20 @@ class Examination:
 
         return self.events
 
+    def get_written_event(self) -> Event:
+        """
+        Returns Written event if present otherwise None
+        """
+
+        return self.written_event
+
+    def get_oral_event(self) -> Event:
+        """
+        Returns Oral event if present otherwise None
+        """
+
+        return self.oral_event
+
     def _generate_events(self) -> None:
         """
         Generates the events that comprise the examination
@@ -74,9 +91,17 @@ class Examination:
 
         # Consider the cases for WRITTEN OR ORAL separately from WRITTEN_AND_ORAL
 
-        if self.exam_type == WRITTEN or self.exam_type == ORAL:
-            single_event = Event(self, self.exam_type)
-            self.events.append(single_event)
+        if self.exam_type == WRITTEN:
+            self.written_event = Event(self, self.exam_type)
+            self.events.append(self.written_event)
+        elif self.exam_type == ORAL:
+            self.oral_event = Event(self, self.exam_type)
+            self.events.append(self.oral_event)
+        elif self.exam_type == WRITTEN_AND_ORAL:
+            self.written_event = Event(self, self.exam_type)
+            self.oral_event = Event(self, self.exam_type)
+            self.events.append(self.written_event)
+            self.events.append(self.oral_event)
 
     def get_max_distance(self) -> int:
         """

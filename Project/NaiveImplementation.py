@@ -158,7 +158,7 @@ R0 = Rooms.get_overlapping_rooms()
 # -- Period Availabilities (P_e in paper) --
 # Set of periods available for event e
 
-PA = {
+PA: Dict[Event, List[Period]] = {
     event: [
         period
         for period in Periods
@@ -205,15 +205,21 @@ KE = {}
 # This occurs if they are written and oral parts of the same examination
 # and they are part of two consecutive examinations of the same course
 
-F = set()
-for course in CourseEvents:
-    if len(course.get_events()) > 1 and course.is_written_and_oral():
-        F.add(tuple(course.get_events()))
+F: Set[Tuple[Examination, Examination]] = set()
+for course, examinations in CourseExaminations.values():
+    course: Course
+    examinations: List[Examination]
+
+    if not course.is_written_and_oral():
+        continue
+
+    for examination in examinations:
+        F.add((examination.get_written_event(), examination.get_oral_event()))
 
 # dictionary mapping events e to the set of events in H3 hard conflict with e
-HC = {}  # type is dict[Event, Frozenset(Event)]
+HC: Dict[Event, frozenset[Event]] = {}
 for event in Events:
-    event_course = event.get_course()
+    event_course: Course = event.get_course()
     event_course_name = event_course.get_course_name()
     event_course_teacher = event_course.get_teacher()
 
