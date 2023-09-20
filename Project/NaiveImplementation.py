@@ -170,26 +170,41 @@ PA = {
 
 # -- Room availabilities --
 # Dictionary mapping events to a set of rooms in which it can be held
+# R_e in paper
 RA = {}
+
 for event in Events:
-    if event.get_num_rooms == 0:
-        RA[event] = set((Rooms.get_dummy_room(),))
-    elif event.num_rooms == 1:
+    if event.get_num_rooms() == 0:
+        # No room required. Set of dummy room
+        RA[event] = set(Rooms.get_dummy_room())
+    elif event.get_num_rooms() == 1:
+        # Only a single room required
+        # Get the set of rooms which are single and are of the right type
+
         RA[event] = set(
-            r for r in Rooms.get_single_rooms() if r.get_type() == event.room_type
+            r for r in Rooms.get_single_rooms() if r.get_type() == event.get_room_type()
         )
     else:
+        # Composite Room required for this event
+        # Get the set of rooms which are single and are of the right type
+
         RA[event] = set(
             r
             for r in Rooms.get_composite_rooms()
-            if len(r.get_members()) >= event.num_rooms
-            and next(iter(Rooms.composite_map[r])).get_type() == event.room_type
+            if len(r.get_members())
+            == event.get_num_rooms()  # May be a >= but come back to check this later
+            and next(iter(Rooms.composite_map[r])).get_type() == event.get_room_type()
         )
 
 # The set of available room equivalence classes for event e
+# K_e in paper
+# TODO Yet to determine what this is
 KE = {}
 
 # F = the set of examination pairs with precendence constraints
+# This occurs if they are written and oral parts of the same examination
+# and they are part of two consecutive examinations of the same course
+
 F = set()
 for course in CourseEvents:
     if len(course.get_events()) > 1 and course.is_written_and_oral():
