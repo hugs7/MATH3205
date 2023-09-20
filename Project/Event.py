@@ -1,5 +1,5 @@
 from Constants import *
-from Examination import Examination
+from typing import ForwardRef
 
 
 class Event:
@@ -8,11 +8,13 @@ class Event:
     that comprise it. This is what this class defines.
     """
 
-    def __init__(self, examination: Examination, event_type: str) -> None:
+    def __init__(self, examination: "Examination", event_type: str) -> None:
+        from Examination import Examination
+
         self.examination: Examination = examination
         self.event_type: str = event_type
 
-    def get_examination(self) -> Examination:
+    def get_examination(self) -> "Examination":
         """
         Returns course that exam event belongs to
         """
@@ -32,3 +34,6 @@ class Event:
         """
 
         return f"Event from Examination {self.examination} of type {self.event_type}"
+
+
+Examination = ForwardRef("Examination.Examination")

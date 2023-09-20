@@ -1,3 +1,15 @@
+"""
+Constants file
+"""
+
+CONSTRAINTS = "Constraints"
+COURSES = "Courses"
+CURRICULA = "Curricula"
+ROOMS = "Rooms"
+PERIODS = "Periods"
+
+SECONDS = "seconds"
+
 COURSE = "Course"
 NUMBER_OF_EXAMS = "NumberOfExams"
 
@@ -24,3 +36,10 @@ MAX_DISTANCE = "MaxDistance"
 MIN_DISTANCE = "MinDistance"
 ROOM_FOR_ORAL = "RoomForOral"
 SAME_DAY = "SameDay"
+
+
+# Timeslots
+SLOTS_PER_DAY = "SlotsPerDay"
+
+PRIMARY_PRIMARY_DISTANCE = "PrimaryPrimaryDistance"
+PRIMARY_SSECONDARY_DISTANCE = "PrimarySecondaryDistance"

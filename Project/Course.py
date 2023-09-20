@@ -5,11 +5,9 @@ Courses have examinations
 Examinations have Events within them, either Oral, Written or WrittenAndOral
 """
 
-from typing import List
-
-from Examination import Examination
+from typing import ForwardRef, List
 from Constants import *
-from Event import Event
+from Examination import Examination
 
 
 class RoomsRequested:
@@ -116,7 +114,8 @@ class Course:
                 course_data.get(WRITTEN_ORAL_SPECS)
             )
 
-        self.examinations: List[Examination] = self._generate_examinations()
+        self.examinations: List[Examination] = []
+        self._generate_examinations()
 
     def get_course_name(self) -> str:
         """

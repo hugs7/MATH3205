@@ -5,9 +5,8 @@ Any exam has components WRITTEN, ORAL or WRITTEN_AND_ORAL
 """
 
 from Constants import *
-from Course import Course
 from Event import Event
-from typing import List
+from typing import List, ForwardRef
 
 
 class Examination:
@@ -16,7 +15,7 @@ class Examination:
     A course can have a number of examinations
     """
 
-    def __init__(self, course: Course, index: int) -> None:
+    def __init__(self, course: "Course", index: int) -> None:
         """
         Args:
             course: Course object which the examination belongs to
@@ -40,7 +39,7 @@ class Examination:
         # Generate the examination's events upon instantiation
         self._generate_events()
 
-    def get_course(self) -> Course:
+    def get_course(self) -> "Course":
         """
         Returns the course instance the examination belongs to
         """
@@ -133,3 +132,6 @@ class Examination:
         """
 
         return f"Examination from course {self.course} of type {self.exam_type}"
+
+
+Course = ForwardRef("Course.Course")

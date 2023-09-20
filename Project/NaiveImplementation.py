@@ -10,11 +10,13 @@ from gurobipy import Model, quicksum, GRB
 import json  # For importing the data as JSON format
 import os
 from typing import Dict, List, Set, Tuple
+from Examination import Examination
 
 # Custom Imports
 from Room import RoomManager
 from Constraint import ConstraintManager
-from Course import CourseManager, Course, Event
+from Course import CourseManager, Course
+from Event import Event
 from Curriculum import CurriculaManager
 from Period import Period
 from Utils import concat
@@ -33,28 +35,28 @@ with open(data_file, "r") as json_file:
 parsed_data = json.loads(json_data)
 
 # Timeslots per day
-slots_per_day = parsed_data["SlotsPerDay"]
+slots_per_day = parsed_data[SLOTS_PER_DAY]
 
 # Primary Primary Distance
-primary_primary_distance = parsed_data["PrimaryPrimaryDistance"]
+primary_primary_distance = parsed_data[PRIMARY_PRIMARY_DISTANCE]
 
 # Exam schedule constraints
 constrManager = ConstraintManager(slots_per_day)
-for constraint in parsed_data["Constraints"]:
+for constraint in parsed_data[CONSTRAINTS]:
     constrManager.add_constraint(constraint)
 
 # Courses
 courseManager = CourseManager()
-for course in parsed_data["Courses"]:
+for course in parsed_data[COURSES]:
     courseManager.add_course(course)
 
 # Curricula
 curriculaManager = CurriculaManager()
-for curriculum in parsed_data["Curricula"]:
+for curriculum in parsed_data[CURRICULA]:
     curriculaManager.add_curriculum(curriculum)
 
 # Rooms
-examRooms = parsed_data["Rooms"]
+examRooms = parsed_data[ROOMS]
 Rooms = RoomManager()
 for examRoom in examRooms:
     Rooms.add_room(examRoom)
@@ -75,17 +77,19 @@ forbidden_period_constraints: List[Period] = [
     for period_constraint in constrManager.get_forbidden_period_constraints()
 ]
 
-print("Data import:", time.time() - previous_time, "seconds")
+print("Data import:", time.time() - previous_time, SECONDS)
 previous_time = time.time()
 
-# Weights of Soft Constraints
+# ------ Weights of Soft Constraints ------
 # S1 soft conflicts
 SC_PRIMARY_SECONDARY = 5
 SC_SECONDARY_SECONDARY = 1
+
 # S2 preferences
 P_UNDESIRED_PERIOD = 10
 P_NOT_PREFERED_ROOM = 2
 P_UNDESIRED_ROOM = 5
+
 # S3 directed and undirected distance
 DD_SAME_EXAMINATION = 15
 DD_SAME_COURSE = 12
@@ -95,18 +99,23 @@ UD_PRIMARY_SECONDARY = 2
 # ------ Sets ------
 # Some sets are already defined above
 # -- Events --
-# (one course can have multiple exam (events))
+# (one course can have multiple examinations)
+# an exmamination can have multiple events
 
 # Get courses
-courses: list[Course] = courseManager.get_courses()
+Courses: List[Course] = courseManager.get_courses()
 
 # Lookup dictionary of events for a given course
-CourseEvents: Dict[Course, Event] = {
-    course: [event for event in course.get_events()] for course in courses
+CourseEvents: Dict[Course, Examination] = {
+    course: [examination for examination in course.get_examinations()]
+    for course in Courses
 }
 
-# Extract exams from CourseList and store in one frozenset
-Events: Set[Event] = frozenset(concat(CourseEvents.values()))
+# Extract examinations from CourseList and store in one frozenset
+Examinations: Set[Examination] = frozenset(concat(CourseEvents.values()))
+
+# Extract Events from the set of Examinations
+Events: Set[Event] = [examination.get_events() for examination in Examinations]
 
 # Forbidden event period constraints. Dictionary of [CourseEvent: Period]
 forbidden_event_period_constraints: Dict[Event, List[Period]] = {}
@@ -127,7 +136,7 @@ for event_period_constraint in constrManager.get_forbidden_event_period_constrai
 # -- Periods --
 # Redefine set of periods into days and timeslots
 # Calculate number of days in exam period
-NumDays = parsed_data["Periods"] // slots_per_day
+NumDays = parsed_data[PERIODS] // slots_per_day
 
 # Set of days
 Days = list(range(NumDays))
@@ -184,7 +193,7 @@ KE = {}
 # F = the set of examination pairs with precendence constraints
 F = set()
 for course in CourseEvents:
-    if len(course.get_events()) > 1 and course.get_exam_type() == "WrittenAndOral":
+    if len(course.get_events()) > 1 and course.is_written_and_oral():
         F.add(tuple(course.get_events()))
 
 # dictionary mapping events e to the set of events in H3 hard conflict with e
@@ -239,12 +248,12 @@ DPUndirected = set()
 
 for c in courses:
     print(c.get_exam_type())
-    if c.get_exam_type() != WRITTEN_AND_ORAL:
+    if not c.is_written_and_oral():
         continue
     print(c)
     if (
-        c.get_exam_type() == WRITTEN_AND_ORAL
-        and not c.written_oral_specs["RoomForOral"]
+        c.is_written_and_oral()
+        and not c.written_oral_specs[ROOM_FOR_ORAL]
         and c.min_distance_between_exams is not None
     ):
         print("here")
@@ -273,6 +282,7 @@ for c in courses:
         DPUndirected.add(tuple(course_events))
         course_events.reverse()
         DPUndirected.add(tuple(course_events))
+
 exit()
 # SCPS
 # Dictionary mapping each primary event to the set of secondary
