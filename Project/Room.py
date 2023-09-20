@@ -2,27 +2,20 @@
 Class for handing rooms in the problem
 """
 
-# Constants
-
+from Constants import *
 from typing import Iterator, Dict, List
 
 
-COMPOSITE = "Composite"
-LARGE = "Large"
-SMALL = "Small"
-DUMMY = "Dummy"
-
-
 class Room:
-    def __init__(self, room_data=None):
+    def __init__(self, room_data=None) -> None:
         if room_data is None:
             self.room = DUMMY
             self.room_type = DUMMY
             self.members = []
         else:
-            self.room = room_data.get("Room")
-            self.room_type = room_data.get("Type")
-            self.members = room_data.get("Members", [])
+            self.room = room_data.get(ROOM)
+            self.room_type = room_data.get(TYPE)
+            self.members = room_data.get(MEMBERS, [])
 
     def __repr__(self) -> str:
         return f"{self.room} ({self.room_type})"
