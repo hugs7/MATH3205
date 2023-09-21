@@ -3,9 +3,9 @@ Class for handing constraints (hard and soft) in the problem
 """
 
 from abc import ABC
-from typing import List, Optional
-
+from typing import List, Optional, Set
 from Period import Period
+from Constants import *
 
 
 ROOM_PERIOD_CONSTRAINT = "RoomPeriodConstraint"
@@ -19,9 +19,9 @@ UNDESIRED = "Undesired"
 
 class Constraint(ABC):
     def __init__(self, constraint_data, slots_per_day: int):
-        self.level = constraint_data.get("Level")
+        self.level = constraint_data.get(LEVEL)
 
-        self.constr_type = constraint_data.get("Type")
+        self.constr_type = constraint_data.get(TYPE)
 
     # Getter method for 'Level' attribute
     def get_level(self) -> str:
@@ -41,11 +41,11 @@ class Constraint(ABC):
         """
         return self.constr_type
 
-    def get_level(self):
-        return self.level
-
     def is_room_constraint(self) -> bool:
         return self.constr_type == ROOM_PERIOD_CONSTRAINT
+
+    def is_event_room_constraint(self) -> bool:
+        return self.constr_type == EVENT_ROOM_CONSTRAINT
 
     def is_event_period_constraint(self) -> bool:
         return self.constr_type == EVENT_PERIOD_CONSTRAINT
@@ -64,11 +64,11 @@ class RoomPeriodConstraint(Constraint):
     def __init__(self, constraint_data, slots_per_day: int):
         super().__init__(constraint_data, slots_per_day)
 
-        self.room = constraint_data.get("Room")
+        self.room = constraint_data.get(ROOM)
         self.period: Period = Period.from_period_number(
-            constraint_data.get("Period"), slots_per_day
+            constraint_data.get(PERIOD), slots_per_day
         )
-        self.part = constraint_data.get("Part")
+        self.part = constraint_data.get(PART)
 
     def __repr__(self):
         return f"Forbidden Room {self.room} at Period {self.period}"
@@ -78,7 +78,7 @@ class RoomPeriodConstraint(Constraint):
         """
         Get the 'Room' attribute.
         Returns:
-            Optional[str]: The 'Room' value or None if it doesn't exist.
+            str: The 'Room' value or None if it doesn't exist.
         """
         return self.room
 
@@ -87,16 +87,16 @@ class RoomPeriodConstraint(Constraint):
         """
         Get the 'Period' attribute.
         Returns:
-            Optional[str]: The 'Period' value or None if it doesn't exist.
+            str: The 'Period' value or None if it doesn't exist.
         """
         return self.period
 
     # Getter method for 'Part' attribute
-    def get_part(self) -> Optional[str]:
+    def get_part(self) -> str:
         """
         Get the 'Part' attribute.
         Returns:
-            Optional[str]: The 'Part' value or None if it doesn't exist.
+            str: The 'Part' value or None if it doesn't exist.
         """
         return self.part
 
@@ -105,13 +105,12 @@ class EventPeriodConstraint(Constraint):
     def __init__(self, constraint_data, slots_per_day: int):
         super().__init__(constraint_data, slots_per_day)
 
-        self.course_name = constraint_data.get("Course")
+        self.course_name = constraint_data.get(COURSE)
         self.period: Period = Period.from_period_number(
             constraint_data.get("Period"), slots_per_day
         )
-        self.exam_ordinal = constraint_data.get("Exam")
+        self.exam_ordinal = constraint_data.get(EXAM)
 
-    # Getter method for 'Course' attribute
     def get_course_name(self) -> str:
         """
         Get the 'Course' attribute.
@@ -126,7 +125,6 @@ class EventPeriodConstraint(Constraint):
         else:
             return f"{self.level} {self.course_name} Exam {self.exam_ordinal} at Period {self.period}"
 
-    # Getter method for 'Period' attribute
     def get_period(self) -> Period:
         """
         Get the 'Period' attribute.
@@ -135,7 +133,6 @@ class EventPeriodConstraint(Constraint):
         """
         return self.period
 
-    # Getter method for 'Exam' attribute
     def get_exam_ordinal(self) -> int:
         """
         Get the 'Exam' attribute.
@@ -144,7 +141,6 @@ class EventPeriodConstraint(Constraint):
         """
         return self.exam_ordinal
 
-    # Getter method for 'Part' attribute
     def get_part(self) -> Optional[str]:
         """
         Get the 'Part' attribute.
@@ -158,16 +154,23 @@ class EventRoomConstraint(Constraint):
     def __init__(self, constraint_data, slots_per_day: int):
         super().__init__(constraint_data, slots_per_day)
 
-        self.room = constraint_data.get("Room")
-        self.part = constraint_data.get("Part")
+        self.course_name = constraint_data.get(COURSE)
+        self.room = constraint_data.get(ROOM)
+        self.part = constraint_data.get(PART)
 
-        # Getter method for 'Room' attribute
+    def get_course_name(self) -> str:
+        """
+        Get the 'Course' attribute.
+        Returns:
+            Optional[str]: The 'Course' value or None if it doesn't exist.
+        """
+        return self.course_name
 
-    def get_room(self) -> Optional[str]:
+    def get_room(self) -> str:
         """
         Get the 'Room' attribute.
         Returns:
-            Optional[str]: The 'Room' value or None if it doesn't exist.
+            str: The 'Room' value
         """
         return self.room
 
@@ -176,16 +179,16 @@ class EventRoomConstraint(Constraint):
         """
         Get the 'Period' attribute.
         Returns:
-            Optional[str]: The 'Period' value or None if it doesn't exist.
+            str: The 'Period' value
         """
         return self.period
 
     # Getter method for 'Part' attribute
-    def get_part(self) -> Optional[str]:
+    def get_part(self) -> str:
         """
         Get the 'Part' attribute.
         Returns:
-            Optional[str]: The 'Part' value or None if it doesn't exist.
+            str The 'Part' value
         """
         return self.part
 
@@ -195,7 +198,7 @@ class PeriodConstraint(Constraint):
         super().__init__(constraint_data, slots_per_day)
 
         self.period: Period = Period.from_period_number(
-            constraint_data.get("Period"), slots_per_day
+            constraint_data.get(PERIOD), slots_per_day
         )
 
     def __repr__(self):
@@ -217,7 +220,7 @@ class ConstraintManager:
         self.slots_per_day = slots_per_day
 
     def add_constraint(self, constraint_data) -> Constraint:
-        constraint_type = constraint_data.get("Type")
+        constraint_type = constraint_data.get(TYPE)
         if constraint_type is None:
             raise ValueError("Constraint type is missing in constraint_data")
 
@@ -260,67 +263,79 @@ class ConstraintManager:
             raise StopIteration
 
     # Room period constraints
-    def get_room_period_constraints(self) -> List[RoomPeriodConstraint]:
-        room_period_constraints = []
-        for constr in self.constraints:
-            if constr.is_room_constraint():
-                room_period_constraints.append(constr)
-        return room_period_constraints
+    def get_room_period_constraints(self) -> Set[RoomPeriodConstraint]:
+        return set(constr for constr in self.constraints if constr.is_room_constraint())
 
-    def get_forbidden_room_period_constraints(self) -> List[RoomPeriodConstraint]:
-        forbidden_room_period_constraints = []
-        for constr in self.constraints:
-            if constr.is_room_constraint() and constr.is_forbidden():
-                forbidden_room_period_constraints.append(constr)
-        return forbidden_room_period_constraints
+    def get_forbidden_room_period_constraints(self) -> Set[RoomPeriodConstraint]:
+        return set(
+            constr
+            for constr in self.constraints
+            if constr.is_room_constraint() and constr.is_forbidden()
+        )
 
-    def get_undesired_room_period_constraints(self) -> List[RoomPeriodConstraint]:
-        undesired_room_period_constraints = []
-        for constr in self.constraints:
-            if constr.is_room_constraint() and constr.is_undesired():
-                undesired_room_period_constraints.append(constr)
-        return undesired_room_period_constraints
+    def get_undesired_room_period_constraints(self) -> Set[RoomPeriodConstraint]:
+        return set(
+            constr
+            for constr in self.constraints
+            if constr.is_room_constraint() and constr.is_undesired()
+        )
+
+    # Event room Constraiats
+    def get_event_room_constraints(self) -> Set[EventPeriodConstraint]:
+        return set(
+            constr for constr in self.constraints if constr.is_event_room_constraint()
+        )
+
+    def get_forbidden_event_room_constraints(self) -> Set[EventPeriodConstraint]:
+        return set(
+            constr
+            for constr in self.constraints
+            if constr.is_event_room_constraint() and constr.is_forbidden()
+        )
+
+    def get_undesired_event_room_constraints(self) -> Set[EventPeriodConstraint]:
+        return set(
+            constr
+            for constr in self.constraints
+            if constr.is_event_room_constraint() and constr.is_undesired()
+        )
 
     # Event period Constraiats
-    def get_event_period_constraints(self) -> List[EventPeriodConstraint]:
-        event_period_constraints = []
-        for constr in self.constraints:
-            if constr.is_event_period_constraint():
-                event_period_constraints.append(constr)
-        return event_period_constraints
+    def get_event_period_constraints(self) -> Set[EventPeriodConstraint]:
+        return set(
+            constr for constr in self.constraints if constr.is_event_period_constraint()
+        )
 
-    def get_forbidden_event_period_constraints(self) -> List[EventPeriodConstraint]:
-        forbidden_event_period_constraints = []
-        for constr in self.constraints:
-            if constr.is_event_period_constraint() and constr.is_forbidden():
-                forbidden_event_period_constraints.append(constr)
-        return forbidden_event_period_constraints
+    def get_forbidden_event_period_constraints(self) -> Set[EventPeriodConstraint]:
+        return set(
+            constr
+            for constr in self.constraints
+            if constr.is_event_period_constraint() and constr.is_forbidden()
+        )
 
-    def get_undesired_event_period_constraints(self) -> List[EventPeriodConstraint]:
-        undesired_event_period_constraints = []
-        for constr in self.constraints:
-            if constr.is_event_period_constraint() and constr.is_undesired():
-                undesired_event_period_constraints.append(constr)
-        return undesired_event_period_constraints
+    def get_undesired_event_period_constraints(self) -> Set[EventPeriodConstraint]:
+        return set(
+            constr
+            for constr in self.constraints
+            if constr.is_event_period_constraint() and constr.is_undesired()
+        )
 
     # Period Constraints
-    def get_period_constraints(self) -> List[PeriodConstraint]:
-        period_constraints = []
-        for constr in self.constraints:
-            if constr.is_period_constraint():
-                period_constraints.append(constr)
-        return period_constraints
+    def get_period_constraints(self) -> Set[PeriodConstraint]:
+        return set(
+            constr for constr in self.constraints if constr.is_period_constraint()
+        )
 
-    def get_forbidden_period_constraints(self) -> List[PeriodConstraint]:
-        period_constraints = []
-        for constr in self.constraints:
-            if constr.is_period_constraint() and constr.is_forbidden():
-                period_constraints.append(constr)
-        return period_constraints
+    def get_forbidden_period_constraints(self) -> Set[PeriodConstraint]:
+        return set(
+            constr
+            for constr in self.constraints
+            if constr.is_period_constraint() and constr.is_forbidden()
+        )
 
-    def get_undesired_period_constraints(self) -> List[PeriodConstraint]:
-        period_constraints = []
-        for constr in self.constraints:
-            if constr.is_period_constraint() and constr.is_undesired():
-                period_constraints.append(constr)
-        return period_constraints
+    def get_undesired_period_constraints(self) -> Set[PeriodConstraint]:
+        return set(
+            constr
+            for constr in self.constraints
+            if constr.is_period_constraint() and constr.is_undesired()
+        )

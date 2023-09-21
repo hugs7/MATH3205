@@ -10,19 +10,29 @@ from gurobipy import Model, quicksum, GRB
 import json  # For importing the data as JSON format
 import os
 from typing import Dict, List, Set, Tuple
+from Examination import Examination
 
 # Custom Imports
 from Room import RoomManager
-from Constraint import ConstraintManager
-from Course import CourseManager, Course, Event
+from Constraint import (
+    ConstraintManager,
+    EventPeriodConstraint,
+    PeriodConstraint,
+    EventRoomConstraint,
+    RoomPeriodConstraint,
+    Constraint,
+)
+from Course import CourseManager, Course
+from Event import Event
 from Curriculum import CurriculaManager
 from Period import Period
 from Utils import concat
+from Constants import *
 
 previous_time = time.time()
 
 # ------ Import data ------
-data_file = os.path.join(".", "Project", "data", "toy.json")
+data_file = os.path.join(".", "Project", "data", "D6-3-17.json")
 
 with open(data_file, "r") as json_file:
     json_data = json_file.read()
@@ -32,25 +42,28 @@ with open(data_file, "r") as json_file:
 parsed_data = json.loads(json_data)
 
 # Timeslots per day
-slots_per_day = parsed_data["SlotsPerDay"]
+slots_per_day = parsed_data[SLOTS_PER_DAY]
+
+# Primary Primary Distance
+primary_primary_distance = parsed_data[PRIMARY_PRIMARY_DISTANCE]
 
 # Exam schedule constraints
 constrManager = ConstraintManager(slots_per_day)
-for constraint in parsed_data["Constraints"]:
+for constraint in parsed_data[CONSTRAINTS]:
     constrManager.add_constraint(constraint)
 
 # Courses
 courseManager = CourseManager()
-for course in parsed_data["Courses"]:
+for course in parsed_data[COURSES]:
     courseManager.add_course(course)
 
 # Curricula
 curriculaManager = CurriculaManager()
-for curriculum in parsed_data["Curricula"]:
+for curriculum in parsed_data[CURRICULA]:
     curriculaManager.add_curriculum(curriculum)
 
 # Rooms
-examRooms = parsed_data["Rooms"]
+examRooms = parsed_data[ROOMS]
 Rooms = RoomManager()
 for examRoom in examRooms:
     Rooms.add_room(examRoom)
@@ -71,39 +84,50 @@ forbidden_period_constraints: List[Period] = [
     for period_constraint in constrManager.get_forbidden_period_constraints()
 ]
 
-print("Data import:", time.time() - previous_time, "seconds")
+print("Data import:", time.time() - previous_time, SECONDS)
 previous_time = time.time()
-
-# Weights of Soft Constraints
-SC_PRIMARY_SECONDARY = 5
-SC_SECONDARY_SECONDARY = 1
-P_UNDESIRED_PERIOD = 10
-P_NOT_PREFERED_ROOM = 2
-P_UNDESIRED_ROOM = 5
-DD_SAME_EXAMINATION = 15
-DD_SAME_COURSE = 12
-UD_PRIMARY_PRIMARY = 2
-UD_PRIMARY_SECONDARY = 2
 
 # ------ Sets ------
 # Some sets are already defined above
 # -- Events --
-# (one course can have multiple exam (events))
+# (one course can have multiple examinations)
+# an exmamination can have multiple events
 
 # Get courses
-courses: list[Course] = courseManager.get_courses()
+Courses: List[Course] = courseManager.get_courses()
 
-# Lookup dictionary of events for a given course
-CourseEvents: Dict[Course, Event] = {
-    course: [event for event in course.get_events()] for course in courses
+# Lookup dictionary of examinations for a given course
+CourseExaminations: Dict[Course, List[Examination]] = {
+    course: [examination for examination in course.get_examinations()]
+    for course in Courses
 }
 
-# Extract exams from CourseList and store in one frozenset
-Events: Set[Event] = frozenset(concat(CourseEvents.values()))
+# Extract examinations from CourseList and store in one frozenset
+Examinations: Set[Examination] = set()
+for course in Courses:
+    examinations = course.get_examinations()
+    for examination in examinations:
+        Examinations.add(examination)
+
+# Extract Events from the set of Examinations
+Events: Set[Event] = set(
+    [event for examination in Examinations for event in examination.get_events()]
+)
+
+# Lookup dictionary of events for a given course
+CourseEvents: Dict[Course, List[Event]] = {
+    course: [
+        event for examination in Examinations for event in examination.get_events()
+    ]
+    for course in Courses
+}
+
+# ------- Constraints -------
 
 # Forbidden event period constraints. Dictionary of [CourseEvent: Period]
 forbidden_event_period_constraints: Dict[Event, List[Period]] = {}
-# Prepopulate dictionary with an empty list for each event
+
+# Initialise dictionary with an empty list for each event
 for event in Events:
     forbidden_event_period_constraints[event] = []
 
@@ -111,16 +135,16 @@ for event in Events:
 for event_period_constraint in constrManager.get_forbidden_event_period_constraints():
     course_name = event_period_constraint.get_course_name()
     course = courseManager.get_course_by_name(course_name)
-    event = course.get_events()[event_period_constraint.get_exam_ordinal()]
+    events = CourseEvents.get(course)
+    for event in events:
+        forbidden_event_period_constraints[event].append(
+            event_period_constraint.get_period()
+        )
 
-    forbidden_event_period_constraints[event].append(
-        event_period_constraint.get_period()
-    )
-
-# -- Periods --
+# ----- Periods -----
 # Redefine set of periods into days and timeslots
 # Calculate number of days in exam period
-NumDays = parsed_data["Periods"] // slots_per_day
+NumDays = parsed_data[PERIODS] // slots_per_day
 
 # Set of days
 Days = list(range(NumDays))
@@ -133,7 +157,9 @@ Periods = [Period(day, timeslot) for day in Days for timeslot in Timeslots]
 
 # Set of composite rooms (R^C) in paper)
 CompositeRooms = Rooms.get_composite_rooms()
+
 # -- Room Equivalence Class --
+# TODO Yet to determine what this is
 K = {}
 
 # The set of overlapping rooms of composite room
@@ -143,7 +169,7 @@ R0 = Rooms.get_overlapping_rooms()
 # -- Period Availabilities (P_e in paper) --
 # Set of periods available for event e
 
-PA = {
+PA: Dict[Event, List[Period]] = {
     event: [
         period
         for period in Periods
@@ -155,37 +181,59 @@ PA = {
 
 # -- Room availabilities --
 # Dictionary mapping events to a set of rooms in which it can be held
+# R_e in paper
 RA = {}
+
 for event in Events:
-    if event.num_rooms == 0:
-        RA[event] = set((Rooms.get_dummy_room(),))
-    elif event.num_rooms == 1:
+    if event.get_num_rooms() == 0:
+        # No room required. Set of dummy room
+        RA[event] = set(Rooms.get_dummy_room())
+    elif event.get_num_rooms() == 1:
+        # Only a single room required
+        # Get the set of rooms which are single and are of the right type
+
         RA[event] = set(
-            r for r in Rooms.get_single_rooms() if r.get_type() == event.room_type
+            r for r in Rooms.get_single_rooms() if r.get_type() == event.get_room_type()
         )
     else:
+        # Composite Room required for this event
+        # Get the set of rooms which are single and are of the right type
+
         RA[event] = set(
             r
             for r in Rooms.get_composite_rooms()
-            if len(r.get_members()) >= event.num_rooms
-            and next(iter(Rooms.composite_map[r])).get_type() == event.room_type
+            if len(r.get_members())
+            == event.get_num_rooms()  # May be a >= but come back to check this later
+            and next(iter(Rooms.composite_map[r])).get_type() == event.get_room_type()
         )
 
 # The set of available room equivalence classes for event e
+# K_e in paper
+# TODO Yet to determine what this is
 KE = {}
 
 # F = the set of examination pairs with precendence constraints
-F = set()
-for course in CourseEvents:
-    if len(course.get_events()) > 1 and course.get_exam_type() == "WrittenAndOral":
-        F.add(tuple(course.get_events()))
+# This occurs if they are written and oral parts of the same examination
+# and they are part of two consecutive examinations of the same course
+
+F: Set[Tuple[Examination, Examination]] = set()
+for examination in Examinations:
+    examination: Examination
+    corresponding_course: Course = examination.get_course()
+
+    if not corresponding_course.is_written_and_oral():
+        continue
+
+    F.add((examination.get_written_event(), examination.get_oral_event()))
 
 # dictionary mapping events e to the set of events in H3 hard conflict with e
-HC = {}  # type is dict[Event, Frozenset(Event)]
-for event in Events:
-    event_course = event.get_course()
-    event_course_name = event_course.get_course_name()
-    event_course_teacher = event_course.get_teacher()
+# HC_e in paper
+HC: Dict[Event, set[Event]] = {}
+
+for course, examinations in CourseExaminations.items():
+    course: Course
+    event_course_name = course.get_course_name()
+    event_course_teacher = course.get_teacher()
 
     overlapping_primary_curriculum_courses = []
 
@@ -219,52 +267,140 @@ for event in Events:
 
     conflict_set = set(primary_curricula_events).union(set(same_teacher_events))
 
-    HC[event] = conflict_set
+    for event in CourseEvents[course]:
+        HC[event] = conflict_set
 
 
-# The set of event pairs with a directed soft distance constraint.
-# The ONLY pairs of events that can have such a constraint are (written, oral)
-# pairs from a single course where the oral exam does NOT require a room
-DPDirected = set()
-# The set of event pairs with an undirected soft distance constraint.
-# If (e1, e2) in DPUndirected, then (e2, e1) is also.
-DPUndirected = set()
-for c in courses:
-    if (
-        c.get_exam_type() == "WrittenAndOral"
-        and not c.written_oral_specs["RoomForOral"]
-        and c.min_distance_between_exams is not None
-    ):
-        # find the actual written and oral events
-        writtenEvent = None
-        oralEvent = None
-        for event in Events:
-            if event.course is not c:
-                continue
-            if event.event_type == "Written":
-                writtenEvent = event
-            elif event.event_type == "Oral":
-                oralEvent = event
-            else:
-                raise Exception("course-event mismatch on course ", c)
-            # We might be able to exit early
-            if writtenEvent is not None and oralEvent is not None:
-                break
+# The set of event pairs with a directed soft distance constraint. Occurs when
+# 1. Written and Oral events of the same examination
+#   minimum and maximum distance
+# 2. Same course with multiple examinations. One exam is consecutive which removes symmetry
+# in the problem. Placed between the first event of each examination if it is a multi-part exam
+DPDirected: Set[Tuple[Event, Event]] = set()
+
+# DP^{E} in paper
+# Examination Event Pairs of the same course.
+# This only applies to the first examination event if there are multiple
+# Setting this here as the loop is present and is convenient.
+DPSameCourse: Set[Tuple[Event, Event]] = set()
+
+
+# DP^{WO}
+# WO Event Parts of the same examination
+# Setting this here as the loop is present and is convenient.
+# Should contain events only from WRITTEN_AND_ORAL courses
+DPWrittenOral: Set[Tuple[Event, Event]] = set()
+
+
+# Written and Oral Events of the same examination
+for examination in Examinations:
+    examination: Examination
+    corresponding_course: Course = examination.get_course()
+
+    if corresponding_course.is_written_and_oral():
+        # Safety check with written oral exam specs
+        assert corresponding_course.get_written_oral_specs is not None
+
+        # Find the actual written and oral events
+        writtenEvent = examination.get_written_event()
+        oralEvent = examination.get_oral_event()
+
         DPDirected.add((writtenEvent, oralEvent))
-    elif c.num_of_exams > 1 and c.min_distance_between_exams is not None:
-        course_events = [e for e in Events if e.course is c]
-        assert len(course_events) == c.num_of_exams
-        DPUndirected.add(tuple(course_events))
-        course_events.reverse()
-        DPUndirected.add(tuple(course_events))
+
+        # Adding to DP^{WO} here as it is convenient
+        DPWrittenOral.add((writtenEvent, oralEvent))
+
+        if corresponding_course.get_written_oral_specs() is None:
+            print("error")
+
+# Events belong to the same course
+for course in Courses:
+    course_examinations = CourseExaminations.get(course)
+
+    # Consider first (written) event in each exam if it's a multi-parter
+    for examination_a in course_examinations:
+        for examination_b in course_examinations:
+            examination_a: Examination
+            examination_b: Examination
+            if examination_a.__eq__(examination_b):
+                continue
+
+            # Don't add directed distance constraints if examination_a is to come after
+            # examination_b
+            if examination_a.get_index() > examination_b.get_index():
+                continue
+
+            event_a = examination_a.get_first_event()
+            event_b = examination_b.get_first_event()
+
+            DPDirected.add((event_a, event_b))
+
+            #  DP^{E}
+            DPSameCourse.add((event_a, event_b))
+
+# DPUndirected - The set of event pairs with an undirected soft distance
+# constraint. If (e1, e2) in DPUndirected, then (e2, e1) is also. Occurs when:
+# 1. Same curriculum: if two courses belong to the same curriculum, there should be a
+# minimum separation between the examinations. For two-event examinations, consider the
+# first event only
+DPUndirected: Set[Tuple[Event, Event]] = set()
+
+# Loop over curriculums
+for curricula in curriculaManager.get_curricula():
+    curriucla_course_names = curricula.get_course_names()
+    curricula_courses: List[Course] = []
+    for course_name in curriucla_course_names:
+        curricula_courses.append(courseManager.get_course_by_name(course_name))
+
+    for course_a in curricula_courses:
+        for course_b in curricula_courses:
+            course_a: Course
+            course_b: Course
+
+            if course_a.__eq__(course_b):
+                continue
+
+            # Get minimum separation between exams
+            course_a_min_dist = course_a.get_min_distance_between_exams()
+            course_b_min_dist = course_b.get_min_distance_between_exams()
+
+            course_a_examinations = CourseExaminations.get(course_a)
+            course_b_examinations = CourseExaminations.get(course_b)
+
+            # Consider first (written) event in each exam if it's a multi-parter
+            # Add every combination of events for the two courses into the set.
+            # No need to check if the examinations are equal as they won't be!
+            # They will be from different courses
+            for examination_a in course_a_examinations:
+                for examination_b in course_b_examinations:
+                    examination_a: Examination
+                    examination_b: Examination
+
+                    # Don't add directed distance constraints if examination_a is to come after
+                    # examination_b
+
+                    # Course a
+
+                    if course_a.is_written() or course_a.is_written_and_oral():
+                        event_a = examination_a.get_written_event()
+                    elif course_a.is_oral():
+                        event_a = examination_a.get_oral_event()
+
+                    # Course b
+
+                    if course_b.is_written() or course_b.is_written_and_oral():
+                        event_b = examination_b.get_written_event()
+                    elif course_b.is_oral():
+                        event_b = examination_b.get_oral_event()
+
+                    DPUndirected.add((event_a, event_b))
 
 # SCPS
 # Dictionary mapping each primary event to the set of secondary
 # courses in the same curriculum
 SCPS = {}  # type is dict[Event, set(Event)]
 for event in Events:
-    event_course = event.get_course()
-    event_course_name = event_course.get_course_name()
+    event_course_name = event.get_course_name()
 
     overlapping_secondary_curriculum_courses = []
 
@@ -325,25 +461,114 @@ for event in Events:
 
     SCSS[event] = set(secondary_curricula_events)
 
-print("Calculating Sets:", time.time() - previous_time, "seconds")
+# The sets containing pairs to be considered for the S3 soft constraint
+# constraints and objective contribution
+
+# DPPrimaryPrimary is the set of event tuples from examinations of which their courses
+# are found in the same primary curriculum
+# This only applies to the first examination event if there are multiple
+DPPrimaryPrimary: Set[Tuple[Event, Event]] = set()
+
+# DPPrimaryPrimary is the set of event tuples from examinations of which
+# the first corresponding course is primary and the second corresponding
+# course is seconday
+DPPrimarySecondary: Set[Tuple[Event, Event]] = set()
+
+# Construct DPPrimaryPrimary and DPPrimarySecondary
+for c in curriculaManager.get_curricula():
+    primary_courses = [
+        courseManager.get_course_by_name(name) for name in c.get_primary_course_names()
+    ]
+
+    secondary_courses = [
+        courseManager.get_course_by_name(name)
+        for name in c.get_secondary_course_names()
+    ]
+
+    for p1 in primary_courses:
+        p1_examinations = p1.get_examinations()
+
+        for p2 in primary_courses:
+            if p1.__eq__(p2):
+                continue
+
+            p2_examinations = p2.get_examinations()
+
+            for p1_exam in p1_examinations:
+                for p2_exam in p2_examinations:
+                    e1 = p1_exam.get_first_event()
+                    e2 = p2_exam.get_first_event()
+
+                    if (e1, e2) not in DPPrimaryPrimary:
+                        DPPrimaryPrimary.add((e1, e2))
+
+        for s in secondary_courses:
+            s_examinations = s.get_examinations()
+
+            for p1_exam in p1_examinations:
+                for s_exam in s_examinations:
+                    e1 = p1_exam.get_first_event()
+                    e2 = s_exam.get_first_event()
+
+                    if (e1, e2) not in DPPrimarySecondary:
+                        DPPrimarySecondary.add((e1, e2))
+
+
+# Soft constraint undesired period violation cost for event e to be assigned to
+# period p
+UndesiredPeriodCost = {}
+for e in Events:
+    undesired_periods = [
+        c.get_period()
+        for c in constrManager.get_undesired_event_period_constraints()
+        if c.get_course_name() == e.get_course_name()
+    ]
+    for p in PA[e]:
+        if p in undesired_periods:
+            UndesiredPeriodCost[e, p] = P_UNDESIRED_PERIOD
+        else:
+            UndesiredPeriodCost[e, p] = 0
+
+# Soft constraint undesired room violation cost for event e to be assigned to
+# period p. \alpha in the paper
+UndesiredRoomCost = {}
+for e in Events:
+    undesired_event_room_constraints: Set[
+        EventRoomConstraint
+    ] = constrManager.get_undesired_event_room_constraints()
+
+    undesired_rooms = [
+        event_room_constraint.get_room()
+        for event_room_constraint in undesired_event_room_constraints
+        if event_room_constraint.get_course_name() == e.get_course_name()
+    ]
+
+    for r in RA[e]:
+        if r in undesired_rooms:
+            UndesiredRoomCost[e, r] = P_UNDESIRED_ROOM
+        else:
+            UndesiredRoomCost[e, r] = 0
+
+
+print("Calculating Sets:", time.time() - previous_time, SECONDS)
 previous_time = time.time()
 
 # ------ Data ------
 # -- Teachers --
-teachers = parsed_data["Teachers"]
+teachers = parsed_data[TEACHERS]
 
 # -- Exam Distance --
-primaryPrimaryDistance = parsed_data["PrimaryPrimaryDistance"]
+primaryPrimaryDistance = parsed_data[PRIMARY_PRIMARY_DISTANCE]
 
 
-print("------\nGurobi\n------")
+print(f"------\n{GUROBI}\n------")
 room_constraints = constrManager.get_room_period_constraints()
 event_constraints = constrManager.get_event_period_constraints()
 period_constraints = constrManager.get_period_constraints()
 
-# --- Define Model ---
-m = Model("Uni Exams")
+# ------ Define Model ------
 
+m = Model(UNIVERSITY_EXAMINATIONS)
 
 # ------ Variables ------
 # X = 1 if event e is assigned to period p and room r, 0 else
@@ -363,24 +588,40 @@ H = {
     for e in Events
 }
 
+# Soft constraint counting variables. The paper claims that all of these may be
+# relaxed to be continuous.
+# S1
 SPS = {(e, p): m.addVar(vtype=GRB.INTEGER) for e in Events for p in Periods}
 SSS = {(e, p): m.addVar(vtype=GRB.INTEGER) for e in Events for p in Periods}
 
+# S3
+PMinE = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for (e1, e2) in DPSameCourse}
+PMinWO = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for (e1, e2) in DPWrittenOral}
+PMaxWO = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for (e1, e2) in DPWrittenOral}
+PMinPP = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for (e1, e2) in DPPrimaryPrimary}
+PMinPS = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for (e1, e2) in DPPrimarySecondary}
+
 # Variables for S3 soft constraints
 # Abs distances between assignment of e1 and e2
-D = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events}
+D_abs = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events}
+
 # Actual distances between assignments of e1 and e2
-DD = {
-    (e1, e2): m.addVar(vtype=GRB.INTEGER, lb=GRB.INFINITY)
+D_actual = {
+    (e1, e2): m.addVar(vtype=GRB.INTEGER, lb=-GRB.INFINITY)
     for e1 in Events
     for e2 in Events
 }
-# 1 if DD[e1,e2] is positive
+# 1 if D_actual[e1, e2] is positive
 G = {(e1, e2): m.addVar(vtype=GRB.BINARY) for e1 in Events for e2 in Events}
-# Abs Val of DD[e1,e2] or Zero
-DAbs1 = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events}
-# Abs value of DD[e1,e2] or Zero
-DAbs2 = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events}
+
+# Abs Val of D_actual[e1, e2] or Zero
+D_actual_abs_1 = {
+    (e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events
+}
+# Abs value of D_actual[e1, e2] or Zero
+D_actual_abs_2 = {
+    (e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events
+}
 
 # ------ Constraints ------
 
@@ -443,7 +684,9 @@ setH = {
 }
 
 # Constraint 7a: Limit only 1 sum p of Y[e, p] to be turned on for each event
-oneP = {e: m.addConstr(quicksum(Y[e, p] for p in PA[e]) == 1) for e in Events}
+# oneP = {e: m.addConstr(quicksum(Y[e, p] for p in Periods) == 1) for e in Events}
+# for p in PA[e]
+# oneP = {e: m.addConstr(quicksum(Y[e, p] for p in PA[e]) == 1) for e in Events}
 
 # Soft Constraints
 
@@ -474,77 +717,171 @@ Preferences = {
 # Constraint 10 (S3): DirectedDistances
 DirectedDistances = {}
 Constraint10 = {
-    (e1, e2): m.addConstr(D[e1, e2] == H[e2] - H[e1]) for (e1, e2) in DPDirected
+    (e1, e2): m.addConstr(D_abs[e1, e2] == H[e2] - H[e1]) for (e1, e2) in DPDirected
 }
 
 # Constraint 11: (S4): UndirectedDifferences
 # Constraint 11:
 Constraint11 = {
-    (e1, e2): m.addConstr(DD[e1, e2] == H[e2] - H[e1]) for (e1, e2) in DPUndirected
+    (e1, e2): m.addConstr(D_actual[e1, e2] == H[e2] - H[e1])
+    for (e1, e2) in DPUndirected
 }
-
 # Constraint 12:
 Constraint12 = {
-    (e1, e2): m.addConstr(DD[e1, e2] <= len(Periods) * G[e1, e2])
+    (e1, e2): m.addConstr(D_actual[e1, e2] <= len(Periods) * G[e1, e2])
     for (e1, e2) in DPUndirected
 }
 
 Constraint13 = {
-    (e1, e2): m.addConstr(DD[e1, e2] >= -len(Periods) * (1 - G[e1, e2]))
+    (e1, e2): m.addConstr(D_actual[e1, e2] >= -len(Periods) * (1 - G[e1, e2]))
     for (e1, e2) in DPUndirected
 }
 
 Constraint14 = {
-    (e1, e2): m.addConstr(DAbs1[e1, e2] <= len(Periods) * G[e1, e2])
+    (e1, e2): m.addConstr(D_actual_abs_1[e1, e2] <= len(Periods) * G[e1, e2])
     for (e1, e2) in DPUndirected
 }
 
 Constraint15 = {
-    (e1, e2): m.addConstr(DAbs1[e1, e2] >= len(Periods) * G[e1, e2])
+    (e1, e2): m.addConstr(D_actual_abs_1[e1, e2] >= len(Periods) * G[e1, e2])
     for (e1, e2) in DPUndirected
 }
 
 Constraint16 = {
-    (e1, e2): m.addConstr(DAbs1[e1, e2] <= DD[e1, e2] + len(Periods) * (1 - G[e1, e2]))
+    (e1, e2): m.addConstr(
+        D_actual_abs_1[e1, e2] <= D_actual[e1, e2] + len(Periods) * (1 - G[e1, e2])
+    )
     for (e1, e2) in DPUndirected
 }
 
 Constraint17 = {
-    (e1, e2): m.addConstr(DAbs1[e1, e2] >= DD[e1, e2] - len(Periods) * (1 - G[e1, e2]))
+    (e1, e2): m.addConstr(
+        D_actual_abs_1[e1, e2] >= D_actual[e1, e2] - len(Periods) * (1 - G[e1, e2])
+    )
     for (e1, e2) in DPUndirected
 }
 
 Constraint18 = {
-    (e1, e2): m.addConstr(DAbs2[e1, e2] == DAbs1[e1, e2] - DD[e1, e2])
+    (e1, e2): m.addConstr(
+        D_actual_abs_2[e1, e2] == D_actual_abs_1[e1, e2] - D_actual[e1, e2]
+    )
     for (e1, e2) in DPUndirected
 }
 
 Constraint19 = {
-    (e1, e2): m.addConstr(D[e1, e2] == DAbs1[e1, e2] + DAbs2[e1, e2])
+    (e1, e2): m.addConstr(
+        D_abs[e1, e2] == D_actual_abs_1[e1, e2] + D_actual_abs_2[e1, e2]
+    )
     for (e1, e2) in DPUndirected
 }
 
+Constraint20 = {}
+
+for e1, e2 in DPSameCourse:
+    e1_course: Course = e1.get_course()
+    e2_course: Course = e2.get_course()
+
+    exam_min_dist_1 = e1_course.get_min_distance_between_exams()
+    exam_min_dist_2 = e2_course.get_min_distance_between_exams()
+    exam_min_dist = max(exam_min_dist_1, exam_min_dist_2)
+
+    Constraint20[(e1, e2)]: m.addConstr(PMinE[e1, e2] + D_abs[e1, e2] >= exam_min_dist)
+
+Constraint21 = {}
+Constraint22 = {}
+
+for written_event, oral_event in DPWrittenOral:
+    # written_event and oral_event are from the same course
+    wo_course: Course = written_event.get_course()
+    assert wo_course is not None
+    written_oral_specs = wo_course.get_written_oral_specs()
+    print(wo_course, wo_course.get_exam_type(), written_oral_specs)
+    min_distance = written_oral_specs.get_min_distance()
+    max_distance = written_oral_specs.get_max_distance()
+
+    # print("PMinE", PMinWO[written_event, oral_event])
+    # print("D_abs", D_abs[written_event, oral_event])
+
+    Constraint21[(written_event, oral_event)]: m.addConstr(
+        PMinWO[written_event, oral_event] + D_abs[written_event, oral_event]
+        >= min_distance
+    )
+    Constraint22[(written_event, oral_event)]: m.addConstr(
+        D_abs[written_event, oral_event] - PMaxWO[written_event, oral_event]
+        <= max_distance
+    )
+
+Constraint23 = {}
+for e1, e2 in DPPrimaryPrimary:
+    e1_course: Course = e1.get_course()
+    e2_course: Course = e2.get_course()
+
+    exam_min_dist_1 = e1_course.get_min_distance_between_exams()
+    exam_min_dist_2 = e2_course.get_min_distance_between_exams()
+    exam_min_dist = max(exam_min_dist_1, exam_min_dist_2)
+
+    Constraint23[(e1, e2)]: m.addConstr(PMinPP[e1, e2] + D_abs[e1, e2] >= exam_min_dist)
+
+
+Constraint24 = {}
+for e1, e2 in DPPrimarySecondary:
+    e1_course: Course = e1.get_course()
+    e2_course: Course = e2.get_course()
+
+    exam_min_dist_1 = e1_course.get_min_distance_between_exams()
+    exam_min_dist_2 = e2_course.get_min_distance_between_exams()
+    exam_min_dist = max(exam_min_dist_1, exam_min_dist_2)
+
+    Constraint24[(e1, e2)]: m.addConstr(PMinPS[e1, e2] + D_abs[e1, e2] >= exam_min_dist)
 
 # ------ Objective Function ------
-# m.setObjective(0, GRB.MAXIMIZE)
+m.setObjective(
+    # Cost S1
+    SC_PRIMARY_SECONDARY * quicksum(SPS[e, p] for e in Events for p in PA[e])
+    + SC_SECONDARY_SECONDARY * quicksum(SSS[e, p] for e in Events for p in PA[e])
+    # Cost S2
+    + quicksum(UndesiredPeriodCost[e, p] * Y[e, p] for e in Events for p in PA[e])
+    + quicksum(
+        UndesiredRoomCost[e, r] * X[e, p, r]
+        for e in Events
+        for p in PA[e]
+        for r in RA[e]
+    )
+    # Cost S3
+    + DD_SAME_COURSE * quicksum(PMinE[e1, e2] for (e1, e2) in DPSameCourse)
+    + DD_SAME_EXAMINATION
+    * quicksum(PMinWO[e1, e2] + PMaxWO[e1, e2] for (e1, e2) in DPWrittenOral)
+    # are we double counting UD_PRIMARY_PRIMARY constraints?
+    + UD_PRIMARY_PRIMARY * quicksum(PMinPP[e1, e2] for (e1, e2) in DPPrimaryPrimary)
+    + UD_PRIMARY_SECONDARY * quicksum(PMinPS[e1, e2] for (e1, e2) in DPPrimarySecondary)
+)
 
 
-print("Define Gurobi Model:", time.time() - previous_time, "seconds")
+print("Define Gurobi Model:", time.time() - previous_time, SECONDS)
 previous_time = time.time()
 # ------ Optimise -------
 m.optimize()
-print("Optimise Gurobi Model:", time.time() - previous_time, "seconds")
+print("Optimise Gurobi Model:", time.time() - previous_time, SECONDS)
 previous_time = time.time()
 
 # ------ Print output ------
 
 print("Objective Value:", m.ObjVal)
+# for p in Periods:
+#     for e in Events:
+#         for r in Rooms:
+#             if X[e, p, r].x > 0.9:
+#                 print(f"Day {p.get_day()}")
+#                 print(f"  Timeslot {p.get_timeslot()}")
+#                 print(f"    Exam {e} in room {r}")
+#                 print()
 
-for p in Periods:
-    for e in Events:
-        for r in Rooms:
-            if X[e, p, r].x > 0.9:
-                print(f"Day {p.get_day()}")
-                print(f"  Timeslot {p.get_timeslot()}")
-                print(f"    Exam {e} in room {r}")
-                print()
+# for d in Days:
+#     print("Day ", d)
+#     for p in Periods:
+#         if p.get_day() == d:
+#             print("  Period ", p)
+#             for e in Events:
+#                 for r in Rooms:
+#                     if X[e, p, r].x > 0.9:
+#                         print(f"    Exam {e} in room {r}")
