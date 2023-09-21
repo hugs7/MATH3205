@@ -25,7 +25,7 @@ from Constants import *
 previous_time = time.time()
 
 # ------ Import data ------
-data_file = os.path.join(".", "Project", "data", "D5-3-18.json")
+data_file = os.path.join(".", "Project", "data", "D6-3-17.json")
 
 with open(data_file, "r") as json_file:
     json_data = json_file.read()
@@ -263,46 +263,100 @@ for course, examinations in CourseExaminations.items():
 
 # TODO up to here in checking
 
-# The set of event pairs with a directed soft distance constraint.
-# The ONLY pairs of events that can have such a constraint are (written, oral)
-# pairs from a single course where the oral exam does NOT require a room
-DPDirected = set()
-# The set of event pairs with an undirected soft distance constraint.
-# If (e1, e2) in DPUndirected, then (e2, e1) is also.
-DPUndirected = set()
+# The set of event pairs with a directed soft distance constraint. Occurs when
+# 1. Written and Oral events of the same examination
+#   minimum and maximum distance
+# 2. Same course with multiple examinations. One exam is consecutive which removes symmetry
+# in the problem. Placed between the first event of each examination if it is a multi-part exam
+DPDirected: Set[Tuple[Event, Event]] = set()
 
-for c in Courses:
-    if (
-        c.is_written_and_oral()
-        and not c.written_oral_specs[ROOM_FOR_ORAL]
-        and c.min_distance_between_exams is not None
-    ):
-        print("here")
+# Written and Oral Events of the same examination
+for examination in Examinations:
+    examination: Examination
+    corresponding_course: Course = examination.get_course()
+
+    if corresponding_course.is_written_and_oral():
         # Find the actual written and oral events
-        writtenEvent = None
-        oralEvent = None
-        for event in Events:
-            if event.course != c:
+        writtenEvent = examination.get_written_event()
+        oralEvent = examination.get_oral_event()
+
+        DPDirected.add((writtenEvent, oralEvent))
+
+# Events belong to the same course
+for course in Courses:
+    course_examinations = CourseExaminations.get(course)
+
+    # Consider first (written) event in each exam if it's a multi-parter
+    for examination_a in course_examinations:
+        for examination_b in course_examinations:
+            examination_a: Examination
+            examination_b: Examination
+            if examination_a.__eq__(examination_b):
                 continue
 
-            if event.event_type == WRITTEN:
-                writtenEvent = event
-            elif event.event_type == ORAL:
-                oralEvent = event
-            else:
-                raise Exception("course-event mismatch on course ", c)
-            # Done?
-            if writtenEvent is not None and oralEvent is not None:
-                break
+            # Don't add directed distance constraints if examination_a is to come after
+            # examination_b
+            if examination_a.get_index() > examination_b.get_index():
+                continue
 
-        print("Adding directed event", writtenEvent, ",", oralEvent)
-        DPDirected.add((writtenEvent, oralEvent))
-    elif c.num_of_exams > 1 and c.min_distance_between_exams is not None:
-        course_events = [e for e in Events if e.course is c]
-        assert len(course_events) == c.num_of_exams
-        DPUndirected.add(tuple(course_events))
-        course_events.reverse()
-        DPUndirected.add(tuple(course_events))
+            if course.is_written_and_oral() or course.is_written():
+                event_a = examination_a.get_written_event()
+                event_b = examination_b.get_written_event()
+            elif course.is_oral():
+                event_a = examination_a.get_oral_event()
+                event_b = examination_b.get_oral_event()
+
+            DPDirected.add((event_a, event_b))
+
+# DPUndirected - The set of event pairs with an undirected soft distance
+# constraint. If (e1, e2) in DPUndirected, then (e2, e1) is also. Occurs when:
+# 1. Same curriculum: if two courses belong to the same curriculum, there should be a
+# minimum separation between the examinations. For two-event examinations, consider the
+# first event only
+DPUndirected: Set[Tuple[Event, Event]] = set()
+
+# Loop over curriculums
+for curricula in curriculaManager.get_curricula():
+    curriucla_course_names = curricula.get_course_names()
+    curricula_courses: List[Course] = []
+    for course_name in curriucla_course_names:
+        curricula_courses.append(courseManager.get_course_by_name(course_name))
+
+    for course_a in curricula_courses:
+        for course_b in curricula_courses:
+            course_a: Course
+            course_b: Course
+
+            if course_a.__eq__(course_b):
+                continue
+
+            # Get minimum separation between exams
+            course_a_min_dist = course_a.get_min_distance_between_exams()
+            course_b_min_dist = course_b.get_min_distance_between_exams()
+
+            course_a_examinations = CourseExaminations.get(course_a)
+            course_b_examinations = CourseExaminations.get(course_b)
+
+            # Consider first (written) event in each exam if it's a multi-parter
+            # Add every combination of events for the two courses into the set.
+            # No need to check if the examinations are equal as they won't be!
+            # They will be from different courses
+            for examination_a in course_a_examinations:
+                for examination_b in course_b_examinations:
+                    examination_a: Examination
+                    examination_b: Examination
+
+                    # Don't add directed distance constraints if examination_a is to come after
+                    # examination_b
+
+                    if course.is_written_and_oral() or course.is_written():
+                        event_a = examination_a.get_written_event()
+                        event_b = examination_b.get_written_event()
+                    elif course.is_oral():
+                        event_a = examination_a.get_oral_event()
+                        event_b = examination_b.get_oral_event()
+
+                    DPUndirected.add((event_a, event_b))
 
 # SCPS
 # Dictionary mapping each primary event to the set of secondary

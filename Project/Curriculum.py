@@ -8,9 +8,14 @@ class Curriculum:
         self.secondary_course_names = curriculum_data.get("SecondaryCourses", [])
 
     def __repr__(self):
+        # TODO fix to simplify
         return f"Curriculum: {self.name}\nPrimary Courses: {', '.join(self.primary_course_names)}\nSecondary Courses: {', '.join(self.secondary_course_names)}"
 
-    def get_courses(self):
+    def get_course_names(self) -> List[str]:
+        """
+        Returns the list of primary and secondary course names as a list of strings
+        """
+
         return self.primary_course_names + self.secondary_course_names
 
     def get_primary_course_names(self) -> List[str]:
