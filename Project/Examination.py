@@ -103,6 +103,9 @@ class Examination:
             self.events.append(self.written_event)
             self.events.append(self.oral_event)
 
+            if self.written_event is None or self.oral_event is None:
+                print("error")
+
     def get_max_distance(self) -> int:
         """
         If the Examination is of type WRITTEN_AND_ORAL, return the

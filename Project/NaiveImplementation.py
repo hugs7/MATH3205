@@ -14,7 +14,14 @@ from Examination import Examination
 
 # Custom Imports
 from Room import RoomManager
-from Constraint import ConstraintManager
+from Constraint import (
+    ConstraintManager,
+    EventPeriodConstraint,
+    PeriodConstraint,
+    EventRoomConstraint,
+    RoomPeriodConstraint,
+    Constraint,
+)
 from Course import CourseManager, Course
 from Event import Event
 from Curriculum import CurriculaManager
@@ -349,11 +356,18 @@ for curricula in curriculaManager.get_curricula():
                     # Don't add directed distance constraints if examination_a is to come after
                     # examination_b
 
-                    if course.is_written_and_oral() or course.is_written():
+                    # Course a
+
+                    if course_a.is_written() or course_a.is_written_and_oral():
                         event_a = examination_a.get_written_event()
-                        event_b = examination_b.get_written_event()
-                    elif course.is_oral():
+                    elif course_a.is_oral():
                         event_a = examination_a.get_oral_event()
+
+                    # Course b
+
+                    if course_b.is_written() or course_b.is_written_and_oral():
+                        event_b = examination_b.get_written_event()
+                    elif course_b.is_oral():
                         event_b = examination_b.get_oral_event()
 
                     DPUndirected.add((event_a, event_b))
@@ -363,8 +377,7 @@ for curricula in curriculaManager.get_curricula():
 # courses in the same curriculum
 SCPS = {}  # type is dict[Event, set(Event)]
 for event in Events:
-    event_course = event.get_course()
-    event_course_name = event_course.get_course_name()
+    event_course_name = event.get_course_name()
 
     overlapping_secondary_curriculum_courses = []
 
@@ -457,26 +470,6 @@ for c in curriculaManager.get_curricula():
                     DPPrimarySecondary.add((e2, e1))
 
 
-print("Calculating Sets:", time.time() - previous_time, SECONDS)
-previous_time = time.time()
-
-# ------ Data ------
-# -- Teachers --
-teachers = parsed_data[TEACHERS]
-
-# -- Exam Distance --
-primaryPrimaryDistance = parsed_data[PRIMARY_PRIMARY_DISTANCE]
-
-
-print(f"------\n{GUROBI}\n------")
-room_constraints = constrManager.get_room_period_constraints()
-event_constraints = constrManager.get_event_period_constraints()
-period_constraints = constrManager.get_period_constraints()
-
-# --- Define Model ---
-m = Model(UNIVERSITY_EXAMINATIONS)
-
-
 # Soft constraint undesired period violation cost for event e to be assigned to
 # period p
 UndesiredPeriodCost = {}
@@ -493,20 +486,45 @@ for e in Events:
             UndesiredPeriodCost[e, p] = 0
 
 # Soft constraint undesired room violation cost for event e to be assigned to
-# period p
+# period p. \alpha in the paper
 UndesiredRoomCost = {}
 for e in Events:
+    undesired_event_room_constraints: Set[
+        EventRoomConstraint
+    ] = constrManager.get_undesired_event_room_constraints()
+
     undesired_rooms = [
-        c.get_room()
-        for c in constrManager.get_undesired_event_room_constraints()
-        if c.get_course_name == e.course_name
+        event_room_constraint.get_room()
+        for event_room_constraint in undesired_event_room_constraints
+        if event_room_constraint.get_course_name() == e.get_course_name()
     ]
+
     for r in RA[e]:
         if r in undesired_rooms:
             UndesiredRoomCost[e, r] = P_UNDESIRED_ROOM
         else:
             UndesiredRoomCost[e, r] = 0
 
+
+print("Calculating Sets:", time.time() - previous_time, SECONDS)
+previous_time = time.time()
+
+# ------ Data ------
+# -- Teachers --
+teachers = parsed_data[TEACHERS]
+
+# -- Exam Distance --
+primaryPrimaryDistance = parsed_data[PRIMARY_PRIMARY_DISTANCE]
+
+
+print(f"------\n{GUROBI}\n------")
+room_constraints = constrManager.get_room_period_constraints()
+event_constraints = constrManager.get_event_period_constraints()
+period_constraints = constrManager.get_period_constraints()
+
+# ------ Define Model ------
+
+m = Model(UNIVERSITY_EXAMINATIONS)
 
 # ------ Variables ------
 # X = 1 if event e is assigned to period p and room r, 0 else
@@ -656,7 +674,6 @@ Constraint10 = {
 Constraint11 = {
     (e1, e2): m.addConstr(DD[e1, e2] == H[e2] - H[e1]) for (e1, e2) in DPUndirected
 }
-
 # Constraint 12:
 Constraint12 = {
     (e1, e2): m.addConstr(DD[e1, e2] <= len(Periods) * G[e1, e2])

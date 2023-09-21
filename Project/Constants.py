@@ -10,11 +10,15 @@ COURSES = "Courses"
 CURRICULA = "Curricula"
 ROOMS = "Rooms"
 PERIODS = "Periods"
+PERIOD = "Period"
+PART = "Part"
 
 SECONDS = "seconds"
 
 COURSE = "Course"
 NUMBER_OF_EXAMS = "NumberOfExams"
+EXAM = "Exam"
+LEVEL = "Level"
 
 # Exam types
 EXAM_TYPE = "ExamType"
