@@ -84,6 +84,20 @@ class Examination:
 
         return self.oral_event
 
+    def get_first_event(self) -> Event:
+        """
+        Returns the written event for written and written_and_oral
+        examinations. Returns the oral event for oral examinations.
+        This is equivalent to returning the first examination event
+        """
+
+        if self.exam_type == WRITTEN or self.exam_type == WRITTEN_AND_ORAL:
+            return self.written_event
+        elif self.exam_type == ORAL:
+            return self.oral_event
+        else:
+            raise Exception("Event not Found Error")
+
     def _generate_events(self) -> None:
         """
         Generates the events that comprise the examination
@@ -91,20 +105,15 @@ class Examination:
 
         # Consider the cases for WRITTEN OR ORAL separately from WRITTEN_AND_ORAL
 
-        if self.exam_type == WRITTEN:
-            self.written_event = Event(self, self.exam_type)
-            self.events.append(self.written_event)
-        elif self.exam_type == ORAL:
-            self.oral_event = Event(self, self.exam_type)
-            self.events.append(self.oral_event)
-        elif self.exam_type == WRITTEN_AND_ORAL:
-            self.written_event = Event(self, self.exam_type)
-            self.oral_event = Event(self, self.exam_type)
-            self.events.append(self.written_event)
-            self.events.append(self.oral_event)
+        if self.exam_type == WRITTEN or self.exam_type == WRITTEN_AND_ORAL:
+            written_event = Event(self, self.exam_type)
+            self.events.append(written_event)
+            self.written_event = written_event
 
-            if self.written_event is None or self.oral_event is None:
-                print("error")
+        if self.exam_type == ORAL or self.exam_type == WRITTEN_AND_ORAL:
+            oral_event = Event(self, self.exam_type)
+            self.events.append(oral_event)
+            self.oral_event = oral_event
 
     def get_max_distance(self) -> int:
         """
@@ -174,7 +183,7 @@ class Examination:
         Defines repr method for Examinations
         """
 
-        return f"Examination from course {self.course} of type {self.exam_type}"
+        return f"Examination from course {self.course} of type {self.exam_type} - {self.written_event, self.oral_event}"
 
 
 Course = ForwardRef("Course.Course")
