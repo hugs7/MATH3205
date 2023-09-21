@@ -310,9 +310,6 @@ for examination in Examinations:
         # Adding to DP^{WO} here as it is convenient
         DPWrittenOral.add((writtenEvent, oralEvent))
 
-        if corresponding_course.get_written_oral_specs() is None:
-            print("error")
-
 # Events belong to the same course
 for course in Courses:
     course_examinations = CourseExaminations.get(course)
@@ -794,13 +791,11 @@ for written_event, oral_event in DPWrittenOral:
     # written_event and oral_event are from the same course
     wo_course: Course = written_event.get_course()
     assert wo_course is not None
+
     written_oral_specs = wo_course.get_written_oral_specs()
-    print(wo_course, wo_course.get_exam_type(), written_oral_specs)
+
     min_distance = written_oral_specs.get_min_distance()
     max_distance = written_oral_specs.get_max_distance()
-
-    # print("PMinE", PMinWO[written_event, oral_event])
-    # print("D_abs", D_abs[written_event, oral_event])
 
     Constraint21[(written_event, oral_event)]: m.addConstr(
         PMinWO[written_event, oral_event] + D_abs[written_event, oral_event]
