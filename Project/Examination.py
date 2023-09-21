@@ -105,13 +105,22 @@ class Examination:
 
         # Consider the cases for WRITTEN OR ORAL separately from WRITTEN_AND_ORAL
 
-        if self.exam_type == WRITTEN or self.exam_type == WRITTEN_AND_ORAL:
+        if self.exam_type == WRITTEN:
             written_event = Event(self, self.exam_type)
             self.events.append(written_event)
             self.written_event = written_event
 
-        if self.exam_type == ORAL or self.exam_type == WRITTEN_AND_ORAL:
+        elif self.exam_type == ORAL:
             oral_event = Event(self, self.exam_type)
+            self.events.append(oral_event)
+            self.oral_event = oral_event
+
+        elif self.exam_type == WRITTEN_AND_ORAL:
+            written_event = Event(self, WRITTEN)
+            self.events.append(written_event)
+            self.written_event = written_event
+
+            oral_event = Event(self, ORAL)
             self.events.append(oral_event)
             self.oral_event = oral_event
 
