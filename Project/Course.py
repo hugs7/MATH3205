@@ -201,7 +201,7 @@ class Course:
         repr method for printing out the course's details
         """
 
-        return f"(Course: {self.course_name}, Exam Type: {self.exam_type},  Teacher: {self.teacher})\n"
+        return f"(Course: {self.course_name}, Exam Type: {self.exam_type},  Teacher: {self.teacher})"
 
     def __hash__(self):
         """

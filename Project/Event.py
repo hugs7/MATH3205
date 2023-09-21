@@ -30,6 +30,13 @@ class Event:
 
         return self.examination.get_course()
 
+    def get_course_name(self) -> str:
+        """
+        Returns the name of the course the examination belongs to
+        """
+
+        return self.get_course().get_course_name()
+
     def get_event_type(self) -> str:
         """
         Returns the type of event
@@ -58,7 +65,9 @@ class Event:
         Defines repr method for events
         """
 
-        return f"Event from Examination {self.examination.course.get_course_name()} of type {self.event_type}\n"
+        return (
+            f"Event from Examination {self.get_course_name()} of type {self.event_type}"
+        )
 
 
 Examination = ForwardRef("Examination.Examination")
