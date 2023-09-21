@@ -42,17 +42,6 @@ class Examination:
         # Generate the examination's events upon instantiation
         self._generate_events()
 
-    def __eq__(self, other: "Examination") -> bool:
-        """
-        Returns true if the examination objects are equal
-        False otherwise
-        """
-
-        if isinstance(other, Examination):
-            return self.course == other.course and self.index == other.index
-
-        return False
-
     def get_course(self):
         """
         Returns the course instance the examination belongs to
@@ -161,6 +150,21 @@ class Examination:
             return self.course.get_written_oral_specs().same_day()
 
         return None
+
+    def __eq__(self, other: "Examination") -> bool:
+        """
+        Returns true if the examination objects are equal
+        False otherwise
+        """
+
+        if isinstance(other, Examination):
+            return self.course == other.course and self.index == other.index
+
+        return False
+
+    def __hash__(self):
+        # Hash based on the hash of the course and index attributes
+        return hash((self.course, self.index))
 
     def __repr__(self) -> str:
         """
