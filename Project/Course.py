@@ -46,6 +46,13 @@ class WrittenOralSpecs:
         self.room_for_oral: bool = bool(written_oral_specs.get(ROOM_FOR_ORAL))
         self.same_day: bool = bool(written_oral_specs.get(SAME_DAY))
 
+    def __repr__(self) -> str:
+        """
+        Representation method for WrittenOralSpecs
+        """
+
+        return f"WOS: ({self.min_distance} - {self.max_distance}), ({self.room_for_oral}, {self.same_day})"
+
     def get_max_distance(self) -> int:
         """
         Returns the maximum distance between the written and oral events within the examination
@@ -108,7 +115,6 @@ class Course:
         self.teacher = course_data.get(TEACHER)
 
         # For courses which have WRITTEN_AND_ORAL exams, get this data
-        self.written_oral_specs = None
         if self.is_written_and_oral():
             self.written_oral_specs: WrittenOralSpecs = WrittenOralSpecs(
                 course_data.get(WRITTEN_ORAL_SPECS)
