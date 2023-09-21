@@ -103,7 +103,11 @@ CourseExaminations: Dict[Course, List[Examination]] = {
 }
 
 # Extract examinations from CourseList and store in one frozenset
-Examinations: Set[Examination] = set(concat(CourseExaminations.values()))
+Examinations: Set[Examination] = set()
+for course in Courses:
+    examinations = course.get_examinations()
+    for examination in examinations:
+        Examinations.add(examination)
 
 # Extract Events from the set of Examinations
 Events: Set[Event] = set(
@@ -213,16 +217,14 @@ KE = {}
 # and they are part of two consecutive examinations of the same course
 
 F: Set[Tuple[Examination, Examination]] = set()
-for course, examinations in CourseExaminations.items():
-    course: Course
-    examinations: List[Examination]
+for examination in Examinations:
+    examination: Examination
+    corresponding_course: Course = examination.get_course()
 
-    if not course.is_written_and_oral():
+    if not corresponding_course.is_written_and_oral():
         continue
 
-    for examination in examinations:
-        F.add((examination.get_written_event(), examination.get_oral_event()))
-
+    F.add((examination.get_written_event(), examination.get_oral_event()))
 
 # dictionary mapping events e to the set of events in H3 hard conflict with e
 # HC_e in paper
@@ -268,7 +270,6 @@ for course, examinations in CourseExaminations.items():
     for event in CourseEvents[course]:
         HC[event] = conflict_set
 
-# TODO up to here in checking
 
 # The set of event pairs with a directed soft distance constraint. Occurs when
 # 1. Written and Oral events of the same examination
@@ -277,17 +278,40 @@ for course, examinations in CourseExaminations.items():
 # in the problem. Placed between the first event of each examination if it is a multi-part exam
 DPDirected: Set[Tuple[Event, Event]] = set()
 
+# DP^{E} in paper
+# Examination Event Pairs of the same course.
+# This only applies to the first examination event if there are multiple
+# Setting this here as the loop is present and is convenient.
+DPSameCourse: Set[Tuple[Event, Event]] = set()
+
+
+# DP^{WO}
+# WO Event Parts of the same examination
+# Setting this here as the loop is present and is convenient.
+# Should contain events only from WRITTEN_AND_ORAL courses
+DPWrittenOral: Set[Tuple[Event, Event]] = set()
+
+
 # Written and Oral Events of the same examination
 for examination in Examinations:
     examination: Examination
     corresponding_course: Course = examination.get_course()
 
     if corresponding_course.is_written_and_oral():
+        # Safety check with written oral exam specs
+        assert corresponding_course.get_written_oral_specs is not None
+
         # Find the actual written and oral events
         writtenEvent = examination.get_written_event()
         oralEvent = examination.get_oral_event()
 
         DPDirected.add((writtenEvent, oralEvent))
+
+        # Adding to DP^{WO} here as it is convenient
+        DPWrittenOral.add((writtenEvent, oralEvent))
+
+        if corresponding_course.get_written_oral_specs() is None:
+            print("error")
 
 # Events belong to the same course
 for course in Courses:
@@ -306,14 +330,13 @@ for course in Courses:
             if examination_a.get_index() > examination_b.get_index():
                 continue
 
-            if course.is_written_and_oral() or course.is_written():
-                event_a = examination_a.get_written_event()
-                event_b = examination_b.get_written_event()
-            elif course.is_oral():
-                event_a = examination_a.get_oral_event()
-                event_b = examination_b.get_oral_event()
+            event_a = examination_a.get_first_event()
+            event_b = examination_b.get_first_event()
 
             DPDirected.add((event_a, event_b))
+
+            #  DP^{E}
+            DPSameCourse.add((event_a, event_b))
 
 # DPUndirected - The set of event pairs with an undirected soft distance
 # constraint. If (e1, e2) in DPUndirected, then (e2, e1) is also. Occurs when:
@@ -441,33 +464,54 @@ for event in Events:
 # The sets containing pairs to be considered for the S3 soft constraint
 # constraints and objective contribution
 
-DPWrittenOral = DPDirected  # will need to change this is DPDirected is changed
-DPSameCourse = (
-    set()
-)  # TODO honestly not sure how to implement this one rip. Should it be undirected?
+# DPPrimaryPrimary is the set of event tuples from examinations of which their courses
+# are found in the same primary curriculum
+# This only applies to the first examination event if there are multiple
+DPPrimaryPrimary: Set[Tuple[Event, Event]] = set()
 
-# Undirected so add both (ordered) pairs
-DPPrimaryPrimary = set()
-DPPrimarySecondary = set()
+# DPPrimaryPrimary is the set of event tuples from examinations of which
+# the first corresponding course is primary and the second corresponding
+# course is seconday
+DPPrimarySecondary: Set[Tuple[Event, Event]] = set()
+
 # Construct DPPrimaryPrimary and DPPrimarySecondary
 for c in curriculaManager.get_curricula():
     primary_courses = [
         courseManager.get_course_by_name(name) for name in c.get_primary_course_names()
     ]
+
     secondary_courses = [
         courseManager.get_course_by_name(name)
         for name in c.get_secondary_course_names()
     ]
+
     for p1 in primary_courses:
+        p1_examinations = p1.get_examinations()
+
         for p2 in primary_courses:
-            for e1 in p1.events:
-                for e2 in p2.events:
-                    DPPrimaryPrimary.add((e1, e2))
+            if p1.__eq__(p2):
+                continue
+
+            p2_examinations = p2.get_examinations()
+
+            for p1_exam in p1_examinations:
+                for p2_exam in p2_examinations:
+                    e1 = p1_exam.get_first_event()
+                    e2 = p2_exam.get_first_event()
+
+                    if (e1, e2) not in DPPrimaryPrimary:
+                        DPPrimaryPrimary.add((e1, e2))
+
         for s in secondary_courses:
-            for e1 in p1.events:
-                for e2 in s.events:
-                    DPPrimarySecondary.add((e1, e2))
-                    DPPrimarySecondary.add((e2, e1))
+            s_examinations = s.get_examinations()
+
+            for p1_exam in p1_examinations:
+                for s_exam in s_examinations:
+                    e1 = p1_exam.get_first_event()
+                    e2 = s_exam.get_first_event()
+
+                    if (e1, e2) not in DPPrimarySecondary:
+                        DPPrimarySecondary.add((e1, e2))
 
 
 # Soft constraint undesired period violation cost for event e to be assigned to
@@ -477,7 +521,7 @@ for e in Events:
     undesired_periods = [
         c.get_period()
         for c in constrManager.get_undesired_event_period_constraints()
-        if c.get_course_name() == e.course_name
+        if c.get_course_name() == e.get_course_name()
     ]
     for p in PA[e]:
         if p in undesired_periods:
@@ -549,6 +593,7 @@ H = {
 # S1
 SPS = {(e, p): m.addVar(vtype=GRB.INTEGER) for e in Events for p in Periods}
 SSS = {(e, p): m.addVar(vtype=GRB.INTEGER) for e in Events for p in Periods}
+
 # S3
 PMinE = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for (e1, e2) in DPSameCourse}
 PMinWO = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for (e1, e2) in DPWrittenOral}
@@ -558,19 +603,25 @@ PMinPS = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for (e1, e2) in DPPrimarySeconda
 
 # Variables for S3 soft constraints
 # Abs distances between assignment of e1 and e2
-D = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events}
+D_abs = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events}
+
 # Actual distances between assignments of e1 and e2
-DD = {
+D_actual = {
     (e1, e2): m.addVar(vtype=GRB.INTEGER, lb=-GRB.INFINITY)
     for e1 in Events
     for e2 in Events
 }
-# 1 if DD[e1,e2] is positive
+# 1 if D_actual[e1, e2] is positive
 G = {(e1, e2): m.addVar(vtype=GRB.BINARY) for e1 in Events for e2 in Events}
-# Abs Val of DD[e1,e2] or Zero
-DAbs1 = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events}
-# Abs value of DD[e1,e2] or Zero
-DAbs2 = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events}
+
+# Abs Val of D_actual[e1, e2] or Zero
+D_actual_abs_1 = {
+    (e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events
+}
+# Abs value of D_actual[e1, e2] or Zero
+D_actual_abs_2 = {
+    (e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events
+}
 
 # ------ Constraints ------
 
@@ -666,88 +717,122 @@ Preferences = {
 # Constraint 10 (S3): DirectedDistances
 DirectedDistances = {}
 Constraint10 = {
-    (e1, e2): m.addConstr(D[e1, e2] == H[e2] - H[e1]) for (e1, e2) in DPDirected
+    (e1, e2): m.addConstr(D_abs[e1, e2] == H[e2] - H[e1]) for (e1, e2) in DPDirected
 }
 
 # Constraint 11: (S4): UndirectedDifferences
 # Constraint 11:
 Constraint11 = {
-    (e1, e2): m.addConstr(DD[e1, e2] == H[e2] - H[e1]) for (e1, e2) in DPUndirected
+    (e1, e2): m.addConstr(D_actual[e1, e2] == H[e2] - H[e1])
+    for (e1, e2) in DPUndirected
 }
 # Constraint 12:
 Constraint12 = {
-    (e1, e2): m.addConstr(DD[e1, e2] <= len(Periods) * G[e1, e2])
+    (e1, e2): m.addConstr(D_actual[e1, e2] <= len(Periods) * G[e1, e2])
     for (e1, e2) in DPUndirected
 }
 
 Constraint13 = {
-    (e1, e2): m.addConstr(DD[e1, e2] >= -len(Periods) * (1 - G[e1, e2]))
+    (e1, e2): m.addConstr(D_actual[e1, e2] >= -len(Periods) * (1 - G[e1, e2]))
     for (e1, e2) in DPUndirected
 }
 
 Constraint14 = {
-    (e1, e2): m.addConstr(DAbs1[e1, e2] <= len(Periods) * G[e1, e2])
+    (e1, e2): m.addConstr(D_actual_abs_1[e1, e2] <= len(Periods) * G[e1, e2])
     for (e1, e2) in DPUndirected
 }
 
 Constraint15 = {
-    (e1, e2): m.addConstr(DAbs1[e1, e2] >= len(Periods) * G[e1, e2])
+    (e1, e2): m.addConstr(D_actual_abs_1[e1, e2] >= len(Periods) * G[e1, e2])
     for (e1, e2) in DPUndirected
 }
 
 Constraint16 = {
-    (e1, e2): m.addConstr(DAbs1[e1, e2] <= DD[e1, e2] + len(Periods) * (1 - G[e1, e2]))
+    (e1, e2): m.addConstr(
+        D_actual_abs_1[e1, e2] <= D_actual[e1, e2] + len(Periods) * (1 - G[e1, e2])
+    )
     for (e1, e2) in DPUndirected
 }
 
 Constraint17 = {
-    (e1, e2): m.addConstr(DAbs1[e1, e2] >= DD[e1, e2] - len(Periods) * (1 - G[e1, e2]))
+    (e1, e2): m.addConstr(
+        D_actual_abs_1[e1, e2] >= D_actual[e1, e2] - len(Periods) * (1 - G[e1, e2])
+    )
     for (e1, e2) in DPUndirected
 }
 
 Constraint18 = {
-    (e1, e2): m.addConstr(DAbs2[e1, e2] == DAbs1[e1, e2] - DD[e1, e2])
+    (e1, e2): m.addConstr(
+        D_actual_abs_2[e1, e2] == D_actual_abs_1[e1, e2] - D_actual[e1, e2]
+    )
     for (e1, e2) in DPUndirected
 }
 
 Constraint19 = {
-    (e1, e2): m.addConstr(D[e1, e2] == DAbs1[e1, e2] + DAbs2[e1, e2])
+    (e1, e2): m.addConstr(
+        D_abs[e1, e2] == D_actual_abs_1[e1, e2] + D_actual_abs_2[e1, e2]
+    )
     for (e1, e2) in DPUndirected
 }
 
-Constraint20 = {
-    (e1, e2): m.addConstr(
-        PMinE[e1, e2] + D[e1, e2] >= courseManager.get_course_min_distance(e1, e2)
-    )
-    for (e1, e2) in DPSameCourse
-}
+Constraint20 = {}
 
-Constraint21 = {
-    (e1, e2): m.addConstr(
-        PMinWO[e1, e2] + D[e1, e2] >= courseManager.get_course_min_distance(e1, e2)
-    )
-    for (e1, e2) in DPWrittenOral
-}
+for e1, e2 in DPSameCourse:
+    e1_course: Course = e1.get_course()
+    e2_course: Course = e2.get_course()
 
-Constraint22 = {
-    (e1, e2): m.addConstr(
-        D[e1, e2] - PMaxWO[e1, e2] <= courseManager.get_course_max_distance(e1, e2)
-    )
-    for (e1, e2) in DPWrittenOral
-}
+    exam_min_dist_1 = e1_course.get_min_distance_between_exams()
+    exam_min_dist_2 = e2_course.get_min_distance_between_exams()
+    exam_min_dist = max(exam_min_dist_1, exam_min_dist_2)
 
-Constraint23 = {
-    (e1, e2): m.addConstr(PMinPP[e1, e2] + D[e1, e2] >= primary_primary_distance)
-    for (e1, e2) in DPPrimaryPrimary
-}
+    Constraint20[(e1, e2)]: m.addConstr(PMinE[e1, e2] + D_abs[e1, e2] >= exam_min_dist)
 
-Constraint24 = {
-    (e1, e2): m.addConstr(
-        PMinPS[e1, e2] + D[e1, e2]
-        >= primary_primary_distance  ## TODO: primary_secondary_distance
+Constraint21 = {}
+Constraint22 = {}
+
+for written_event, oral_event in DPWrittenOral:
+    # written_event and oral_event are from the same course
+    wo_course: Course = written_event.get_course()
+    assert wo_course is not None
+    written_oral_specs = wo_course.get_written_oral_specs()
+    print(wo_course, wo_course.get_exam_type(), written_oral_specs)
+    min_distance = written_oral_specs.get_min_distance()
+    max_distance = written_oral_specs.get_max_distance()
+
+    # print("PMinE", PMinWO[written_event, oral_event])
+    # print("D_abs", D_abs[written_event, oral_event])
+
+    Constraint21[(written_event, oral_event)]: m.addConstr(
+        PMinWO[written_event, oral_event] + D_abs[written_event, oral_event]
+        >= min_distance
     )
-    for (e1, e2) in DPPrimarySecondary
-}
+    Constraint22[(written_event, oral_event)]: m.addConstr(
+        D_abs[written_event, oral_event] - PMaxWO[written_event, oral_event]
+        <= max_distance
+    )
+
+Constraint23 = {}
+for e1, e2 in DPPrimaryPrimary:
+    e1_course: Course = e1.get_course()
+    e2_course: Course = e2.get_course()
+
+    exam_min_dist_1 = e1_course.get_min_distance_between_exams()
+    exam_min_dist_2 = e2_course.get_min_distance_between_exams()
+    exam_min_dist = max(exam_min_dist_1, exam_min_dist_2)
+
+    Constraint23[(e1, e2)]: m.addConstr(PMinPP[e1, e2] + D_abs[e1, e2] >= exam_min_dist)
+
+
+Constraint24 = {}
+for e1, e2 in DPPrimarySecondary:
+    e1_course: Course = e1.get_course()
+    e2_course: Course = e2.get_course()
+
+    exam_min_dist_1 = e1_course.get_min_distance_between_exams()
+    exam_min_dist_2 = e2_course.get_min_distance_between_exams()
+    exam_min_dist = max(exam_min_dist_1, exam_min_dist_2)
+
+    Constraint24[(e1, e2)]: m.addConstr(PMinPS[e1, e2] + D_abs[e1, e2] >= exam_min_dist)
 
 # ------ Objective Function ------
 m.setObjective(
