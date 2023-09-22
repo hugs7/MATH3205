@@ -61,6 +61,14 @@ class Room:
 
         return self.room_type == SMALL
 
+    def is_medium(self) -> bool:
+        """
+        Returns true if room is medium
+        False otherwise
+        """
+
+        return self.room_type == MEDIUM
+
     def is_large(self) -> bool:
         """
         Returns true if room is large
