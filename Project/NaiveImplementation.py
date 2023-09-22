@@ -892,8 +892,8 @@ for d in Days:
     print("------" * 10 + "\nDay ", d)
     for p in Periods:
         if p.get_day() == d:
-            print(f"{' '*8}Period ", p)
+            print(f"{' '*4}Period ", p)
             for e in Events:
                 for r in Rooms:
                     if X[e, p, r].x > 0.9:
-                        print(f"{' '*15} Exam {e} in room {r}")
+                        print(f"{' '*8} Exam {e} in room {r}")
