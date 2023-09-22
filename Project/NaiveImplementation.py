@@ -32,7 +32,7 @@ from Constants import *
 previous_time = time.time()
 
 # ------ Import data ------
-data_file = os.path.join(".", "Project", "data", "toy.json")
+data_file = os.path.join(".", "Project", "data", "D1-1-16.json")
 
 with open(data_file, "r") as json_file:
     json_data = json_file.read()
@@ -199,7 +199,8 @@ RA: Dict[Event, List[Room]] = {}
 
 available_types: Dict[str, List[str]] = {}
 available_types[DUMMY] = [DUMMY]
-available_types[SMALL] = [SMALL, LARGE]
+available_types[SMALL] = [SMALL, MEDIUM, LARGE]
+available_types[MEDIUM] = [MEDIUM, LARGE]
 available_types[LARGE] = [LARGE]
 available_types[COMPOSITE] = [COMPOSITE]
 
@@ -253,8 +254,6 @@ F: Set[Tuple[Event, Event]] = set()
 
 #     F.add((examination.get_written_event(), examination.get_oral_event()))
 
-
-print(F)
 
 # dictionary mapping events e to the set of events in H3 hard conflict with e
 # HC_e in paper
@@ -683,12 +682,12 @@ HardConflicts = {
 }
 
 # Constraint 4: Some events must precede other events (hard constraint).
-# Precendences = {(e1, e2): m.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
+Precendences = {(e1, e2): m.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
 
 # Constraint 5: Some rooms, day and timeslot configurations are unavailable.
 Unavailabilities = {
     (e, p): m.addConstr(
-        len(HC[e]) * Y[e, p] + quicksum(Y[e2, p] for e2 in HC[e]) <= 1.1 * len(HC[e])
+        len(HC[e]) * Y[e, p] + quicksum(Y[e2, p] for e2 in HC[e]) <= 1.0 * len(HC[e])
     )
     for e in Events
     for p in PA[e]
@@ -702,19 +701,12 @@ setY = {
 }
 
 # Constraint 7: Set values of H_e
-# setH = {
-#     e: m.addConstr(
-#         quicksum(p.get_ordinal_value(slots_per_day) * Y[e, p] for p in PA[e]) == H[e]
-#     )
-#     for e in Events
-# }
-
-setH = {}
-for e in Events:
-    print(f"{str(e):<35}| {str([p.get_ordinal_value(slots_per_day) for p in PA[e]])}")
-    setH[e] = m.addConstr(
+setH = {
+    e: m.addConstr(
         quicksum(p.get_ordinal_value(slots_per_day) * Y[e, p] for p in PA[e]) == H[e]
     )
+    for e in Events
+}
 
 # Constraint 7a: Limit only 1 sum p of Y[e, p] to be turned on for each event
 # oneP = {e: m.addConstr(quicksum(Y[e, p] for p in Periods) == 1) for e in Events}
@@ -748,7 +740,7 @@ Preferences = {
 }
 
 # Constraint 10 (S3): DirectedDistances
-DirectedDistances = {}
+# DirectedDistances = {}
 Constraint10 = {
     (e1, e2): m.addConstr(D_abs[e1, e2] == H[e2] - H[e1]) for (e1, e2) in DPDirected
 }
@@ -776,7 +768,7 @@ Constraint14 = {
 }
 
 Constraint15 = {
-    (e1, e2): m.addConstr(D_actual_abs_1[e1, e2] >= len(Periods) * G[e1, e2])
+    (e1, e2): m.addConstr(D_actual_abs_1[e1, e2] >= -len(Periods) * G[e1, e2])
     for (e1, e2) in DPUndirected
 }
 
@@ -856,8 +848,6 @@ for e1, e2 in DPPrimarySecondary:
     e1_course: Course = e1.get_course()
     e2_course: Course = e2.get_course()
 
-    exam_min_dist = max(exam_min_dist_1, exam_min_dist_2)
-
     Constraint24[(e1, e2)]: m.addConstr(PMinPS[e1, e2] + D_abs[e1, e2] >= 1)
 
 # ------ Objective Function ------
@@ -897,7 +887,7 @@ for event in Events:
         if Y[event, period].x > 0.9:
             print(event, period, Y[event, period].x)
 
-print("Objective Value:", m.ObjVal)
+print("\n\nObjective Value:", m.ObjVal, "\n\n")
 # for p in Periods:
 #     for e in Events:
 #         for r in Rooms:
