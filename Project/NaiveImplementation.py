@@ -687,7 +687,7 @@ Precendences = {(e1, e2): m.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
 # Constraint 5: Some rooms, day and timeslot configurations are unavailable.
 Unavailabilities = {
     (e, p): m.addConstr(
-        len(HC[e]) * Y[e, p] + quicksum(Y[e2, p] for e2 in HC[e]) <= 1.0 * len(HC[e])
+        len(HC[e]) * Y[e, p] + quicksum(Y[e2, p] for e2 in HC[e]) <= len(HC[e])
     )
     for e in Events
     for p in PA[e]
@@ -897,3 +897,5 @@ for d in Days:
                 for r in Rooms:
                     if X[e, p, r].x > 0.9:
                         print(f"{' '*8} Exam {e} in room {r}")
+
+print("------" * 10)
