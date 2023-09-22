@@ -619,15 +619,15 @@ H = {e: m.addVar(vtype=GRB.INTEGER) for e in Events}
 # Soft constraint counting variables. The paper claims that all of these may be
 # relaxed to be continuous.
 # S1
-SPS = {(e, p): m.addVar(vtype=GRB.INTEGER) for e in Events for p in Periods}
-SSS = {(e, p): m.addVar(vtype=GRB.INTEGER) for e in Events for p in Periods}
+SPS = {(e, p): m.addVar(vtype=GRB.CONTINUOUS) for e in Events for p in Periods}
+SSS = {(e, p): m.addVar(vtype=GRB.CONTINUOUS) for e in Events for p in Periods}
 
 # S3
-PMinE = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for (e1, e2) in DPSameCourse}
-PMinWO = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for (e1, e2) in DPWrittenOral}
-PMaxWO = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for (e1, e2) in DPWrittenOral}
-PMinPP = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for (e1, e2) in DPPrimaryPrimary}
-PMinPS = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for (e1, e2) in DPPrimarySecondary}
+PMinE = {(e1, e2): m.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPSameCourse}
+PMinWO = {(e1, e2): m.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPWrittenOral}
+PMaxWO = {(e1, e2): m.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPWrittenOral}
+PMinPP = {(e1, e2): m.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPPrimaryPrimary}
+PMinPS = {(e1, e2): m.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPPrimarySecondary}
 
 # Variables for S3 soft constraints
 # Abs distances between assignment of e1 and e2
