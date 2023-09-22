@@ -32,7 +32,7 @@ from Constants import *
 previous_time = time.time()
 
 # ------ Import data ------
-data_file = os.path.join(".", "Project", "data", "D1-1-16.json")
+data_file = os.path.join(".", "Project", "data", "toy.json")
 
 with open(data_file, "r") as json_file:
     json_data = json_file.read()
@@ -595,9 +595,6 @@ primaryPrimaryDistance = parsed_data[PRIMARY_PRIMARY_DISTANCE]
 
 
 print(f"------\n{GUROBI}\n------")
-room_constraints = constrManager.get_room_period_constraints()
-event_constraints = constrManager.get_event_period_constraints()
-period_constraints = constrManager.get_period_constraints()
 
 # ------ Define Model ------
 
