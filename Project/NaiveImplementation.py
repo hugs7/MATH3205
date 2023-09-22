@@ -13,7 +13,7 @@ from typing import Dict, List, Set, Tuple
 from Examination import Examination
 
 # Custom Imports
-from Room import RoomManager
+from Room import RoomManager, Room
 from Constraint import (
     ConstraintManager,
     EventPeriodConstraint,
@@ -32,7 +32,7 @@ from Constants import *
 previous_time = time.time()
 
 # ------ Import data ------
-data_file = os.path.join(".", "Project", "data", "D6-3-17.json")
+data_file = os.path.join(".", "Project", "data", "toy.json")
 
 with open(data_file, "r") as json_file:
     json_data = json_file.read()
@@ -133,13 +133,26 @@ for event in Events:
 
 # Iterate through forbidden_event_period_constraints and add to the right list as required
 for event_period_constraint in constrManager.get_forbidden_event_period_constraints():
+    # Period that the EventPeriodConstraint correspondds to
+    period = event_period_constraint.get_period()
+
+    # Corresponding Course
     course_name = event_period_constraint.get_course_name()
     course = courseManager.get_course_by_name(course_name)
-    events = CourseEvents.get(course)
-    for event in events:
-        forbidden_event_period_constraints[event].append(
-            event_period_constraint.get_period()
-        )
+    course_exams = course.get_examinations()
+
+    # Loop over the exams in the course
+    for exam in course_exams:
+        # Check the exam number matches the constraint
+        if exam.get_index() != event_period_constraint.get_exam_ordinal():
+            continue
+
+        if event_period_constraint.get_part() == WRITTEN:
+            event = exam.get_written_event()
+        elif event_period_constraint.get_part() == ORAL:
+            event = exam.get_oral_event()
+
+        forbidden_event_period_constraints[event].append(period)
 
 # ----- Periods -----
 # Redefine set of periods into days and timeslots
@@ -168,7 +181,6 @@ R0 = Rooms.get_overlapping_rooms()
 
 # -- Period Availabilities (P_e in paper) --
 # Set of periods available for event e
-
 PA: Dict[Event, List[Period]] = {
     event: [
         period
@@ -179,52 +191,70 @@ PA: Dict[Event, List[Period]] = {
     for event in Events
 }
 
+
 # -- Room availabilities --
 # Dictionary mapping events to a set of rooms in which it can be held
 # R_e in paper
-RA = {}
+RA: Dict[Event, List[Room]] = {}
+
+available_types: Dict[str, List[str]] = {}
+available_types[DUMMY] = [DUMMY]
+available_types[SMALL] = [SMALL, LARGE]
+available_types[LARGE] = [LARGE]
+available_types[COMPOSITE] = [COMPOSITE]
 
 for event in Events:
     if event.get_num_rooms() == 0:
         # No room required. Set of dummy room
-        RA[event] = set(Rooms.get_dummy_room())
+        RA[event] = set([Rooms.get_dummy_room()])
     elif event.get_num_rooms() == 1:
         # Only a single room required
         # Get the set of rooms which are single and are of the right type
 
-        RA[event] = set(
-            r for r in Rooms.get_single_rooms() if r.get_type() == event.get_room_type()
-        )
+        room_set = set()
+        for r in Rooms.get_single_rooms():
+            if r.get_type() in available_types.get(r.get_type()):
+                room_set.add(r)
+
+        RA[event] = room_set
     else:
         # Composite Room required for this event
         # Get the set of rooms which are single and are of the right type
 
-        RA[event] = set(
-            r
-            for r in Rooms.get_composite_rooms()
-            if len(r.get_members())
-            == event.get_num_rooms()  # May be a >= but come back to check this later
-            and next(iter(Rooms.composite_map[r])).get_type() == event.get_room_type()
-        )
+        room_set = set()
+        for r in Rooms.get_composite_rooms():
+            adjacent_rooms: List[Room] = Rooms.composite_map[r]
+
+            if (
+                len(r.get_members()) == event.get_num_rooms()
+                and adjacent_rooms[0].get_type() == event.get_room_type()
+            ):
+                room_set.add(r)
+
+        RA[event] = room_set
 
 # The set of available room equivalence classes for event e
 # K_e in paper
 # TODO Yet to determine what this is
 KE = {}
 
-# F = the set of examination pairs with precendence constraints
+# F = the set of examination pairs with precendence constraints.
+# But actually we use the event instead
 # This occurs if they are written and oral parts of the same examination
 # and they are part of two consecutive examinations of the same course
 
-F: Set[Tuple[Examination, Examination]] = set()
-for examination in Examinations:
-    examination: Examination
-    corresponding_course: Course = examination.get_course()
+F: Set[Tuple[Event, Event]] = set()
+# for examination in Examinations:
+#     examination: Examination
+#     corresponding_course: Course = examination.get_course()
 
-    if not corresponding_course.is_written_and_oral():
-        continue
+#     if not corresponding_course.is_written_and_oral():
+#         continue
 
-    F.add((examination.get_written_event(), examination.get_oral_event()))
+#     F.add((examination.get_written_event(), examination.get_oral_event()))
+
+
+print(F)
 
 # dictionary mapping events e to the set of events in H3 hard conflict with e
 # HC_e in paper
@@ -305,6 +335,7 @@ for examination in Examinations:
         writtenEvent = examination.get_written_event()
         oralEvent = examination.get_oral_event()
 
+        F.add((writtenEvent, oralEvent))
         DPDirected.add((writtenEvent, oralEvent))
 
         # Adding to DP^{WO} here as it is convenient
@@ -330,6 +361,7 @@ for course in Courses:
             event_a = examination_a.get_first_event()
             event_b = examination_b.get_first_event()
 
+            F.add((event_a, event_b))
             DPDirected.add((event_a, event_b))
 
             #  DP^{E}
@@ -580,10 +612,7 @@ X = {
 Y = {(e, p): m.addVar(vtype=GRB.BINARY) for e in Events for p in Periods}
 
 # The ordinal (order) value of the period assigned to event e
-H = {
-    e: m.addVar(vtype=GRB.INTEGER, ub=Periods[-1].get_ordinal_value(slots_per_day))
-    for e in Events
-}
+H = {e: m.addVar(vtype=GRB.INTEGER) for e in Events}
 
 # Soft constraint counting variables. The paper claims that all of these may be
 # relaxed to be continuous.
@@ -624,7 +653,7 @@ D_actual_abs_2 = {
 
 # Constraint 1: Each event assigned to an available period and room.
 RoomRequest = {
-    e: m.addConstr(quicksum(X[e, p, r] for p in Periods for r in Rooms) == 1)
+    e: m.addConstr(quicksum(X[e, p, r] for p in Periods for r in RA[e]) == 1)
     for e in Events
 }
 
@@ -645,21 +674,21 @@ RoomOccupation = {
 
 HardConflicts = {
     (cr, p): m.addConstr(
-        len(R0[cr]) * quicksum(X[e, p, cr] for e in Events)
+        (len(R0[cr])) * quicksum(X[e, p, cr] for e in Events)
         + quicksum(X[e, p, ro] for e in Events for ro in R0[cr])
-        <= len(R0[cr])
+        <= (len(R0[cr]))
     )
     for cr in CompositeRooms
     for p in Periods
 }
 
 # Constraint 4: Some events must precede other events (hard constraint).
-Precendences = {(e1, e2): m.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
+# Precendences = {(e1, e2): m.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
 
 # Constraint 5: Some rooms, day and timeslot configurations are unavailable.
 Unavailabilities = {
     (e, p): m.addConstr(
-        len(HC[e]) * Y[e, p] + quicksum(Y[e2, p] for e2 in HC[e]) <= len(HC[e])
+        len(HC[e]) * Y[e, p] + quicksum(Y[e2, p] for e2 in HC[e]) <= 1.1 * len(HC[e])
     )
     for e in Events
     for p in PA[e]
@@ -673,12 +702,19 @@ setY = {
 }
 
 # Constraint 7: Set values of H_e
-setH = {
-    e: m.addConstr(
+# setH = {
+#     e: m.addConstr(
+#         quicksum(p.get_ordinal_value(slots_per_day) * Y[e, p] for p in PA[e]) == H[e]
+#     )
+#     for e in Events
+# }
+
+setH = {}
+for e in Events:
+    print(f"{str(e):<35}| {str([p.get_ordinal_value(slots_per_day) for p in PA[e]])}")
+    setH[e] = m.addConstr(
         quicksum(p.get_ordinal_value(slots_per_day) * Y[e, p] for p in PA[e]) == H[e]
     )
-    for e in Events
-}
 
 # Constraint 7a: Limit only 1 sum p of Y[e, p] to be turned on for each event
 # oneP = {e: m.addConstr(quicksum(Y[e, p] for p in Periods) == 1) for e in Events}
@@ -718,11 +754,11 @@ Constraint10 = {
 }
 
 # Constraint 11: (S4): UndirectedDifferences
-# Constraint 11:
 Constraint11 = {
     (e1, e2): m.addConstr(D_actual[e1, e2] == H[e2] - H[e1])
     for (e1, e2) in DPUndirected
 }
+
 # Constraint 12:
 Constraint12 = {
     (e1, e2): m.addConstr(D_actual[e1, e2] <= len(Periods) * G[e1, e2])
@@ -811,23 +847,18 @@ for e1, e2 in DPPrimaryPrimary:
     e1_course: Course = e1.get_course()
     e2_course: Course = e2.get_course()
 
-    exam_min_dist_1 = e1_course.get_min_distance_between_exams()
-    exam_min_dist_2 = e2_course.get_min_distance_between_exams()
-    exam_min_dist = max(exam_min_dist_1, exam_min_dist_2)
-
-    Constraint23[(e1, e2)]: m.addConstr(PMinPP[e1, e2] + D_abs[e1, e2] >= exam_min_dist)
-
+    Constraint23[(e1, e2)]: m.addConstr(
+        PMinPP[e1, e2] + D_abs[e1, e2] >= primary_primary_distance
+    )
 
 Constraint24 = {}
 for e1, e2 in DPPrimarySecondary:
     e1_course: Course = e1.get_course()
     e2_course: Course = e2.get_course()
 
-    exam_min_dist_1 = e1_course.get_min_distance_between_exams()
-    exam_min_dist_2 = e2_course.get_min_distance_between_exams()
     exam_min_dist = max(exam_min_dist_1, exam_min_dist_2)
 
-    Constraint24[(e1, e2)]: m.addConstr(PMinPS[e1, e2] + D_abs[e1, e2] >= exam_min_dist)
+    Constraint24[(e1, e2)]: m.addConstr(PMinPS[e1, e2] + D_abs[e1, e2] >= 1)
 
 # ------ Objective Function ------
 m.setObjective(
@@ -861,6 +892,11 @@ previous_time = time.time()
 
 # ------ Print output ------
 
+for event in Events:
+    for period in Periods:
+        if Y[event, period].x > 0.9:
+            print(event, period, Y[event, period].x)
+
 print("Objective Value:", m.ObjVal)
 # for p in Periods:
 #     for e in Events:
@@ -871,12 +907,12 @@ print("Objective Value:", m.ObjVal)
 #                 print(f"    Exam {e} in room {r}")
 #                 print()
 
-# for d in Days:
-#     print("Day ", d)
-#     for p in Periods:
-#         if p.get_day() == d:
-#             print("  Period ", p)
-#             for e in Events:
-#                 for r in Rooms:
-#                     if X[e, p, r].x > 0.9:
-#                         print(f"    Exam {e} in room {r}")
+for d in Days:
+    print("Day ", d)
+    for p in Periods:
+        if p.get_day() == d:
+            print("  Period ", p)
+            for e in Events:
+                for r in Rooms:
+                    if X[e, p, r].x > 0.9:
+                        print(f"    Exam {e} in room {r}")
