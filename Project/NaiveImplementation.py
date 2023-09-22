@@ -158,6 +158,8 @@ for event_period_constraint in constrManager.get_forbidden_event_period_constrai
 # Redefine set of periods into days and timeslots
 # Calculate number of days in exam period
 NumDays = parsed_data[PERIODS] // slots_per_day
+print("NumDays", NumDays)
+print("Slots per day", slots_per_day)
 
 # Set of days
 Days = list(range(NumDays))
@@ -166,7 +168,9 @@ Days = list(range(NumDays))
 Timeslots = list(range(slots_per_day))
 
 # Set of periods each day
-Periods = [Period(day, timeslot) for day in Days for timeslot in Timeslots]
+Periods = [
+    Period(day, timeslot, slots_per_day) for day in Days for timeslot in Timeslots
+]
 
 # Set of composite rooms (R^C) in paper)
 CompositeRooms = Rooms.get_composite_rooms()
@@ -702,9 +706,7 @@ setY = {
 
 # Constraint 7: Set values of H_e
 setH = {
-    e: m.addConstr(
-        quicksum(p.get_ordinal_value(slots_per_day) * Y[e, p] for p in PA[e]) == H[e]
-    )
+    e: m.addConstr(quicksum(p.get_ordinal_value() * Y[e, p] for p in PA[e]) == H[e])
     for e in Events
 }
 
@@ -868,7 +870,9 @@ m.setObjective(
     * quicksum(PMinWO[e1, e2] + PMaxWO[e1, e2] for (e1, e2) in DPWrittenOral)
     # are we double counting UD_PRIMARY_PRIMARY constraints?
     + UD_PRIMARY_PRIMARY * quicksum(PMinPP[e1, e2] for (e1, e2) in DPPrimaryPrimary)
-    + UD_PRIMARY_SECONDARY * quicksum(PMinPS[e1, e2] for (e1, e2) in DPPrimarySecondary)
+    + UD_PRIMARY_SECONDARY
+    * quicksum(PMinPS[e1, e2] for (e1, e2) in DPPrimarySecondary),
+    GRB.MINIMIZE,
 )
 
 
