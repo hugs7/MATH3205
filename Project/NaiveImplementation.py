@@ -740,7 +740,6 @@ Preferences = {
 }
 
 # Constraint 10 (S3): DirectedDistances
-# DirectedDistances = {}
 Constraint10 = {
     (e1, e2): m.addConstr(D_abs[e1, e2] == H[e2] - H[e1]) for (e1, e2) in DPDirected
 }
@@ -888,21 +887,13 @@ for event in Events:
             print(event, period, Y[event, period].x)
 
 print("\n\nObjective Value:", m.ObjVal, "\n\n")
-# for p in Periods:
-#     for e in Events:
-#         for r in Rooms:
-#             if X[e, p, r].x > 0.9:
-#                 print(f"Day {p.get_day()}")
-#                 print(f"  Timeslot {p.get_timeslot()}")
-#                 print(f"    Exam {e} in room {r}")
-#                 print()
 
 for d in Days:
-    print("Day ", d)
+    print("------" * 10 + "\nDay ", d)
     for p in Periods:
         if p.get_day() == d:
-            print("  Period ", p)
+            print(f"{' '*8}Period ", p)
             for e in Events:
                 for r in Rooms:
                     if X[e, p, r].x > 0.9:
-                        print(f"    Exam {e} in room {r}")
+                        print(f"{' '*15} Exam {e} in room {r}")
