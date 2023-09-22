@@ -71,6 +71,7 @@ class Period:
         """
         Hash function for Period objects.
         """
+
         return hash((self.day, self.timeslot))
 
     def get_ordinal_value(self, slots_per_day: int) -> int:
@@ -90,7 +91,7 @@ class Period:
         Returns:
             Period: The Period object corresponding to the period number.
         """
-        day = (period_number - 1) // slots_per_day
-        timeslot = (period_number - 1) % slots_per_day
+        day = period_number // slots_per_day
+        timeslot = period_number % slots_per_day
 
         return Period(day, timeslot)
