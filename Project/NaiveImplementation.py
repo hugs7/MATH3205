@@ -158,8 +158,6 @@ for event_period_constraint in constrManager.get_forbidden_event_period_constrai
 # Redefine set of periods into days and timeslots
 # Calculate number of days in exam period
 NumDays = parsed_data[PERIODS] // slots_per_day
-print("NumDays", NumDays)
-print("Slots per day", slots_per_day)
 
 # Set of days
 Days = list(range(NumDays))
@@ -185,16 +183,19 @@ R0 = Rooms.get_overlapping_rooms()
 
 # -- Period Availabilities (P_e in paper) --
 # Set of periods available for event e
-PA: Dict[Event, List[Period]] = {
-    event: [
-        period
-        for period in Periods
-        if period not in forbidden_period_constraints
-        and period not in forbidden_event_period_constraints[event]
-    ]
-    for event in Events
-}
+PA: Dict[Event, List[Period]] = {}
+for event in Events:
+    PA[event] = []
 
+    for period in Periods:
+        if period in forbidden_period_constraints:
+            continue
+
+        if period in forbidden_event_period_constraints[event]:
+            print("Skipping 2")
+            continue
+
+        PA[event].append(period)
 
 # -- Room availabilities --
 # Dictionary mapping events to a set of rooms in which it can be held
@@ -611,6 +612,7 @@ X = {
     for r in Rooms
 }
 
+
 # Y = 1 if event e is assigned to day d and timeslot t, 0 else (auxiliary variable)
 Y = {(e, p): m.addVar(vtype=GRB.BINARY) for e in Events for p in Periods}
 
@@ -656,7 +658,7 @@ D_actual_abs_2 = {
 
 # Constraint 1: Each event assigned to an available period and room.
 RoomRequest = {
-    e: m.addConstr(quicksum(X[e, p, r] for p in Periods for r in RA[e]) == 1)
+    e: m.addConstr(quicksum(X[e, p, r] for p in PA[e] for r in RA[e]) == 1)
     for e in Events
 }
 
@@ -689,12 +691,29 @@ HardConflicts = {
 Precendences = {(e1, e2): m.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
 
 # Constraint 5: Some rooms, day and timeslot configurations are unavailable.
-Unavailabilities = {
-    (e, p): m.addConstr(
-        len(HC[e]) * Y[e, p] + quicksum(Y[e2, p] for e2 in HC[e]) <= len(HC[e])
-    )
+# Unavailabilities = {
+#     (e, p): m.addConstr(
+#         len(HC[e]) * Y[e, p] + quicksum(Y[e2, p] for e2 in HC[e]) <= len(HC[e])
+#     )
+#     for e in Events
+#     for p in PA[e]
+# }
+
+# Prevent events scheduled when they aren't allowed. Alternative to constraint 5 atm
+# seems to give much more correct objective value from testing so far.
+
+PeriodScheduling = {
+    (e, p, r): m.addConstr(quicksum(X[e, p, r] for r in Rooms) == 0)
     for e in Events
-    for p in PA[e]
+    for p in Periods
+    if p not in PA[e]
+}
+
+RoomScheduling = {
+    (e, p, r): m.addConstr(quicksum(X[e, p, r] for p in Periods) == 0)
+    for e in Events
+    for r in Rooms
+    if r not in RA[e]
 }
 
 # Constraint 6: Set values of Y_(e,p)
@@ -711,7 +730,7 @@ setH = {
 }
 
 # Constraint 7a: Limit only 1 sum p of Y[e, p] to be turned on for each event
-# oneP = {e: m.addConstr(quicksum(Y[e, p] for p in Periods) == 1) for e in Events}
+oneP = {e: m.addConstr(quicksum(Y[e, p] for p in Periods) == 1) for e in Events}
 # for p in PA[e]
 # oneP = {e: m.addConstr(quicksum(Y[e, p] for p in PA[e]) == 1) for e in Events}
 
@@ -849,7 +868,9 @@ for e1, e2 in DPPrimarySecondary:
     e1_course: Course = e1.get_course()
     e2_course: Course = e2.get_course()
 
-    Constraint24[(e1, e2)]: m.addConstr(PMinPS[e1, e2] + D_abs[e1, e2] >= 1)
+    Constraint24[(e1, e2)]: m.addConstr(
+        PMinPS[e1, e2] + D_abs[e1, e2] >= primary_primary_distance
+    )
 
 # ------ Objective Function ------
 m.setObjective(
@@ -885,10 +906,10 @@ previous_time = time.time()
 
 # ------ Print output ------
 
-for event in Events:
-    for period in Periods:
-        if Y[event, period].x > 0.9:
-            print(event, period, Y[event, period].x)
+# for event in Events:
+#     for period in Periods:
+#         if Y[event, period].x > 0.9:
+#             print(event, period, Y[event, period].x)
 
 print("\n\nObjective Value:", m.ObjVal, "\n\n")
 
