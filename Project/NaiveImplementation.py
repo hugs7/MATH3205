@@ -218,7 +218,7 @@ for event in Events:
 
         room_set = set()
         for r in Rooms.get_single_rooms():
-            if r.get_type() in available_types.get(r.get_type()):
+            if r.get_type() in available_types.get(event.get_room_type()):
                 room_set.add(r)
 
         RA[event] = room_set
