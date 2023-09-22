@@ -96,7 +96,7 @@ class RoomPeriodConstraint(Constraint):
         """
         Get the 'Part' attribute.
         Returns:
-            str: The 'Part' value or None if it doesn't exist.
+            str The 'Part' value. This is like the event the constraint refers to
         """
         return self.part
 
@@ -110,6 +110,8 @@ class EventPeriodConstraint(Constraint):
             constraint_data.get("Period"), slots_per_day
         )
         self.exam_ordinal = constraint_data.get(EXAM)
+
+        self.part = constraint_data.get(PART)
 
     def get_course_name(self) -> str:
         """
@@ -145,7 +147,7 @@ class EventPeriodConstraint(Constraint):
         """
         Get the 'Part' attribute.
         Returns:
-            Optional[str]: The 'Part' value or None if it doesn't exist.
+            str The 'Part' value. This is like the event the constraint refers to.
         """
         return self.part
 
@@ -188,7 +190,7 @@ class EventRoomConstraint(Constraint):
         """
         Get the 'Part' attribute.
         Returns:
-            str The 'Part' value
+            str The 'Part' value. This is like the event the constraint refers to
         """
         return self.part
 
