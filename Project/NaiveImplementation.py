@@ -867,9 +867,7 @@ for e1, e2 in DPPrimarySecondary:
     e1_course: Course = e1.get_course()
     e2_course: Course = e2.get_course()
 
-    Constraint24[(e1, e2)]: m.addConstr(
-        PMinPS[e1, e2] + D_abs[e1, e2] >= primary_primary_distance
-    )
+    Constraint24[(e1, e2)]: m.addConstr(PMinPS[e1, e2] + D_abs[e1, e2] >= 1)
 
 # ------ Objective Function ------
 m.setObjective(
