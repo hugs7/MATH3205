@@ -11,17 +11,11 @@ import json  # For importing the data as JSON format
 import os
 from typing import Dict, List, Set, Tuple
 from Examination import Examination
+from SolutionExport import Solution
 
 # Custom Imports
 from Room import RoomManager, Room
-from Constraint import (
-    ConstraintManager,
-    EventPeriodConstraint,
-    PeriodConstraint,
-    EventRoomConstraint,
-    RoomPeriodConstraint,
-    Constraint,
-)
+from Constraint import ConstraintManager, EventRoomConstraint
 from Course import CourseManager, Course
 from Event import Event
 from Curriculum import CurriculaManager
@@ -31,7 +25,8 @@ import Constants as const
 previous_time = time.time()
 
 # ------ Import data ------
-data_file = os.path.join(".", "Project", "data", "toy.json")
+instance_name = "toy.json"
+data_file = os.path.join(".", "Project", "data", instance_name)
 
 with open(data_file, "r") as json_file:
     json_data = json_file.read()
@@ -890,9 +885,9 @@ m.setObjective(
     * quicksum(PMinWO[e1, e2] + PMaxWO[e1, e2] for (e1, e2) in DPWrittenOral)
     + const.UD_PRIMARY_PRIMARY
     / 2  # divided by 2 because both undirected pairs exist
-    * quicksum(PMinPP[e1, e2] for (e1, e2) in DPPrimaryPrimary)
-    + const.UD_PRIMARY_SECONDARY
-    * quicksum(PMinPS[e1, e2] for (e1, e2) in DPPrimarySecondary),
+    * quicksum(PMinPP[e1, e2] for (e1, e2) in DPPrimaryPrimary),
+    # + const.UD_PRIMARY_SECONDARY
+    # * quicksum(PMinPS[e1, e2] for (e1, e2) in DPPrimarySecondary),
     GRB.MINIMIZE,
 )
 
@@ -913,6 +908,9 @@ previous_time = time.time()
 
 print("\n\nObjective Value:", m.ObjVal, "\n\n")
 
+# Solution class generates json to export
+sol = Solution(instance_name[:-5], m.objval)
+
 for d in Days:
     print("------" * 10 + "\nDay ", d)
     for p in Periods:
@@ -921,6 +919,14 @@ for d in Days:
             for e in Events:
                 for r in Rooms:
                     if X[e, p, r].x > 0.9:
+                        sol.add_event(
+                            e.get_course_name(),
+                            e.get_examination().get_index(),
+                            e.get_event_type(),
+                            p.get_ordinal_value(),
+                            r.get_room(),
+                        )
                         print(f"{' '*4} Period {p}: exam {e} in in room {r}")
 
 print("------" * 10)
+sol.export()

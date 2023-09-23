@@ -4,7 +4,7 @@ Each examination has events within it that are like it's components.
 Any exam has components WRITTEN, ORAL or WRITTEN_AND_ORAL
 """
 
-from Constants import *
+import Constants as const
 from Event import Event
 from typing import List, ForwardRef
 
@@ -27,11 +27,11 @@ class Examination:
         self.index = index
 
         if self.course.is_oral():
-            self.exam_type = ORAL
+            self.exam_type = const.ORAL
         elif self.course.is_written():
-            self.exam_type = WRITTEN
+            self.exam_type = const.WRITTEN
         elif self.course.is_written_and_oral():
-            self.exam_type = WRITTEN_AND_ORAL
+            self.exam_type = const.WRITTEN_AND_ORAL
 
         # Initialise the events list
         self.events: List[Event] = []
@@ -91,9 +91,9 @@ class Examination:
         This is equivalent to returning the first examination event
         """
 
-        if self.exam_type == WRITTEN or self.exam_type == WRITTEN_AND_ORAL:
+        if self.exam_type == const.WRITTEN or self.exam_type == const.WRITTEN_AND_ORAL:
             return self.written_event
-        elif self.exam_type == ORAL:
+        elif self.exam_type == const.ORAL:
             return self.oral_event
         else:
             raise Exception("Event not Found Error")
@@ -105,22 +105,22 @@ class Examination:
 
         # Consider the cases for WRITTEN OR ORAL separately from WRITTEN_AND_ORAL
 
-        if self.exam_type == WRITTEN:
+        if self.exam_type == const.WRITTEN:
             written_event = Event(self, self.exam_type)
             self.events.append(written_event)
             self.written_event = written_event
 
-        elif self.exam_type == ORAL:
+        elif self.exam_type == const.ORAL:
             oral_event = Event(self, self.exam_type)
             self.events.append(oral_event)
             self.oral_event = oral_event
 
-        elif self.exam_type == WRITTEN_AND_ORAL:
-            written_event = Event(self, WRITTEN)
+        elif self.exam_type == const.WRITTEN_AND_ORAL:
+            written_event = Event(self, const.WRITTEN)
             self.events.append(written_event)
             self.written_event = written_event
 
-            oral_event = Event(self, ORAL)
+            oral_event = Event(self, const.ORAL)
             self.events.append(oral_event)
             self.oral_event = oral_event
 
@@ -131,7 +131,7 @@ class Examination:
         Else return None.
         """
 
-        if self.exam_type == WRITTEN_AND_ORAL:
+        if self.exam_type == const.WRITTEN_AND_ORAL:
             return self.course.get_written_oral_specs().get_max_distance()
 
         return None
@@ -143,7 +143,7 @@ class Examination:
         Else return None.
         """
 
-        if self.exam_type == WRITTEN_AND_ORAL:
+        if self.exam_type == const.WRITTEN_AND_ORAL:
             return self.course.get_written_oral_specs().get_min_distance()
 
         return None
@@ -155,7 +155,7 @@ class Examination:
         Else return None.
         """
 
-        if self.exam_type == WRITTEN_AND_ORAL:
+        if self.exam_type == const.WRITTEN_AND_ORAL:
             return self.course.get_written_oral_specs().get_room_for_oral()
 
         return None
@@ -167,7 +167,7 @@ class Examination:
         Else return None.
         """
 
-        if self.exam_type == WRITTEN_AND_ORAL:
+        if self.exam_type == const.WRITTEN_AND_ORAL:
             return self.course.get_written_oral_specs().same_day()
 
         return None
