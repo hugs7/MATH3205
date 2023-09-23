@@ -319,7 +319,6 @@ DPDirected: Set[Tuple[Event, Event]] = set()
 # Setting this here as the loop is present and is convenient.
 DPSameCourse: Set[Tuple[Event, Event]] = set()
 
-
 # DP^{WO}
 # WO Event Parts of the same examination
 # Setting this here as the loop is present and is convenient.
@@ -889,8 +888,8 @@ m.setObjective(
     + const.DD_SAME_COURSE * quicksum(PMinE[e1, e2] for (e1, e2) in DPSameCourse)
     + const.DD_SAME_EXAMINATION
     * quicksum(PMinWO[e1, e2] + PMaxWO[e1, e2] for (e1, e2) in DPWrittenOral)
-    # are we double counting UD_PRIMARY_PRIMARY constraints?
     + const.UD_PRIMARY_PRIMARY
+    / 2  # divided by 2 because both undirected pairs exist
     * quicksum(PMinPP[e1, e2] for (e1, e2) in DPPrimaryPrimary)
     + const.UD_PRIMARY_SECONDARY
     * quicksum(PMinPS[e1, e2] for (e1, e2) in DPPrimarySecondary),
