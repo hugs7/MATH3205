@@ -70,6 +70,8 @@ for examRoom in examRooms:
 # Cannot add any more rooms after this
 Rooms.construct_composite_map()
 
+dummy_room = Rooms.get_dummy_room()
+
 room_constraints = constrManager.get_room_period_constraints()
 
 # Event period Constraints
@@ -211,7 +213,7 @@ available_types[const.COMPOSITE] = [const.COMPOSITE]
 for event in Events:
     if event.get_num_rooms() == 0:
         # No room required. Set of dummy room
-        RA[event] = set([Rooms.get_dummy_room()])
+        RA[event] = {dummy_room}
     elif event.get_num_rooms() == 1:
         # Only a single room required
         # Get the set of rooms which are single and are of the right type
@@ -663,6 +665,7 @@ RoomRequest = {
 RoomOccupation = {
     (r, p): m.addConstr(quicksum(X[e, p, r] for e in Events) <= 1)
     for r in Rooms
+    if r is not dummy_room
     for p in Periods
 }
 
@@ -709,7 +712,7 @@ PeriodScheduling = {
 RoomScheduling = {
     (e, p, r): m.addConstr(quicksum(X[e, p, r] for p in Periods) == 0)
     for e in Events
-    for r in Rooms # should be without dummy
+    for r in Rooms  # should be without dummy
     if r not in RA[e]
 }
 

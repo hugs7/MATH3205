@@ -2,20 +2,20 @@
 Class for handing rooms in the problem
 """
 
-from Constants import *
+import Constants as const
 from typing import Iterator, Dict, List
 
 
 class Room:
     def __init__(self, room_data=None) -> None:
         if room_data is None:
-            self.room = DUMMY
-            self.room_type = DUMMY
+            self.room = const.DUMMY
+            self.room_type = const.DUMMY
             self.members = []
         else:
-            self.room = room_data.get(ROOM)
-            self.room_type = room_data.get(TYPE)
-            self.members = room_data.get(MEMBERS, [])
+            self.room = room_data.get(const.ROOM)
+            self.room_type = room_data.get(const.TYPE)
+            self.members = room_data.get(const.MEMBERS, [])
 
     def __repr__(self) -> str:
         return f"{self.room} ({self.room_type})"
@@ -51,7 +51,7 @@ class Room:
         False otherwise
         """
 
-        return self.room_type == COMPOSITE
+        return self.room_type == const.COMPOSITE
 
     def is_small(self) -> bool:
         """
@@ -59,7 +59,7 @@ class Room:
         False otherwise
         """
 
-        return self.room_type == SMALL
+        return self.room_type == const.SMALL
 
     def is_medium(self) -> bool:
         """
@@ -67,7 +67,7 @@ class Room:
         False otherwise
         """
 
-        return self.room_type == MEDIUM
+        return self.room_type == const.MEDIUM
 
     def is_large(self) -> bool:
         """
@@ -75,7 +75,7 @@ class Room:
         False otherwise
         """
 
-        return self.room_type == LARGE
+        return self.room_type == const.LARGE
 
 
 class RoomManager:
@@ -105,7 +105,7 @@ class RoomManager:
 
         assert not self.constructed
         # Check if room already exists
-        existing_room = self.get_room_by_name(room_data.get(ROOM))
+        existing_room = self.get_room_by_name(room_data.get(const.ROOM))
         if existing_room is not None:
             raise ValueError("Room already exists")
 
@@ -136,7 +136,7 @@ class RoomManager:
         Gets list of composite rooms stored by the RoomManager
         """
 
-        return [r for r in self.rooms if r.get_type() == COMPOSITE]
+        return [r for r in self.rooms if r.get_type() == const.COMPOSITE]
 
     def get_single_rooms(self) -> list[Room]:
         """
@@ -144,7 +144,9 @@ class RoomManager:
         """
 
         return [
-            r for r in self.rooms if r.get_type() != COMPOSITE and r.get_type() != DUMMY
+            r
+            for r in self.rooms
+            if r.get_type() != const.COMPOSITE and r.get_type() != const.DUMMY
         ]
 
     def get_dummy_room(self) -> Room:
@@ -153,7 +155,7 @@ class RoomManager:
         """
 
         for r in self.rooms:
-            if r.get_type() == DUMMY:
+            if r.get_type() == const.DUMMY:
                 return r
         raise Exception("No dummy room big sad")
 
