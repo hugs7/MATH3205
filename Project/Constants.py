@@ -49,7 +49,6 @@ PRIMARY_PRIMARY_DISTANCE = "PrimaryPrimaryDistance"
 PRIMARY_SSECONDARY_DISTANCE = "PrimarySecondaryDistance"
 
 # --- Rooms ---
-
 ROOM = "Room"
 COMPOSITE = "Composite"
 LARGE = "Large"
@@ -61,6 +60,18 @@ MEMBERS = "Members"
 # Rooms Requested
 NUMBER = "Number"
 TYPE = "Type"
+
+
+# --- Constraints ---
+ROOM_PERIOD_CONSTRAINT = "RoomPeriodConstraint"
+EVENT_PERIOD_CONSTRAINT = "EventPeriodConstraint"
+EVENT_ROOM_CONSTRAINT = "EventRoomConstraint"
+PERIOD_CONSTRAINT = "PeriodConstraint"
+
+FORBIDDEN = "Forbidden"
+UNDESIRED = "Undesired"
+
+
 # ------ Weights of Soft Constraints ------
 # S1 soft conflicts
 SC_PRIMARY_SECONDARY = 5

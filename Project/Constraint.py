@@ -5,23 +5,14 @@ Class for handing constraints (hard and soft) in the problem
 from abc import ABC
 from typing import List, Optional, Set
 from Period import Period
-from Constants import *
-
-
-ROOM_PERIOD_CONSTRAINT = "RoomPeriodConstraint"
-EVENT_PERIOD_CONSTRAINT = "EventPeriodConstraint"
-EVENT_ROOM_CONSTRAINT = "EventRoomConstraint"
-PERIOD_CONSTRAINT = "PeriodConstraint"
-
-FORBIDDEN = "Forbidden"
-UNDESIRED = "Undesired"
+import Constants as const
 
 
 class Constraint(ABC):
     def __init__(self, constraint_data, slots_per_day: int):
-        self.level = constraint_data.get(LEVEL)
+        self.level = constraint_data.get(const.LEVEL)
 
-        self.constr_type = constraint_data.get(TYPE)
+        self.constr_type = constraint_data.get(const.TYPE)
 
     # Getter method for 'Level' attribute
     def get_level(self) -> str:
@@ -42,33 +33,33 @@ class Constraint(ABC):
         return self.constr_type
 
     def is_room_constraint(self) -> bool:
-        return self.constr_type == ROOM_PERIOD_CONSTRAINT
+        return self.constr_type == const.ROOM_PERIOD_CONSTRAINT
 
     def is_event_room_constraint(self) -> bool:
-        return self.constr_type == EVENT_ROOM_CONSTRAINT
+        return self.constr_type == const.EVENT_ROOM_CONSTRAINT
 
     def is_event_period_constraint(self) -> bool:
-        return self.constr_type == EVENT_PERIOD_CONSTRAINT
+        return self.constr_type == const.EVENT_PERIOD_CONSTRAINT
 
     def is_period_constraint(self) -> bool:
-        return self.constr_type == PERIOD_CONSTRAINT
+        return self.constr_type == const.PERIOD_CONSTRAINT
 
     def is_forbidden(self) -> bool:
-        return self.level == FORBIDDEN
+        return self.level == const.FORBIDDEN
 
     def is_undesired(self) -> bool:
-        return self.level == UNDESIRED
+        return self.level == const.UNDESIRED
 
 
 class RoomPeriodConstraint(Constraint):
     def __init__(self, constraint_data, slots_per_day: int):
         super().__init__(constraint_data, slots_per_day)
 
-        self.room = constraint_data.get(ROOM)
+        self.room = constraint_data.get(const.ROOM)
         self.period: Period = Period.from_period_number(
-            constraint_data.get(PERIOD), slots_per_day
+            constraint_data.get(const.PERIOD), slots_per_day
         )
-        self.part = constraint_data.get(PART)
+        self.part = constraint_data.get(const.PART)
 
     def __repr__(self):
         return f"Forbidden Room {self.room} at Period {self.period}"
@@ -105,13 +96,13 @@ class EventPeriodConstraint(Constraint):
     def __init__(self, constraint_data, slots_per_day: int):
         super().__init__(constraint_data, slots_per_day)
 
-        self.course_name = constraint_data.get(COURSE)
+        self.course_name = constraint_data.get(const.COURSE)
         self.period: Period = Period.from_period_number(
             constraint_data.get("Period"), slots_per_day
         )
-        self.exam_ordinal = constraint_data.get(EXAM)
+        self.exam_ordinal = constraint_data.get(const.EXAM)
 
-        self.part = constraint_data.get(PART)
+        self.part = constraint_data.get(const.PART)
 
     def get_course_name(self) -> str:
         """
@@ -156,9 +147,9 @@ class EventRoomConstraint(Constraint):
     def __init__(self, constraint_data, slots_per_day: int):
         super().__init__(constraint_data, slots_per_day)
 
-        self.course_name = constraint_data.get(COURSE)
-        self.room = constraint_data.get(ROOM)
-        self.part = constraint_data.get(PART)
+        self.course_name = constraint_data.get(const.COURSE)
+        self.room = constraint_data.get(const.ROOM)
+        self.part = constraint_data.get(const.PART)
 
     def get_course_name(self) -> str:
         """
@@ -200,7 +191,7 @@ class PeriodConstraint(Constraint):
         super().__init__(constraint_data, slots_per_day)
 
         self.period: Period = Period.from_period_number(
-            constraint_data.get(PERIOD), slots_per_day
+            constraint_data.get(const.PERIOD), slots_per_day
         )
 
     def __repr__(self):
@@ -222,15 +213,15 @@ class ConstraintManager:
         self.slots_per_day = slots_per_day
 
     def add_constraint(self, constraint_data) -> Constraint:
-        constraint_type = constraint_data.get(TYPE)
+        constraint_type = constraint_data.get(const.TYPE)
         if constraint_type is None:
             raise ValueError("Constraint type is missing in constraint_data")
 
         constraint_constructors = {
-            ROOM_PERIOD_CONSTRAINT: RoomPeriodConstraint,
-            EVENT_PERIOD_CONSTRAINT: EventPeriodConstraint,
-            EVENT_ROOM_CONSTRAINT: EventRoomConstraint,
-            PERIOD_CONSTRAINT: PeriodConstraint,
+            const.ROOM_PERIOD_CONSTRAINT: RoomPeriodConstraint,
+            const.EVENT_PERIOD_CONSTRAINT: EventPeriodConstraint,
+            const.EVENT_ROOM_CONSTRAINT: EventRoomConstraint,
+            const.PERIOD_CONSTRAINT: PeriodConstraint,
         }
 
         constraint_class = constraint_constructors.get(constraint_type)

@@ -66,7 +66,7 @@ class Period:
     def __repr__(self) -> str:
         """Repr method for period"""
 
-        return f"{self.get_ordinal_value()} ({self.day}, {self.timeslot})"
+        return f"{self.get_ordinal_value()} (day {self.day}, timeslot {self.timeslot})"
 
     def __hash__(self) -> int:
         """

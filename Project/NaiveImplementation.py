@@ -191,7 +191,7 @@ for event in Events:
             continue
 
         if period in forbidden_event_period_constraints[event]:
-            print("Skipping 2")
+            print("Skipping period", period, "for event", event)
             continue
 
         PA[event].append(period)
@@ -549,6 +549,7 @@ for c in curriculaManager.get_curricula():
 # Soft constraint undesired period violation cost for event e to be assigned to
 # period p
 UndesiredPeriodCost = {}
+undesired_periods = set(p.get_period() for p in period_constraints if p.is_undesired())
 for e in Events:
     undesired_periods = [
         c.get_period()
@@ -556,7 +557,7 @@ for e in Events:
         if c.get_course_name() == e.get_course_name()
     ]
     for p in PA[e]:
-        if p in undesired_periods:
+        if p in undesired_periods or p in undesired_periods:
             UndesiredPeriodCost[e, p] = const.P_UNDESIRED_PERIOD
         else:
             UndesiredPeriodCost[e, p] = 0
@@ -708,7 +709,7 @@ PeriodScheduling = {
 RoomScheduling = {
     (e, p, r): m.addConstr(quicksum(X[e, p, r] for p in Periods) == 0)
     for e in Events
-    for r in Rooms
+    for r in Rooms # should be without dummy
     if r not in RA[e]
 }
 
@@ -914,10 +915,10 @@ for d in Days:
     print("------" * 10 + "\nDay ", d)
     for p in Periods:
         if p.get_day() == d:
-            print(f"{' '*4}Period ", p)
+            # print(f"{' '*4}Period ", p)
             for e in Events:
                 for r in Rooms:
                     if X[e, p, r].x > 0.9:
-                        print(f"{' '*8} Exam {e} in room {r}")
+                        print(f"{' '*4} Period {p}: exam {e} in in room {r}")
 
 print("------" * 10)
