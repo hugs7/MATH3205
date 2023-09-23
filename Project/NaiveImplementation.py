@@ -26,8 +26,7 @@ from Course import CourseManager, Course
 from Event import Event
 from Curriculum import CurriculaManager
 from Period import Period
-from Utils import concat
-from Constants import *
+import Constants as const
 
 previous_time = time.time()
 
@@ -42,28 +41,28 @@ with open(data_file, "r") as json_file:
 parsed_data = json.loads(json_data)
 
 # Timeslots per day
-slots_per_day = parsed_data[SLOTS_PER_DAY]
+slots_per_day = parsed_data[const.SLOTS_PER_DAY]
 
 # Primary Primary Distance
-primary_primary_distance = parsed_data[PRIMARY_PRIMARY_DISTANCE]
+primary_primary_distance = parsed_data[const.PRIMARY_PRIMARY_DISTANCE]
 
 # Exam schedule constraints
 constrManager = ConstraintManager(slots_per_day)
-for constraint in parsed_data[CONSTRAINTS]:
+for constraint in parsed_data[const.CONSTRAINTS]:
     constrManager.add_constraint(constraint)
 
 # Courses
 courseManager = CourseManager()
-for course in parsed_data[COURSES]:
+for course in parsed_data[const.COURSES]:
     courseManager.add_course(course)
 
 # Curricula
 curriculaManager = CurriculaManager()
-for curriculum in parsed_data[CURRICULA]:
+for curriculum in parsed_data[const.CURRICULA]:
     curriculaManager.add_curriculum(curriculum)
 
 # Rooms
-examRooms = parsed_data[ROOMS]
+examRooms = parsed_data[const.ROOMS]
 Rooms = RoomManager()
 for examRoom in examRooms:
     Rooms.add_room(examRoom)
@@ -84,7 +83,7 @@ forbidden_period_constraints: List[Period] = [
     for period_constraint in constrManager.get_forbidden_period_constraints()
 ]
 
-print("Data import:", time.time() - previous_time, SECONDS)
+print("Data import:", time.time() - previous_time, const.SECONDS)
 previous_time = time.time()
 
 # ------ Sets ------
@@ -147,9 +146,9 @@ for event_period_constraint in constrManager.get_forbidden_event_period_constrai
         if exam.get_index() != event_period_constraint.get_exam_ordinal():
             continue
 
-        if event_period_constraint.get_part() == WRITTEN:
+        if event_period_constraint.get_part() == const.WRITTEN:
             event = exam.get_written_event()
-        elif event_period_constraint.get_part() == ORAL:
+        elif event_period_constraint.get_part() == const.ORAL:
             event = exam.get_oral_event()
 
         forbidden_event_period_constraints[event].append(period)
@@ -157,7 +156,7 @@ for event_period_constraint in constrManager.get_forbidden_event_period_constrai
 # ----- Periods -----
 # Redefine set of periods into days and timeslots
 # Calculate number of days in exam period
-NumDays = parsed_data[PERIODS] // slots_per_day
+NumDays = parsed_data[const.PERIODS] // slots_per_day
 
 # Set of days
 Days = list(range(NumDays))
@@ -203,11 +202,11 @@ for event in Events:
 RA: Dict[Event, List[Room]] = {}
 
 available_types: Dict[str, List[str]] = {}
-available_types[DUMMY] = [DUMMY]
-available_types[SMALL] = [SMALL, MEDIUM, LARGE]
-available_types[MEDIUM] = [MEDIUM, LARGE]
-available_types[LARGE] = [LARGE]
-available_types[COMPOSITE] = [COMPOSITE]
+available_types[const.DUMMY] = [const.DUMMY]
+available_types[const.SMALL] = [const.SMALL, const.MEDIUM, const.LARGE]
+available_types[const.MEDIUM] = [const.MEDIUM, const.LARGE]
+available_types[const.LARGE] = [const.LARGE]
+available_types[const.COMPOSITE] = [const.COMPOSITE]
 
 for event in Events:
     if event.get_num_rooms() == 0:
@@ -558,7 +557,7 @@ for e in Events:
     ]
     for p in PA[e]:
         if p in undesired_periods:
-            UndesiredPeriodCost[e, p] = P_UNDESIRED_PERIOD
+            UndesiredPeriodCost[e, p] = const.P_UNDESIRED_PERIOD
         else:
             UndesiredPeriodCost[e, p] = 0
 
@@ -578,27 +577,27 @@ for e in Events:
 
     for r in RA[e]:
         if r in undesired_rooms:
-            UndesiredRoomCost[e, r] = P_UNDESIRED_ROOM
+            UndesiredRoomCost[e, r] = const.P_UNDESIRED_ROOM
         else:
             UndesiredRoomCost[e, r] = 0
 
 
-print("Calculating Sets:", time.time() - previous_time, SECONDS)
+print("Calculating Sets:", time.time() - previous_time, const.SECONDS)
 previous_time = time.time()
 
 # ------ Data ------
 # -- Teachers --
-teachers = parsed_data[TEACHERS]
+teachers = parsed_data[const.TEACHERS]
 
 # -- Exam Distance --
-primaryPrimaryDistance = parsed_data[PRIMARY_PRIMARY_DISTANCE]
+primaryPrimaryDistance = parsed_data[const.PRIMARY_PRIMARY_DISTANCE]
 
 
-print(f"------\n{GUROBI}\n------")
+print(f"------\n{const.GUROBI}\n------")
 
 # ------ Define Model ------
 
-m = Model(UNIVERSITY_EXAMINATIONS)
+m = Model(const.UNIVERSITY_EXAMINATIONS)
 
 # ------ Variables ------
 # X = 1 if event e is assigned to period p and room r, 0 else
@@ -872,8 +871,8 @@ for e1, e2 in DPPrimarySecondary:
 # ------ Objective Function ------
 m.setObjective(
     # Cost S1
-    SC_PRIMARY_SECONDARY * quicksum(SPS[e, p] for e in Events for p in PA[e])
-    + SC_SECONDARY_SECONDARY * quicksum(SSS[e, p] for e in Events for p in PA[e])
+    const.SC_PRIMARY_SECONDARY * quicksum(SPS[e, p] for e in Events for p in PA[e])
+    + const.SC_SECONDARY_SECONDARY * quicksum(SSS[e, p] for e in Events for p in PA[e])
     # Cost S2
     + quicksum(UndesiredPeriodCost[e, p] * Y[e, p] for e in Events for p in PA[e])
     + quicksum(
@@ -883,22 +882,23 @@ m.setObjective(
         for r in RA[e]
     )
     # Cost S3
-    + DD_SAME_COURSE * quicksum(PMinE[e1, e2] for (e1, e2) in DPSameCourse)
-    + DD_SAME_EXAMINATION
+    + const.DD_SAME_COURSE * quicksum(PMinE[e1, e2] for (e1, e2) in DPSameCourse)
+    + const.DD_SAME_EXAMINATION
     * quicksum(PMinWO[e1, e2] + PMaxWO[e1, e2] for (e1, e2) in DPWrittenOral)
     # are we double counting UD_PRIMARY_PRIMARY constraints?
-    + UD_PRIMARY_PRIMARY * quicksum(PMinPP[e1, e2] for (e1, e2) in DPPrimaryPrimary)
-    + UD_PRIMARY_SECONDARY
+    + const.UD_PRIMARY_PRIMARY
+    * quicksum(PMinPP[e1, e2] for (e1, e2) in DPPrimaryPrimary)
+    + const.UD_PRIMARY_SECONDARY
     * quicksum(PMinPS[e1, e2] for (e1, e2) in DPPrimarySecondary),
     GRB.MINIMIZE,
 )
 
 
-print("Define Gurobi Model:", time.time() - previous_time, SECONDS)
+print("Define Gurobi Model:", time.time() - previous_time, const.SECONDS)
 previous_time = time.time()
 # ------ Optimise -------
 m.optimize()
-print("Optimise Gurobi Model:", time.time() - previous_time, SECONDS)
+print("Optimise Gurobi Model:", time.time() - previous_time, const.SECONDS)
 previous_time = time.time()
 
 # ------ Print output ------
