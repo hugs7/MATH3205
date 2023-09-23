@@ -31,7 +31,7 @@ import Constants as const
 previous_time = time.time()
 
 # ------ Import data ------
-data_file = os.path.join(".", "Project", "data", "toy.json")
+data_file = os.path.join(".", "Project", "data", "D2-1-18.json")
 
 with open(data_file, "r") as json_file:
     json_data = json_file.read()
