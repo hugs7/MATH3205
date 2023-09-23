@@ -9,9 +9,10 @@ Hugo Burton
 
 
 class Period:
-    def __init__(self, day: int, timeslot: int) -> None:
+    def __init__(self, day: int, timeslot: int, slots_per_day: int) -> None:
         self.day: int = day
         self.timeslot: int = timeslot
+        self.slots_per_day = slots_per_day
 
     def get_day(self) -> int:
         """
@@ -65,20 +66,21 @@ class Period:
     def __repr__(self) -> str:
         """Repr method for period"""
 
-        return f"({self.day}, {self.timeslot})"
+        return f"{self.get_ordinal_value()} ({self.day}, {self.timeslot})"
 
     def __hash__(self) -> int:
         """
         Hash function for Period objects.
         """
+
         return hash((self.day, self.timeslot))
 
-    def get_ordinal_value(self, slots_per_day: int) -> int:
+    def get_ordinal_value(self) -> int:
         """
         Returns period number as in the data. Day * Slots per day + timeslot
         """
 
-        return self.day * slots_per_day + self.timeslot
+        return self.day * self.slots_per_day + self.timeslot
 
     @staticmethod
     def from_period_number(period_number: int, slots_per_day: int) -> "Period":
@@ -90,7 +92,7 @@ class Period:
         Returns:
             Period: The Period object corresponding to the period number.
         """
-        day = (period_number - 1) // slots_per_day
-        timeslot = (period_number - 1) % slots_per_day
+        day = period_number // slots_per_day
+        timeslot = period_number % slots_per_day
 
-        return Period(day, timeslot)
+        return Period(day, timeslot, slots_per_day)

@@ -2,27 +2,20 @@
 Class for handing rooms in the problem
 """
 
-# Constants
-
+from Constants import *
 from typing import Iterator, Dict, List
 
 
-COMPOSITE = "Composite"
-LARGE = "Large"
-SMALL = "Small"
-DUMMY = "Dummy"
-
-
 class Room:
-    def __init__(self, room_data=None):
+    def __init__(self, room_data=None) -> None:
         if room_data is None:
             self.room = DUMMY
             self.room_type = DUMMY
             self.members = []
         else:
-            self.room = room_data.get("Room")
-            self.room_type = room_data.get("Type")
-            self.members = room_data.get("Members", [])
+            self.room = room_data.get(ROOM)
+            self.room_type = room_data.get(TYPE)
+            self.members = room_data.get(MEMBERS, [])
 
     def __repr__(self) -> str:
         return f"{self.room} ({self.room_type})"
@@ -68,6 +61,14 @@ class Room:
 
         return self.room_type == SMALL
 
+    def is_medium(self) -> bool:
+        """
+        Returns true if room is medium
+        False otherwise
+        """
+
+        return self.room_type == MEDIUM
+
     def is_large(self) -> bool:
         """
         Returns true if room is large
@@ -92,7 +93,7 @@ class RoomManager:
         self.rooms: list[Room] = [Room()]
 
         # Graph in the form of an ajacency list for storing joining rooms
-        self.composite_map = {}
+        self.composite_map: Dict[Room, List[Room]] = {}
 
         # Flag for if Composite room graph has been constructed
         self.constructed = False
@@ -104,7 +105,7 @@ class RoomManager:
 
         assert not self.constructed
         # Check if room already exists
-        existing_room = self.get_room_by_name(room_data.get("Room"))
+        existing_room = self.get_room_by_name(room_data.get(ROOM))
         if existing_room is not None:
             raise ValueError("Room already exists")
 
@@ -135,9 +136,7 @@ class RoomManager:
         Gets list of composite rooms stored by the RoomManager
         """
 
-        return [
-            r for r in self.rooms if r.get_type() == COMPOSITE and r.get_type != DUMMY
-        ]
+        return [r for r in self.rooms if r.get_type() == COMPOSITE]
 
     def get_single_rooms(self) -> list[Room]:
         """
@@ -145,7 +144,7 @@ class RoomManager:
         """
 
         return [
-            r for r in self.rooms if r.get_type() != COMPOSITE and r.get_type != DUMMY
+            r for r in self.rooms if r.get_type() != COMPOSITE and r.get_type() != DUMMY
         ]
 
     def get_dummy_room(self) -> Room:
@@ -237,3 +236,13 @@ class RoomManager:
     # Implement the iterable functionality
     def __iter__(self) -> Iterator[Room]:
         return iter(self.rooms)
+
+    def __repr__(self) -> str:
+        """
+        Repr method for RoomManager
+        """
+
+        string = "Room Manager: \n"
+        for room in self.rooms:
+            string += f"{room}\n"
+        return string
