@@ -1,9 +1,31 @@
 from gurobipy import Model, quicksum, GRB
+from typing import Set
 import os
+
+Alphabet = "abcdefghijklmnopqrstuvwxyz"
 
 
 def position_in_alphabet(letter):
     return Alphabet.index(letter.lower())
+
+
+def get_letter_pairs_indices(letters: Set[str]):
+    """
+    Gets pairs of letters from set of letters
+    """
+    # Assuming Alphabet is "abcdefghijklmnopqrstuvwxyz"
+
+    letter_indices = {letter: Alphabet.index(letter.lower()) for letter in letters}
+
+    pairs_indices = []
+
+    for letter1 in letters:
+        for letter2 in letters:
+            index1 = letter_indices[letter1]
+            index2 = letter_indices[letter2]
+            pairs_indices.append((index1, index2))
+
+    return pairs_indices
 
 
 def get_letter_pairs(grid):
@@ -18,39 +40,36 @@ def get_letter_pairs(grid):
     # Horizontal pairs
     for row in grid:
         for i in range(cols - 1):
-            index1 = get_alphabet_indices(row[i])
-            index2 = get_alphabet_indices(row[i + 1])
+            index1 = position_in_alphabet(row[i])
+            index2 = position_in_alphabet(row[i + 1])
             alphabet_indices_pairs.append((index1, index2))
 
     # Vertical pairs
     for col in range(cols):
         for i in range(rows - 1):
-            index1 = get_alphabet_indices(grid[i][col])
-            index2 = get_alphabet_indices(grid[i + 1][col])
+            index1 = position_in_alphabet(grid[i][col])
+            index2 = position_in_alphabet(grid[i + 1][col])
             alphabet_indices_pairs.append((index1, index2))
 
     # Diagonal pairs (top-left to bottom-right)
     for row in range(rows - 1):
         for col in range(cols - 1):
-            index1 = get_alphabet_indices(grid[row][col])
-            index2 = get_alphabet_indices(grid[row + 1][col + 1])
+            index1 = position_in_alphabet(grid[row][col])
+            index2 = position_in_alphabet(grid[row + 1][col + 1])
             alphabet_indices_pairs.append((index1, index2))
 
     # Diagonal pairs (top-right to bottom-left)
     for row in range(rows - 1):
         for col in range(1, cols):
-            index1 = get_alphabet_indices(grid[row][col])
-            index2 = get_alphabet_indices(grid[row + 1][col - 1])
+            index1 = position_in_alphabet(grid[row][col])
+            index2 = position_in_alphabet(grid[row + 1][col - 1])
             alphabet_indices_pairs.append((index1, index2))
 
     return alphabet_indices_pairs
 
 
 # Maximise the number of 4+ letter words
-Alphabet = "abcdefghijklmnopqrstuvwxyz"
 # Most common letters to reduce to for a simpler problem
-LimA = 16
-
 S = range(9)
 
 f = open(os.path.join(".", "Week 3", "Squardle Game", "enable1.txt"), "r")
@@ -106,7 +125,7 @@ A = Alphabet
 # Set of pairs of indices for each word in WordList
 # Indexed by position in alphabet
 P = {}
-for word in WordList:
+for w_index, word in enumerate(WordList):
     tuples = []
     for i in range(len(word) - 1):
         letter1 = word[i]
@@ -114,16 +133,25 @@ for word in WordList:
         position1 = position_in_alphabet(letter1)
         position2 = position_in_alphabet(letter2)
         tuples.append((position1, position2))
-    P[word] = tuples
+    P[w_index] = tuples
 
-GridPairs = get_letter_pairs(grid)
-print(GridPairs)
 
 # Data
-# Grid
-G = range(len(grid))
+AllLetterPairs = get_letter_pairs_indices(grid_letters)
+print(AllLetterPairs)
+
+GridPairs = get_letter_pairs(grid)
+GP = {}
+for pair in AllLetterPairs:
+    # Determine if pair exists on the grid or not 1 or 0
+    if pair in GridPairs:
+        GP[pair] = 1
+    else:
+        GP[pair] = 0
+
 
 # Variables
+
 # Each word has a binary variable if it's possible to make
 X = {w: m.addVar(vtype=GRB.BINARY) for w in WL}
 
@@ -137,20 +165,13 @@ m.setObjective(quicksum(X[w] for w in WL), GRB.MAXIMIZE)
 
 # Constraints
 
-PairsExist = {(w, p): m.addConstr(Z[w, p] <= 1) for w in WL for p in P[w]}
+PairsExist = {
+    (w, p): m.addConstr(Z[w, p] <= quicksum(GP[pp] for pp in GridPairs))
+    for w in WL
+    for p in P[w]
+}
 
-for p in P:
-    for a in p:
-        m.addConstr(Z[p] <= Y[a])
-for w in W:
-    for a, b in zip(WordList[w], WordList[w][1:]):
-        m.addConstr(Theta[w] <= Z[frozenset([a, b])])
-
-m.addConstr(quicksum(Y.values()) == len(S))
-m.addConstr(quicksum(Z.values()) <= 20)
-
-for a in Y:
-    Y[a].BranchPriority = Freq[a]
+WordPossible = {w: m.addConstr(X[w] <= Z[w, p]) for w in WL for p in P[w]}
 
 m.setParam("BranchDir", 1)
 m.setParam("Heuristics", 0)
@@ -159,9 +180,6 @@ m.setParam("MIPGap", 0)
 m.setParam("MIPFocus", 2)
 m.optimize()
 
-
-#####
-
-
-# tSet = set([frozenset([a,b]) for w in W if Theta[w].x > 0.9 for a,b in zip(WordList[w], WordList[w][1:])])
-# len(tSet)
+for w in WL:
+    if X[w].x > 0.9:
+        print(WordList[w])
