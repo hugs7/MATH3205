@@ -5,67 +5,41 @@ import os
 Alphabet = "abcdefghijklmnopqrstuvwxyz"
 
 
-def position_in_alphabet(letter):
-    return Alphabet.index(letter.lower())
+def generate_words(grid):
+    def is_valid(x, y):
+        return 0 <= x < len(grid[0]) and 0 <= y < len(grid)
 
+    def backtrack(word, x, y):
+        if 4 <= len(word) <= 9:
+            found_words.add(word)
 
-def get_letter_pairs_indices(letters: Set[str]):
-    """
-    Gets pairs of letters from set of letters
-    """
-    # Assuming Alphabet is "abcdefghijklmnopqrstuvwxyz"
+        if len(word) > 9:
+            return
 
-    letter_indices = {letter: Alphabet.index(letter.lower()) for letter in letters}
+        for dx, dy in [
+            (1, 0),
+            (0, 1),
+            (1, 1),
+            (-1, 0),
+            (0, -1),
+            (-1, -1),
+            (1, -1),
+            (-1, 1),
+        ]:
+            new_x, new_y = x + dx, y + dy
+            if is_valid(new_x, new_y) and (new_x, new_y) not in visited:
+                visited.add((new_x, new_y))
+                backtrack(word + grid[new_y][new_x], new_x, new_y)
+                visited.remove((new_x, new_y))
 
-    pairs_indices = []
+    found_words = set()
+    for y in range(len(grid)):
+        for x in range(len(grid[0])):
+            visited = set()
+            visited.add((x, y))
+            backtrack(grid[y][x], x, y)
 
-    for letter1 in letters:
-        for letter2 in letters:
-            index1 = letter_indices[letter1]
-            index2 = letter_indices[letter2]
-            pairs_indices.append((index1, index2))
-
-    return pairs_indices
-
-
-def get_letter_pairs(grid):
-    """
-    Gets every pair of letters in the grid
-    """
-
-    rows = len(grid)
-    cols = len(grid[0])
-    alphabet_indices_pairs = []
-
-    # Horizontal pairs
-    for row in grid:
-        for i in range(cols - 1):
-            index1 = position_in_alphabet(row[i])
-            index2 = position_in_alphabet(row[i + 1])
-            alphabet_indices_pairs.append((index1, index2))
-
-    # Vertical pairs
-    for col in range(cols):
-        for i in range(rows - 1):
-            index1 = position_in_alphabet(grid[i][col])
-            index2 = position_in_alphabet(grid[i + 1][col])
-            alphabet_indices_pairs.append((index1, index2))
-
-    # Diagonal pairs (top-left to bottom-right)
-    for row in range(rows - 1):
-        for col in range(cols - 1):
-            index1 = position_in_alphabet(grid[row][col])
-            index2 = position_in_alphabet(grid[row + 1][col + 1])
-            alphabet_indices_pairs.append((index1, index2))
-
-    # Diagonal pairs (top-right to bottom-left)
-    for row in range(rows - 1):
-        for col in range(1, cols):
-            index1 = position_in_alphabet(grid[row][col])
-            index2 = position_in_alphabet(grid[row + 1][col - 1])
-            alphabet_indices_pairs.append((index1, index2))
-
-    return alphabet_indices_pairs
+    return found_words
 
 
 # Maximise the number of 4+ letter words
@@ -114,72 +88,18 @@ for word in AllWords:
         WordList.append(word)
 
 
-# Define model
-m = Model()
+gridWords = generate_words(grid)
+print(len(gridWords))
+# _, _, next_x, next_y = GridPairsLookup[(x1, y1)]
+count = 0
+for wordLen in range(4, 9 + 1):
+    print(f"{wordLen} letter words")
+    for word in gridWords:
+        if word in WordList and len(word) == wordLen:
+            print(word)
+            count += 1
+    print()
 
-# Sets
-
-WL = range(len(WordList))
-A = Alphabet
-
-# Set of pairs of indices for each word in WordList
-# Indexed by position in alphabet
-P = {}
-for w_index, word in enumerate(WordList):
-    tuples = []
-    for i in range(len(word) - 1):
-        letter1 = word[i]
-        letter2 = word[i + 1]
-        position1 = position_in_alphabet(letter1)
-        position2 = position_in_alphabet(letter2)
-        tuples.append((position1, position2))
-    P[w_index] = tuples
-
-
-# Data
-AllLetterPairs = get_letter_pairs_indices(grid_letters)
-print(AllLetterPairs)
-
-GridPairs = get_letter_pairs(grid)
-GP = {}
-for pair in AllLetterPairs:
-    # Determine if pair exists on the grid or not 1 or 0
-    if pair in GridPairs:
-        GP[pair] = 1
-    else:
-        GP[pair] = 0
-
-
+print(count)
 # Variables
-
-# Each word has a binary variable if it's possible to make
-X = {w: m.addVar(vtype=GRB.BINARY) for w in WL}
-
-# Z_wp = 1 if letter pair p from word w exists on grid
-Z = {(w, p): m.addVar(vtype=GRB.BINARY) for w in WL for p in P[w]}
-
-# Objective
-
-# Maximise words that can be formed
-m.setObjective(quicksum(X[w] for w in WL), GRB.MAXIMIZE)
-
-# Constraints
-
-PairsExist = {
-    (w, p): m.addConstr(Z[w, p] <= quicksum(GP[pp] for pp in GridPairs))
-    for w in WL
-    for p in P[w]
-}
-
-WordPossible = {w: m.addConstr(X[w] <= Z[w, p]) for w in WL for p in P[w]}
-
-m.setParam("BranchDir", 1)
-m.setParam("Heuristics", 0)
-m.setParam("Cuts", 0)
-m.setParam("MIPGap", 0)
-m.setParam("MIPFocus", 2)
-m.optimize()
-
-for w in WL:
-    if X[w].x > 0.9:
-        print(WordList[w])
+exit()
