@@ -16,11 +16,7 @@ from Examination import Examination
 from Room import RoomManager, Room
 from Constraint import (
     ConstraintManager,
-    EventPeriodConstraint,
-    PeriodConstraint,
     EventRoomConstraint,
-    RoomPeriodConstraint,
-    Constraint,
 )
 from Course import CourseManager, Course
 from Event import Event
