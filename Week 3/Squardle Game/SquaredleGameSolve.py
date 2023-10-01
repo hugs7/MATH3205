@@ -4,16 +4,18 @@ import os
 
 Alphabet = "abcdefghijklmnopqrstuvwxyz"
 
+max_word_len = 12
+
 
 def generate_words(grid):
     def is_valid(x, y):
         return 0 <= x < len(grid[0]) and 0 <= y < len(grid)
 
     def backtrack(word, x, y):
-        if 4 <= len(word) <= 12:
+        if 4 <= len(word) <= max_word_len:
             found_words.add(word)
 
-        if len(word) > 12:
+        if len(word) > max_word_len:
             return
 
         for dx, dy in [
@@ -44,7 +46,7 @@ def generate_words(grid):
 
 # Maximise the number of 4+ letter words
 # Most common letters to reduce to for a simpler problem
-S = range(9)
+S = range(max_word_len)
 
 f = open(os.path.join(".", "Week 3", "Squardle Game", "enable1.txt"), "r")
 
