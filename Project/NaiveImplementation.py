@@ -21,6 +21,7 @@ from Event import Event
 from Curriculum import CurriculaManager
 from Period import Period
 import Constants as const
+from Utils import concat
 
 previous_time = time.time()
 
@@ -184,14 +185,14 @@ for event in Events:
     PA[event] = []
 
     for period in Periods:
-        if period in forbidden_period_constraints:
-            continue
-
-        if period in forbidden_event_period_constraints[event]:
+        if (
+            period in forbidden_period_constraints
+            or period in forbidden_event_period_constraints[event]
+        ):
             print("Skipping period", period, "for event", event)
-            continue
+        else:
+            PA[event].append(period)
 
-        PA[event].append(period)
 
 # -- Room availabilities --
 # Dictionary mapping events to a set of rooms in which it can be held
@@ -260,45 +261,37 @@ F: Set[Tuple[Event, Event]] = set()
 # HC_e in paper
 HC: Dict[Event, set[Event]] = {}
 
-for course, examinations in CourseExaminations.items():
-    course: Course
-    event_course_name = course.get_course_name()
-    event_course_teacher = course.get_teacher()
+for e in Events:
+    event_course_name: str = e.get_course().get_course_name()
 
-    overlapping_primary_curriculum_courses = []
+    # events from other primary courses of the same curriculum
+    primary_course_names: Set[str] = set(
+        course
+        for curr in curriculaManager.get_curricula()
+        if event_course_name in curr.get_primary_course_names()
+        for course in curr.get_primary_course_names()
+    )
+    primary_hard_conflicts = set(
+        event
+        for event in Events
+        if event.get_course_name() in primary_course_names and event is not e
+    )
 
-    for curriculum in curriculaManager.get_curricula():
-        primary_course_names = curriculum.get_primary_course_names()
-        if event_course_name not in primary_course_names:
-            continue
+    # Conflicts with teachers
+    teacher_name: str = next(
+        (c.get_teacher() for c in Courses if c.get_course_name() == course_name), None
+    )
+    if teacher_name is None:
+        raise Exception(f"No course found matching event {e}")
+    teacher_hard_conflicts = set(
+        event
+        for c in Courses
+        if c.get_teacher() == teacher_name
+        for event in CourseEvents[c]
+        if event is not e
+    )
 
-        # This curricula containing the course in the primary section
-        # Add all the courses from here into the overlapping_primary_curriculum
-        for primary_course_name in primary_course_names:
-            primary_course = courseManager.get_course_by_name(primary_course_name)
-            if primary_course not in overlapping_primary_curriculum_courses:
-                overlapping_primary_curriculum_courses.append(primary_course)
-
-    # Now convert all these courses into events using the CourseEvent dictionary
-    primary_curricula_events = []
-    for course in overlapping_primary_curriculum_courses:
-        primary_curricula_events.extend(CourseEvents.get(course))
-
-    # Find Teachers teaching the same course
-    same_teacher_courses: List[Course] = []
-    for course in courseManager.get_courses():
-        if course.get_teacher() == event_course_teacher:
-            same_teacher_courses.append(course)
-
-    # Now convert all those same teacher courses to events
-    same_teacher_events = []
-    for course in same_teacher_courses:
-        same_teacher_events.extend(CourseEvents.get(course))
-
-    conflict_set = set(primary_curricula_events).union(set(same_teacher_events))
-
-    for event in CourseEvents[course]:
-        HC[event] = conflict_set
+    HC[e] = primary_hard_conflicts | teacher_hard_conflicts
 
 
 # The set of event pairs with a directed soft distance constraint. Occurs when
@@ -667,10 +660,9 @@ RoomOccupation = {
 # Occurs in the following cases:
 #   - They are part of the same primary curriculum
 #   - They have the same teacher
-# M: Number of elements (rooms maybe - confirm with Michael) in the overlapping roomconcat
+# M: Number of elements (rooms maybe - confirm with Michael) in the overlapping room
 # rc is room-composite   - Rooms that are composite
 # ro is room-overlapping - Rooms that overlap in a composite room
-
 HardConflicts = {
     (cr, p): m.addConstr(
         (len(R0[cr])) * quicksum(X[e, p, cr] for e in Events)
@@ -685,29 +677,12 @@ HardConflicts = {
 Precendences = {(e1, e2): m.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
 
 # Constraint 5: Some rooms, day and timeslot configurations are unavailable.
-# Unavailabilities = {
-#     (e, p): m.addConstr(
-#         len(HC[e]) * Y[e, p] + quicksum(Y[e2, p] for e2 in HC[e]) <= len(HC[e])
-#     )
-#     for e in Events
-#     for p in PA[e]
-# }
-
-# Prevent events scheduled when they aren't allowed. Alternative to constraint 5 atm
-# seems to give much more correct objective value from testing so far.
-
-PeriodScheduling = {
-    (e, p, r): m.addConstr(quicksum(X[e, p, r] for r in Rooms) == 0)
+Unavailabilities = {
+    (e, p): m.addConstr(
+        len(HC[e]) * Y[e, p] + quicksum(Y[e2, p] for e2 in HC[e]) <= len(HC[e])
+    )
     for e in Events
-    for p in Periods
-    if p not in PA[e]
-}
-
-RoomScheduling = {
-    (e, p, r): m.addConstr(quicksum(X[e, p, r] for p in Periods) == 0)
-    for e in Events
-    for r in Rooms  # should be without dummy
-    if r not in RA[e]
+    for p in PA[e]
 }
 
 # Constraint 6: Set values of Y_(e,p)

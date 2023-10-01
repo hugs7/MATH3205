@@ -5,8 +5,8 @@ Courses have examinations
 Examinations have Events within them, either Oral, Written or WrittenAndOral
 """
 
-from typing import ForwardRef, List
-from Constants import *
+from typing import List
+import Constants as const
 from Examination import Examination
 
 
@@ -17,8 +17,8 @@ class RoomsRequested:
     """
 
     def __init__(self, rooms_requested_data) -> None:
-        self.number = rooms_requested_data.get(NUMBER)
-        self.type = rooms_requested_data.get(TYPE)
+        self.number = rooms_requested_data.get(const.NUMBER)
+        self.type = rooms_requested_data.get(const.TYPE)
 
     def get_number(self) -> int:
         """
@@ -27,7 +27,7 @@ class RoomsRequested:
 
         return self.number
 
-    def get_type(self) -> int:
+    def get_type(self) -> str:
         """
         Returns the type of the room requested
         """
@@ -41,10 +41,10 @@ class WrittenOralSpecs:
     """
 
     def __init__(self, written_oral_specs) -> None:
-        self.max_distance: int = int(written_oral_specs.get(MAX_DISTANCE))
-        self.min_distance: int = int(written_oral_specs.get(MIN_DISTANCE))
-        self.room_for_oral: bool = bool(written_oral_specs.get(ROOM_FOR_ORAL))
-        self.same_day: bool = bool(written_oral_specs.get(SAME_DAY))
+        self.max_distance: int = int(written_oral_specs.get(const.MAX_DISTANCE))
+        self.min_distance: int = int(written_oral_specs.get(const.MIN_DISTANCE))
+        self.room_for_oral: bool = bool(written_oral_specs.get(const.ROOM_FOR_ORAL))
+        self.same_day: bool = bool(written_oral_specs.get(const.SAME_DAY))
 
     def __repr__(self) -> str:
         """
@@ -91,33 +91,33 @@ class Course:
 
     def __init__(self, course_data) -> None:
         # Course name
-        self.course_name = course_data.get(COURSE)
+        self.course_name = course_data.get(const.COURSE)
 
         # Exam type of course
-        self.exam_type = course_data.get(EXAM_TYPE)
+        self.exam_type = course_data.get(const.EXAM_TYPE)
 
         # Number of exams the course has
-        self.num_of_exams = course_data.get(NUMBER_OF_EXAMS)
+        self.num_of_exams = course_data.get(const.NUMBER_OF_EXAMS)
 
         # If NUMBER_OF_EXAMS is more than 1, get MINIMUM_DISTANCE_BETWEEN_EXAMS
         self.min_distance_between_exams = None
         if self.num_of_exams > 1:
             self.min_distance_between_exams = int(
-                course_data.get(MINIMUM_DISTANCE_BETWEEN_EXAMS)
+                course_data.get(const.MINIMUM_DISTANCE_BETWEEN_EXAMS)
             )
 
         # Rooms requested
         self.rooms_requested: RoomsRequested = RoomsRequested(
-            course_data.get(ROOMS_REQUESTED)
+            course_data.get(const.ROOMS_REQUESTED)
         )
 
         # Teacher
-        self.teacher = course_data.get(TEACHER)
+        self.teacher = course_data.get(const.TEACHER)
 
         # For courses which have WRITTEN_AND_ORAL exams, get this data
         if self.is_written_and_oral():
             self.written_oral_specs: WrittenOralSpecs = WrittenOralSpecs(
-                course_data.get(WRITTEN_ORAL_SPECS)
+                course_data.get(const.WRITTEN_ORAL_SPECS)
             )
 
         self.examinations: List[Examination] = []
@@ -186,21 +186,21 @@ class Course:
         Returns true if the course's exams have written events only
         """
 
-        return self.exam_type == WRITTEN
+        return self.exam_type == const.WRITTEN
 
     def is_oral(self) -> bool:
         """
         Returns true if the course's exams have oral events only
         """
 
-        return self.exam_type == ORAL
+        return self.exam_type == const.ORAL
 
     def is_written_and_oral(self) -> bool:
         """
         Returns true if the course's exams have written and oral events
         """
 
-        return self.exam_type == WRITTEN_AND_ORAL
+        return self.exam_type == const.WRITTEN_AND_ORAL
 
     def __repr__(self) -> str:
         """

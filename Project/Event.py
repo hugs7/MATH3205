@@ -1,5 +1,7 @@
 from typing import ForwardRef
 
+import Constants as const
+
 
 class Event:
     """
@@ -43,21 +45,32 @@ class Event:
 
         return self.event_type
 
+    def room_required(self) -> bool:
+        """
+        Returns if any room(s) are required for this event
+        """
+
+        return not (
+            self.get_event_type() == const.ORAL
+            and self.get_examination().get_exam_type() == const.WRITTEN_AND_ORAL
+            and not self.get_course().get_written_oral_specs().get_room_for_oral()
+        )
+
     def get_num_rooms(self) -> int:
         """
         Returns the number of rooms requested by the event
         """
-
-        rooms_requested = self.course.get_rooms_requested()
-        return rooms_requested.get_number()
+        if self.room_required():
+            return self.course.get_rooms_requested().get_number()
+        return 0
 
     def get_room_type(self) -> str:
         """
         Returns the room type requested by the event
         """
-
-        rooms_requested = self.course.get_rooms_requested()
-        return rooms_requested.get_type()
+        if self.room_required():
+            return self.course.get_rooms_requested().get_type()
+        return const.DUMMY
 
     def __repr__(self) -> str:
         """
