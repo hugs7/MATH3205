@@ -10,10 +10,10 @@ def generate_words(grid):
         return 0 <= x < len(grid[0]) and 0 <= y < len(grid)
 
     def backtrack(word, x, y):
-        if 4 <= len(word) <= 9:
+        if 4 <= len(word) <= 12:
             found_words.add(word)
 
-        if len(word) > 9:
+        if len(word) > 12:
             return
 
         for dx, dy in [
