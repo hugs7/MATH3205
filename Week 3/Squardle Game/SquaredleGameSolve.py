@@ -1,10 +1,11 @@
 from gurobipy import Model, quicksum, GRB
-from typing import Set
+from typing import Dict, Set
 import os
 
 Alphabet = "abcdefghijklmnopqrstuvwxyz"
 
-max_word_len = 12
+min_word_length = 4
+max_word_len = 8
 
 
 def generate_words(grid):
@@ -12,7 +13,7 @@ def generate_words(grid):
         return 0 <= x < len(grid[0]) and 0 <= y < len(grid)
 
     def backtrack(word, x, y):
-        if 4 <= len(word) <= max_word_len:
+        if min_word_length <= len(word) <= max_word_len:
             found_words.add(word)
 
         if len(word) > max_word_len:
@@ -37,6 +38,7 @@ def generate_words(grid):
     found_words = set()
     for y in range(len(grid)):
         for x in range(len(grid[0])):
+            print(x, y)
             visited = set()
             visited.add((x, y))
             backtrack(grid[y][x], x, y)
@@ -44,7 +46,7 @@ def generate_words(grid):
     return found_words
 
 
-# Maximise the number of 4+ letter words
+# Maximise the number of min_word_length+ letter words
 # Most common letters to reduce to for a simpler problem
 S = range(max_word_len)
 
@@ -53,10 +55,10 @@ f = open(os.path.join(".", "Week 3", "Squardle Game", "enable1.txt"), "r")
 # :-1 removes the new line
 AllWords = [w[:-1] for w in f]
 
-# Limit to words with 4 to 9 letters
+# Limit to words with min_word_length to 9 letters
 
-AllWords = [w for w in AllWords if len(w) >= 4 and len(w) <= len(S)]
-print(len(AllWords), "words between 4 and", len(S), "letters, no repeats")
+AllWords = [w for w in AllWords if len(w) >= min_word_length and len(w) <= len(S)]
+print(len(AllWords), "words between min_word_length and", len(S), "letters, no repeats")
 
 # Define game grid
 
@@ -89,14 +91,24 @@ for word in AllWords:
         # Add word to LimitedWordList
         WordList.append(word)
 
-
 gridWords = generate_words(grid)
-print(len(gridWords))
+
+gridwordsLenDict: Dict[str, list[str]] = {}
+for l in range(min_word_length, max_word_len + 1):
+    gridwordsLenDict[l] = []
+
+print("splitting words")
+
+for word in gridWords:
+    gridwordsLenDict[len(word)].append(word)
+print([len(w) for w in gridwordsLenDict.values()])
+
+print("----")
 # _, _, next_x, next_y = GridPairsLookup[(x1, y1)]
 count = 0
-for wordLen in range(4, 9 + 1):
+for wordLen in range(min_word_length, max_word_len + 1):
     print(f"{wordLen} letter words")
-    for word in gridWords:
+    for word in gridwordsLenDict[wordLen]:
         if word in WordList and len(word) == wordLen:
             print(word)
             count += 1
