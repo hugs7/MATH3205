@@ -595,12 +595,12 @@ print(f"------\n{const.GUROBI}\n------")
 
 # ------ Define Model ------
 
-m = Model(const.UNIVERSITY_EXAMINATIONS)
+BMP = Model(const.UNIVERSITY_EXAMINATIONS)
 
 # ------ Variables ------
 # X = 1 if event e is assigned to period p and room r, 0 else
 X = {
-    (e, p, r): m.addVar(vtype=GRB.BINARY)
+    (e, p, r): BMP.addVar(vtype=GRB.BINARY)
     for e in Events
     for p in Periods
     for r in Rooms
@@ -608,57 +608,60 @@ X = {
 
 
 # Y = 1 if event e is assigned to day d and timeslot t, 0 else (auxiliary variable)
-Y = {(e, p): m.addVar(vtype=GRB.BINARY) for e in Events for p in Periods}
+Y = {(e, p): BMP.addVar(vtype=GRB.BINARY) for e in Events for p in Periods}
 
 # The ordinal (order) value of the period assigned to event e
-H = {e: m.addVar(vtype=GRB.INTEGER) for e in Events}
+H = {e: BMP.addVar(vtype=GRB.INTEGER) for e in Events}
+
+# Theta variable for each timeslot in T
+Theta = {t: BMP.addVar() for t in T}
 
 # Soft constraint counting variables. The paper claims that all of these may be
 # relaxed to be continuous.
 # S1
-SPS = {(e, p): m.addVar(vtype=GRB.CONTINUOUS) for e in Events for p in Periods}
-SSS = {(e, p): m.addVar(vtype=GRB.CONTINUOUS) for e in Events for p in Periods}
+SPS = {(e, p): BMP.addVar(vtype=GRB.CONTINUOUS) for e in Events for p in Periods}
+SSS = {(e, p): BMP.addVar(vtype=GRB.CONTINUOUS) for e in Events for p in Periods}
 
 # S3
-PMinE = {(e1, e2): m.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPSameCourse}
-PMinWO = {(e1, e2): m.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPWrittenOral}
-PMaxWO = {(e1, e2): m.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPWrittenOral}
-PMinPP = {(e1, e2): m.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPPrimaryPrimary}
-PMinPS = {(e1, e2): m.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPPrimarySecondary}
+PMinE = {(e1, e2): BMP.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPSameCourse}
+PMinWO = {(e1, e2): BMP.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPWrittenOral}
+PMaxWO = {(e1, e2): BMP.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPWrittenOral}
+PMinPP = {(e1, e2): BMP.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPPrimaryPrimary}
+PMinPS = {(e1, e2): BMP.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPPrimarySecondary}
 
 # Variables for S3 soft constraints
 # Abs distances between assignment of e1 and e2
-D_abs = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events}
+D_abs = {(e1, e2): BMP.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events}
 
 # Actual distances between assignments of e1 and e2
 D_actual = {
-    (e1, e2): m.addVar(vtype=GRB.INTEGER, lb=-GRB.INFINITY)
+    (e1, e2): BMP.addVar(vtype=GRB.INTEGER, lb=-GRB.INFINITY)
     for e1 in Events
     for e2 in Events
 }
 # 1 if D_actual[e1, e2] is positive
-G = {(e1, e2): m.addVar(vtype=GRB.BINARY) for e1 in Events for e2 in Events}
+G = {(e1, e2): BMP.addVar(vtype=GRB.BINARY) for e1 in Events for e2 in Events}
 
 # Abs Val of D_actual[e1, e2] or Zero
 D_actual_abs_1 = {
-    (e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events
+    (e1, e2): BMP.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events
 }
 # Abs value of D_actual[e1, e2] or Zero
 D_actual_abs_2 = {
-    (e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events
+    (e1, e2): BMP.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events
 }
 
 # ------ Constraints ------
 
 # Constraint 1: Each event assigned to an available period and room.
 RoomRequest = {
-    e: m.addConstr(quicksum(X[e, p, r] for p in PA[e] for r in RA[e]) == 1)
+    e: BMP.addConstr(quicksum(X[e, p, r] for p in PA[e] for r in RA[e]) == 1)
     for e in Events
 }
 
 # Constraint 2: At most one event can use a room at once.
 RoomOccupation = {
-    (r, p): m.addConstr(quicksum(X[e, p, r] for e in Events) <= 1)
+    (r, p): BMP.addConstr(quicksum(X[e, p, r] for e in Events) <= 1)
     for r in Rooms
     if r is not dummy_room
     for p in Periods
@@ -673,7 +676,7 @@ RoomOccupation = {
 # ro is room-overlapping - Rooms that overlap in a composite room
 
 HardConflicts = {
-    (cr, p): m.addConstr(
+    (cr, p): BMP.addConstr(
         (len(R0[cr])) * quicksum(X[e, p, cr] for e in Events)
         + quicksum(X[e, p, ro] for e in Events for ro in R0[cr])
         <= (len(R0[cr]))
@@ -683,7 +686,7 @@ HardConflicts = {
 }
 
 # Constraint 4: Some events must precede other events (hard constraint).
-Precendences = {(e1, e2): m.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
+Precendences = {(e1, e2): BMP.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
 
 # Constraint 5: Some rooms, day and timeslot configurations are unavailable.
 # Unavailabilities = {
@@ -698,14 +701,14 @@ Precendences = {(e1, e2): m.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
 # seems to give much more correct objective value from testing so far.
 
 PeriodScheduling = {
-    (e, p, r): m.addConstr(quicksum(X[e, p, r] for r in Rooms) == 0)
+    (e, p, r): BMP.addConstr(quicksum(X[e, p, r] for r in Rooms) == 0)
     for e in Events
     for p in Periods
     if p not in PA[e]
 }
 
 RoomScheduling = {
-    (e, p, r): m.addConstr(quicksum(X[e, p, r] for p in Periods) == 0)
+    (e, p, r): BMP.addConstr(quicksum(X[e, p, r] for p in Periods) == 0)
     for e in Events
     for r in Rooms  # should be without dummy
     if r not in RA[e]
@@ -713,19 +716,19 @@ RoomScheduling = {
 
 # Constraint 6: Set values of Y_(e,p)
 setY = {
-    (e, p): m.addConstr(Y[e, p] - quicksum(X[e, p, r] for r in RA[e]) == 0)
+    (e, p): BMP.addConstr(Y[e, p] - quicksum(X[e, p, r] for r in RA[e]) == 0)
     for e in Events
     for p in PA[e]
 }
 
 # Constraint 7: Set values of H_e
 setH = {
-    e: m.addConstr(quicksum(p.get_ordinal_value() * Y[e, p] for p in PA[e]) == H[e])
+    e: BMP.addConstr(quicksum(p.get_ordinal_value() * Y[e, p] for p in PA[e]) == H[e])
     for e in Events
 }
 
 # Constraint 7a: Limit only 1 sum p of Y[e, p] to be turned on for each event
-oneP = {e: m.addConstr(quicksum(Y[e, p] for p in Periods) == 1) for e in Events}
+oneP = {e: BMP.addConstr(quicksum(Y[e, p] for p in Periods) == 1) for e in Events}
 # for p in PA[e]
 # oneP = {e: m.addConstr(quicksum(Y[e, p] for p in PA[e]) == 1) for e in Events}
 
@@ -733,7 +736,7 @@ oneP = {e: m.addConstr(quicksum(Y[e, p] for p in Periods) == 1) for e in Events}
 
 # Constraint 8 (S1): Soft Conflicts
 SoftConflicts = {
-    (e, p): m.addConstr(
+    (e, p): BMP.addConstr(
         len({e2 for e2 in SCPS[e] if (e, e2) in DPDirected and p in PA[e2]}) * Y[e, p]
         + quicksum(Y[e2, p] for e2 in SCPS[e] if (e, e2) in DPDirected)
         <= SPS[e, p]
@@ -745,7 +748,7 @@ SoftConflicts = {
 
 # Constraint 9 (S2): Preferences
 Preferences = {
-    (e, p): m.addConstr(
+    (e, p): BMP.addConstr(
         len({e2 for e2 in SCSS[e] if (e, e2) in DPDirected and p in PA[e2]}) * Y[e, p]
         + quicksum(Y[e2, p] for e2 in SCSS[e] if (e, e2) in DPDirected)
         <= SSS[e, p]
@@ -757,59 +760,59 @@ Preferences = {
 
 # Constraint 10 (S3): DirectedDistances
 Constraint10 = {
-    (e1, e2): m.addConstr(D_abs[e1, e2] == H[e2] - H[e1]) for (e1, e2) in DPDirected
+    (e1, e2): BMP.addConstr(D_abs[e1, e2] == H[e2] - H[e1]) for (e1, e2) in DPDirected
 }
 
 # Constraint 11: (S4): UndirectedDifferences
 Constraint11 = {
-    (e1, e2): m.addConstr(D_actual[e1, e2] == H[e2] - H[e1])
+    (e1, e2): BMP.addConstr(D_actual[e1, e2] == H[e2] - H[e1])
     for (e1, e2) in DPUndirected
 }
 
 # Constraint 12:
 Constraint12 = {
-    (e1, e2): m.addConstr(D_actual[e1, e2] <= len(Periods) * G[e1, e2])
+    (e1, e2): BMP.addConstr(D_actual[e1, e2] <= len(Periods) * G[e1, e2])
     for (e1, e2) in DPUndirected
 }
 
 Constraint13 = {
-    (e1, e2): m.addConstr(D_actual[e1, e2] >= -len(Periods) * (1 - G[e1, e2]))
+    (e1, e2): BMP.addConstr(D_actual[e1, e2] >= -len(Periods) * (1 - G[e1, e2]))
     for (e1, e2) in DPUndirected
 }
 
 Constraint14 = {
-    (e1, e2): m.addConstr(D_actual_abs_1[e1, e2] <= len(Periods) * G[e1, e2])
+    (e1, e2): BMP.addConstr(D_actual_abs_1[e1, e2] <= len(Periods) * G[e1, e2])
     for (e1, e2) in DPUndirected
 }
 
 Constraint15 = {
-    (e1, e2): m.addConstr(D_actual_abs_1[e1, e2] >= -len(Periods) * G[e1, e2])
+    (e1, e2): BMP.addConstr(D_actual_abs_1[e1, e2] >= -len(Periods) * G[e1, e2])
     for (e1, e2) in DPUndirected
 }
 
 Constraint16 = {
-    (e1, e2): m.addConstr(
+    (e1, e2): BMP.addConstr(
         D_actual_abs_1[e1, e2] <= D_actual[e1, e2] + len(Periods) * (1 - G[e1, e2])
     )
     for (e1, e2) in DPUndirected
 }
 
 Constraint17 = {
-    (e1, e2): m.addConstr(
+    (e1, e2): BMP.addConstr(
         D_actual_abs_1[e1, e2] >= D_actual[e1, e2] - len(Periods) * (1 - G[e1, e2])
     )
     for (e1, e2) in DPUndirected
 }
 
 Constraint18 = {
-    (e1, e2): m.addConstr(
+    (e1, e2): BMP.addConstr(
         D_actual_abs_2[e1, e2] == D_actual_abs_1[e1, e2] - D_actual[e1, e2]
     )
     for (e1, e2) in DPUndirected
 }
 
 Constraint19 = {
-    (e1, e2): m.addConstr(
+    (e1, e2): BMP.addConstr(
         D_abs[e1, e2] == D_actual_abs_1[e1, e2] + D_actual_abs_2[e1, e2]
     )
     for (e1, e2) in DPUndirected
@@ -825,7 +828,9 @@ for e1, e2 in DPSameCourse:
     exam_min_dist_2 = e2_course.get_min_distance_between_exams()
     exam_min_dist = max(exam_min_dist_1, exam_min_dist_2)
 
-    Constraint20[(e1, e2)]: m.addConstr(PMinE[e1, e2] + D_abs[e1, e2] >= exam_min_dist)
+    Constraint20[(e1, e2)]: BMP.addConstr(
+        PMinE[e1, e2] + D_abs[e1, e2] >= exam_min_dist
+    )
 
 Constraint21 = {}
 Constraint22 = {}
@@ -840,11 +845,11 @@ for written_event, oral_event in DPWrittenOral:
     min_distance = written_oral_specs.get_min_distance()
     max_distance = written_oral_specs.get_max_distance()
 
-    Constraint21[(written_event, oral_event)]: m.addConstr(
+    Constraint21[(written_event, oral_event)]: BMP.addConstr(
         PMinWO[written_event, oral_event] + D_abs[written_event, oral_event]
         >= min_distance
     )
-    Constraint22[(written_event, oral_event)]: m.addConstr(
+    Constraint22[(written_event, oral_event)]: BMP.addConstr(
         D_abs[written_event, oral_event] - PMaxWO[written_event, oral_event]
         <= max_distance
     )
@@ -854,7 +859,7 @@ for e1, e2 in DPPrimaryPrimary:
     e1_course: Course = e1.get_course()
     e2_course: Course = e2.get_course()
 
-    Constraint23[(e1, e2)]: m.addConstr(
+    Constraint23[(e1, e2)]: BMP.addConstr(
         PMinPP[e1, e2] + D_abs[e1, e2] >= primary_primary_distance
     )
 
@@ -863,10 +868,10 @@ for e1, e2 in DPPrimarySecondary:
     e1_course: Course = e1.get_course()
     e2_course: Course = e2.get_course()
 
-    Constraint24[(e1, e2)]: m.addConstr(PMinPS[e1, e2] + D_abs[e1, e2] >= 1)
+    Constraint24[(e1, e2)]: BMP.addConstr(PMinPS[e1, e2] + D_abs[e1, e2] >= 1)
 
 # ------ Objective Function ------
-m.setObjective(
+BMP.setObjective(
     # Cost S1
     const.SC_PRIMARY_SECONDARY * quicksum(SPS[e, p] for e in Events for p in PA[e])
     + const.SC_SECONDARY_SECONDARY * quicksum(SSS[e, p] for e in Events for p in PA[e])
@@ -891,10 +896,25 @@ m.setObjective(
 )
 
 
+def callback(model, where):
+    if where == GRB.Callback.MIPSOL:
+        XV = model.cbGetSolution(X)
+        YV = model.cbGetSolution(Y)
+        YSet = {t for t in YV if YV[t] > 0.9}
+
+        ThetaV = model.cbGetSolution(Theta)
+
+        TotalObj = 0
+        CutsAdded = 0
+        for t in Timeslots:
+            pass
+
+
+
 print("Define Gurobi Model:", time.time() - previous_time, const.SECONDS)
 previous_time = time.time()
 # ------ Optimise -------
-m.optimize()
+BMP.optimize()
 print("Optimise Gurobi Model:", time.time() - previous_time, const.SECONDS)
 previous_time = time.time()
 
@@ -905,7 +925,7 @@ previous_time = time.time()
 #         if Y[event, period].x > 0.9:
 #             print(event, period, Y[event, period].x)
 
-print("\n\nObjective Value:", m.ObjVal, "\n\n")
+print("\n\nObjective Value:", BMP.ObjVal, "\n\n")
 
 for d in Days:
     print("------" * 10 + "\nDay ", d)
