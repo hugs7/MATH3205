@@ -54,6 +54,7 @@ COMPOSITE = "Composite"
 LARGE = "Large"
 MEDIUM = "Medium"
 SMALL = "Small"
+SINGLE_ROOMS = [SMALL, MEDIUM, LARGE]
 DUMMY = "Dummy"
 MEMBERS = "Members"
 
