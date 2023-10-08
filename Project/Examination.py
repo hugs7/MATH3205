@@ -63,6 +63,30 @@ class Examination:
 
         return self.exam_type
 
+    def is_written(self) -> bool:
+        """
+        Returns true if the examination is written
+        False otherwise
+        """
+
+        return self.exam_type == const.WRITTEN
+
+    def is_oral(self) -> bool:
+        """
+        Returns true if the examination is oral
+        False otherwise
+        """
+
+        return self.exam_type == const.ORAL
+
+    def is_written_and_oral(self) -> bool:
+        """
+        Returns true if the examination is written and oral
+        False otherwise
+        """
+
+        return self.exam_type == const.WRITTEN_AND_ORAL
+
     def get_events(self) -> List[Event]:
         """
         Returns the events that comprise the examination
