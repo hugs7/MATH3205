@@ -126,7 +126,7 @@ class Event:
         Defines repr method for events
         """
 
-        return f"{self.event_type} Event ({self.get_course_name()} - {self.examination.get_index()})"
+        return f"{self.event_type} Event ({self.get_course_name()} - {self.examination.get_index()}), {self.get_num_rooms()} {self.get_room_type()} room(s) required"
 
 
 Examination = ForwardRef("Examination.Examination")

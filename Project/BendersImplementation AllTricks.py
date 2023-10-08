@@ -877,8 +877,6 @@ setH = {
 
 # Constraint 7a: Limit only 1 sum p of Y[e, p] to be turned on for each event
 # oneP = {e: BMP.addConstr(quicksum(Y[e, p] for p in Periods) == 1) for e in Events}
-# for p in PA[e]
-# oneP = {e: m.addConstr(quicksum(Y[e, p] for p in PA[e]) == 1) for e in Events}
 
 print("Hard Constraints defined", time.time())
 # Soft Constraints
@@ -1018,8 +1016,11 @@ for e1, e2 in DPPrimarySecondary:
     e2_course: Course = e2.get_course()
 
     Constraint24[(e1, e2)]: BMP.addConstr(PMinPS[e1, e2] + D_abs[e1, e2] >= 1)
+
 print("Constraints defined", time.time())
+
 # ------ Objective Function ------
+
 BMP.setObjective(
     # Cost S1
     const.SC_PRIMARY_SECONDARY * quicksum(SPS[e, p] for e in Events for p in PA[e])
@@ -1053,29 +1054,24 @@ BMP.setObjective(
 previous_time = time.time()
 print("Defined Gurobi Model:", time.time() - previous_time, const.SECONDS)
 
-reachedOptimal = False
-iter = 0
-BMP.setParam("OutputFlag", 1)
 
-while not reachedOptimal:
-    print("Iteration " + str(iter))
-    # ------ Optimise -------
-    BMP.optimize()
-    print(
-        f"Optimise Gurobi Model ({str(iter)}): {time.time() - previous_time} {const.SECONDS}"
-    )
-    previous_time = time.time()
+def Callback(model, where):
+    if where != GRB.Callback.MIPSOL:
+        return
 
-    print("Master Problem Objective: " + str(BMP.objVal))
-    print("------" * 10)
+    print("Callback")
+    YV = model.cbGetSolution(Y)
 
+    S2RV = model.cbGetSolution(S2R)
+
+    TotalObj = 0
     numCuts = 0
 
     for p in Periods:
         # Sets
 
         # Set of events that are assigned to period p (from the master problem)
-        EventsP = [e for e in Events if Y[e, p].x > 0.9]
+        EventsP = [e for e in Events if YV[e, p] > 0.9]
 
         # Set of events assigned to period p requiring room with type room_type and # members num_rooms
         events_p_by_type_and_size: Dict[Tuple[str, int], List[Event]] = {}
@@ -1092,7 +1088,7 @@ while not reachedOptimal:
         BSP = Model("BSP for Period " + str(p))
 
         # Set output flag off/on
-        BSP.setParam("OutputFlag", 1)
+        BSP.setParam("OutputFlag", 0)
 
         # Variables in Subproblem
 
@@ -1105,10 +1101,7 @@ while not reachedOptimal:
 
         # Subproblem objective function
 
-        BSP.setObjective(
-            quicksum(UR[e] for e in EventsP),
-            GRB.MINIMIZE,
-        )
+        BSP.setObjective(quicksum(UR[e] for e in EventsP), GRB.MINIMIZE)
 
         # Subproblem Constraints
 
@@ -1159,7 +1152,7 @@ while not reachedOptimal:
         # Constraint 6: Set values of Y_(e,p)
         # This is now implicitly handled in the subproblem
         # setY = {
-        #     (e, p): BMP.addConstr(Y[e, p] - quicksum(X[e, r] for r in RA[e]) == 0)
+        #     (e, p): BSP.addConstr(Y[e, p] - quicksum(X[e, r] for r in RA[e]) == 0)
         #     for e in Events
         #     for p in PA[e]
         # }
@@ -1170,7 +1163,7 @@ while not reachedOptimal:
         # being allocated to this period
 
         if BSP.status == GRB.INFEASIBLE:
-            print("Infeasible")
+            print("Infeasible subproblem")
             # Subproblem was infeasible. Add feasability cut
 
             # Find number of events allocated to period p that request small rooms
@@ -1184,7 +1177,7 @@ while not reachedOptimal:
                 # ensuring to add the number of rooms for composite events.
                 for e in EventsP:
                     # If the event was scheduled in this period
-                    if Y[e, p].x > 0.9 and e.get_room_type() == room_type:
+                    if YV[e, p] > 0.9 and e.get_room_type() == room_type:
                         # Add the number of rooms required by the event.
                         room_allocations[room_type] += e.get_num_rooms()
 
@@ -1193,23 +1186,18 @@ while not reachedOptimal:
             # print("Num rooms available", rooms_available[p])
 
             for room_type in const.SINGLE_ROOM_TYPES:
-                print(room_type)
-
                 if max_members_by_room_type[room_type] == 0:
                     continue
 
                 for num_members in range(1, max_members_by_room_type[room_type] + 1):
-                    print(
-                        available_rooms_by_period_type_and_size[
-                            (period, room_type, num_members)
-                        ]
-                    )
-
                     # Limit the number of events allocated to period p of type room_type
                     # with num_members members
-                    BMP.addConstr(
+                    print(
+                        f"Upper bound {room_type} {num_members} , {str(sum(len(available_rooms_by_period_type_and_size[(period, room_type_star, num_members)]) for room_type_star in inverse_room_types[room_type]))}"
+                    )
+                    model.cbLazy(
                         quicksum(
-                            Y[e, p]
+                            YV[e, p]
                             for e in events_p_by_type_and_size[(room_type, num_members)]
                         )
                         <= sum(
@@ -1221,58 +1209,21 @@ while not reachedOptimal:
                             for room_type_star in inverse_room_types[room_type]
                         )
                     )
-                print()
 
-            numCuts += 1
+                    numCuts += 1
 
-        # Optimality cut
-        iter += 1
-
-        if numCuts == 0:
-            # If we haven't added any cuts in the current iteration, we can concludee have reached the optimal solution and therefore we can break
-            reachedOptimal = True
-            print("No Cuts Added")
+            # Now go solve the master problem again
+        else:
+            # BSP is feasible. Update the objective function of the master problem
+            S2RV[p] = BSP.objVal
 
 
-# def SolveBSP(p: Period, YV):
-#     """
-#     Solves the subproblem
-#     """
-
-#     global SolvesCalled
-#     SolvesCalled += 1
-
-#     _SolveBSP[p] = BSP.ObjVal
-#     return BSP.ObjVal
-
-
-# def Callback(model, where):
-#     """
-#     Callback is called when the master problem reaches an objective
-#     """
-
-#     if where == GRB.Callback.MIPSOL:
-#         YV = model.cbGetSolution(Y)
-#         YSet = {t for t in YV if YV[t] > 0.9}
-
-#         S2RV = model.cbGetSolution(S2R)
-
-#         TotalObj = 0
-#         CutsAdded = 0
-#         for p in Periods:
-#             for e in Events:
-#                 Obj = SolveBSP(p, YV)
-#                 TotalObj += Obj
-
-#                 if Obj < 0:
-#                     CutsAdded += 1
+BMP.setParam("OutputFlag", 1)
+BMP.setParam("MIPGap", 0)
+BMP.setParam("LazyConstraints", 1)
+BMP.optimize(Callback)
 
 # ------ Print output ------
-
-# for event in Events:
-#     for period in Periods:
-#         if Y[event, period].x > 0.9:
-#             print(event, period, Y[event, period].x)
 
 print("----")
 print("\n\nFinal Objective Value:", BMP.ObjVal, "\n\n")
