@@ -18,14 +18,14 @@ from Room import RoomManager, Room
 from Constraint import ConstraintManager, EventRoomConstraint
 from Course import CourseManager, Course
 from Event import Event
-from Curriculum import CurriculaManager
+from Curriculum import CurriculaManager, Curriculum
 from Period import Period
 import Constants as const
 
 previous_time = time.time()
 
 # ------ Import data ------
-instance_name = "D2-2-18.json"
+instance_name = "D1-3-16.json"
 data_file = os.path.join(".", "Project", "data", instance_name)
 
 with open(data_file, "r") as json_file:
@@ -113,7 +113,10 @@ Events: Set[Event] = set(
 # Lookup dictionary of events for a given course
 CourseEvents: Dict[Course, List[Event]] = {
     course: [
-        event for examination in Examinations for event in examination.get_events()
+        event
+        for examination in Examinations
+        if examination.get_course() == course
+        for event in examination.get_events()
     ]
     for course in Courses
 }
@@ -188,7 +191,6 @@ for event in Events:
             continue
 
         if period in forbidden_event_period_constraints[event]:
-            print("Skipping period", period, "for event", event)
             continue
 
         PA[event].append(period)
@@ -258,48 +260,45 @@ F: Set[Tuple[Event, Event]] = set()
 
 # dictionary mapping events e to the set of events in H3 hard conflict with e
 # HC_e in paper
-HC: Dict[Event, set[Event]] = {}
+HC: Dict[Event, List[Event]] = {}
 
-for course, examinations in CourseExaminations.items():
-    course: Course
-    event_course_name = course.get_course_name()
-    event_course_teacher = course.get_teacher()
+# Initialise empty list for every event
+for e in Events:
+    HC[e] = []
 
-    overlapping_primary_curriculum_courses = []
+for curriculum in curriculaManager.get_curricula():
+    curriculum: Curriculum
 
-    for curriculum in curriculaManager.get_curricula():
-        primary_course_names = curriculum.get_primary_course_names()
-        if event_course_name not in primary_course_names:
-            continue
+    curriculum_events_by_teacher: Dict[str, List[Event]] = {}
 
-        # This curricula containing the course in the primary section
-        # Add all the courses from here into the overlapping_primary_curriculum
-        for primary_course_name in primary_course_names:
-            primary_course = courseManager.get_course_by_name(primary_course_name)
-            if primary_course not in overlapping_primary_curriculum_courses:
-                overlapping_primary_curriculum_courses.append(primary_course)
+    # Get all the primary events that are part of this curriculum and taught by the same teacher
+    for course_name in curriculum.get_primary_course_names():
+        course: Course = courseManager.get_course_by_name(course_name)
 
-    # Now convert all these courses into events using the CourseEvent dictionary
-    primary_curricula_events = []
-    for course in overlapping_primary_curriculum_courses:
-        primary_curricula_events.extend(CourseEvents.get(course))
+        course_teacher = course.get_teacher()
 
-    # Find Teachers teaching the same course
-    same_teacher_courses: List[Course] = []
-    for course in courseManager.get_courses():
-        if course.get_teacher() == event_course_teacher:
-            same_teacher_courses.append(course)
+        # Get the set of events for this course
+        course_events: List[Event] = CourseEvents.get(course)
 
-    # Now convert all those same teacher courses to events
-    same_teacher_events = []
-    for course in same_teacher_courses:
-        same_teacher_events.extend(CourseEvents.get(course))
+        if course_teacher not in curriculum_events_by_teacher.keys():
+            curriculum_events_by_teacher[course_teacher] = []
 
-    conflict_set = set(primary_curricula_events).union(set(same_teacher_events))
+        curriculum_events_by_teacher[course_teacher].extend(course_events)
 
-    for event in CourseEvents[course]:
-        HC[event] = conflict_set
+    for course_name in curriculum.get_primary_course_names():
+        course: Course = courseManager.get_course_by_name(course_name)
 
+        course_teacher = course.get_teacher()
+
+        # Get the set of events for this course
+        course_events: List[Event] = CourseEvents.get(course)
+
+        for event in course_events:
+            for curriculum_event in curriculum_events_by_teacher[course_teacher]:
+                if event == curriculum_event:
+                    continue
+                HC[event].append(curriculum_event)
+            # HC[event].extend(curriculum_events_by_teacher[course_teacher])
 
 # The set of event pairs with a directed soft distance constraint. Occurs when
 # 1. Written and Oral events of the same examination
@@ -685,30 +684,41 @@ HardConflicts = {
 Precendences = {(e1, e2): m.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
 
 # Constraint 5: Some rooms, day and timeslot configurations are unavailable.
+Unavailabilities = {
+    (e, p): m.addConstr(
+        len(HC[e]) * Y[e, p] + quicksum(Y[e2, p] for e2 in HC[e]) <= len(HC[e])
+    )
+    for e in Events
+    for p in PA[e]
+}
+
+# print([len(HC[e]) + 2 for e in Events])
+# print([len(HC[e]) for e in Events])
 # Unavailabilities = {
 #     (e, p): m.addConstr(
-#         len(HC[e]) * Y[e, p] + quicksum(Y[e2, p] for e2 in HC[e]) <= len(HC[e])
+#         quicksum(Y[e2, p] for e2 in HC[e]) <= (len(HC[e]) + 2) * (1 - Y[e, p])
 #     )
 #     for e in Events
+#     if len(HC[e]) > 0
 #     for p in PA[e]
 # }
 
 # Prevent events scheduled when they aren't allowed. Alternative to constraint 5 atm
 # seems to give much more correct objective value from testing so far.
 
-PeriodScheduling = {
-    (e, p, r): m.addConstr(quicksum(X[e, p, r] for r in Rooms) == 0)
-    for e in Events
-    for p in Periods
-    if p not in PA[e]
-}
+# PeriodScheduling = {
+#     (e, p, r): m.addConstr(quicksum(X[e, p, r] for r in Rooms) == 0)
+#     for e in Events
+#     for p in Periods
+#     if p not in PA[e]
+# }
 
-RoomScheduling = {
-    (e, p, r): m.addConstr(quicksum(X[e, p, r] for p in Periods) == 0)
-    for e in Events
-    for r in Rooms  # should be without dummy
-    if r not in RA[e]
-}
+# RoomScheduling = {
+#     (e, p, r): m.addConstr(quicksum(X[e, p, r] for p in Periods) == 0)
+#     for e in Events
+#     for r in Rooms  # should be without dummy
+#     if r not in RA[e]
+# }
 
 # Constraint 6: Set values of Y_(e,p)
 setY = {

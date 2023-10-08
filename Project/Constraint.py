@@ -286,7 +286,7 @@ class ConstraintManager:
             if constr.is_event_room_constraint() and constr.is_forbidden()
         )
 
-    def get_undesired_event_room_constraints(self) -> Set[EventPeriodConstraint]:
+    def get_undesired_event_room_constraints(self) -> Set[EventRoomConstraint]:
         return set(
             constr
             for constr in self.constraints
