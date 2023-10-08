@@ -16,6 +16,7 @@ from Examination import Examination
 from Room import RoomManager, Room
 from Constraint import (
     ConstraintManager,
+    EventPeriodConstraint,
     EventRoomConstraint,
 )
 from Course import CourseManager, Course
@@ -424,6 +425,106 @@ for curricula in curriculaManager.get_curricula():
 
                     DPUndirected.add((event_a, event_b))
 
+# $P1$ the set of all unordered pairs $s$ of events $s = \{e_1, e_2\}$
+# for which there exists a curriculum with courses $c_1 \neq c_2$, not
+# both primary courses, such that $e_1$ and $e_2$ are examination events
+# for $c_1$ and $c_2$ respectively.
+
+P1: Set[frozenset[Event, Event]] = set()
+
+# Loop over curriculums
+for curricula in curriculaManager.get_curricula():
+    curriucla_course_names = curricula.get_course_names()
+    curricula_courses: List[Course] = []
+    for course_name in curriucla_course_names:
+        curricula_courses.append(courseManager.get_course_by_name(course_name))
+
+    course_exams: List[Examination] = []
+    for course_a in curricula_courses:
+        course_a: Course
+        course_exams.extend([exam for exam in course_a.get_examinations()])
+
+    for exam_a in course_exams:
+        for exam_b in course_exams:
+            exam_a: Examination
+            exam_b: Examination
+
+            exam_a_course: Course = exam_a.get_course()
+            exam_b_course: Course = exam_b.get_course()
+
+            if exam_a_course.__eq__(exam_b_course):
+                continue
+
+            if curricula.get_primary_course_names().__contains__(
+                exam_a_course.get_course_name()
+            ):
+                continue
+
+            if (
+                not course_a.is_written_and_oral()
+                and not course_b.is_written_and_oral()
+            ):
+                event_a = exam_a.get_first_event()
+                event_b = exam_b.get_first_event()
+
+                P1.add(frozenset(event_a, event_b))
+            elif course_a.is_written_and_oral and not course_b.is_written_and_oral():
+                event_a = exam_a.get_written_event()
+                event_b = exam_b.get_first_event()
+
+                P1.add(frozenset(event_a, event_b))
+
+                event_a = exam_a.get_oral_event()
+                P1.add(frozenset(event_a, event_b))
+            elif not course_a.is_written_and_oral and course_b.is_written_and_oral():
+                event_a = exam_a.get_first_event()
+                event_b = exam_b.get_written_event()
+
+                P1.add(frozenset(event_a, event_b))
+
+                event_b = exam_b.get_oral_event()
+                P1.add(frozenset(event_a, event_b))
+
+# P2P the set of all events with undesired period preferences
+P2P: Set[Event] = set()
+for event in Events:
+    event_period_constraints: Set[
+        EventPeriodConstraint
+    ] = constrManager.get_undesired_event_period_constraints()
+    for event_period_constraint in event_period_constraints:
+        course_name = event_period_constraint.get_course_name()
+        exam_num = event_period_constraint.get_exam_ordinal()
+        exam_part = event_period_constraint.get_part()
+
+        course: Course = courseManager.get_course_by_name(course_name)
+        exam: Examination = course.get_examination_by_index(exam_num)
+        if exam_part == const.ORAL:
+            event = exam.get_oral_event()
+        elif exam_part == const.WRITTEN:
+            event = exam.get_written_event()
+
+        P2P.add(event)
+
+# P2R the set of all events with undesired room preferences
+P2R: Set[Event] = set()
+for event in Events:
+    event_period_constraints: Set[
+        EventPeriodConstraint
+    ] = constrManager.get_undesired_event_room_constraints()
+    for event_period_constraint in event_period_constraints:
+        course_name = event_period_constraint.get_course_name()
+        exam_num = event_period_constraint.get_exam_ordinal()
+        exam_part = event_period_constraint.get_part()
+
+        course: Course = courseManager.get_course_by_name(course_name)
+        exam: Examination = course.get_examination_by_index(exam_num)
+        if exam_part == const.ORAL:
+            event = exam.get_oral_event()
+        elif exam_part == const.WRITTEN:
+            event = exam.get_written_event()
+
+        P2R.add(event)
+
 # SCPS
 # Dictionary mapping each primary event to the set of secondary
 # courses in the same curriculum
@@ -598,23 +699,14 @@ print(f"------\n{const.GUROBI}\n------")
 BMP = Model(const.UNIVERSITY_EXAMINATIONS)
 
 # ------ Variables ------
-# X = 1 if event e is assigned to period p and room r, 0 else
-X = {
-    (e, p, r): BMP.addVar(vtype=GRB.BINARY)
-    for e in Events
-    for p in Periods
-    for r in Rooms
-}
-
-
 # Y = 1 if event e is assigned to day d and timeslot t, 0 else (auxiliary variable)
 Y = {(e, p): BMP.addVar(vtype=GRB.BINARY) for e in Events for p in Periods}
 
 # The ordinal (order) value of the period assigned to event e
 H = {e: BMP.addVar(vtype=GRB.INTEGER) for e in Events}
 
-# Theta variable for each timeslot in T
-Theta = {t: BMP.addVar() for t in Timeslots}
+S1 = {(frozenset(e1, e2)): BMP.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in P1}
+S2 = {(frozenset(e1, e2)): BMP.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in P1}
 
 # Soft constraint counting variables. The paper claims that all of these may be
 # relaxed to be continuous.
@@ -653,36 +745,9 @@ D_actual_abs_2 = {
 
 # ------ Constraints ------
 
-# Constraint 1: Each event assigned to an available period and room.
-RoomRequest = {
-    e: BMP.addConstr(quicksum(X[e, p, r] for p in PA[e] for r in RA[e]) == 1)
-    for e in Events
-}
-
-# Constraint 2: At most one event can use a room at once.
-RoomOccupation = {
-    (r, p): BMP.addConstr(quicksum(X[e, p, r] for e in Events) <= 1)
-    for r in Rooms
-    if r is not dummy_room
-    for p in Periods
-}
-
-# Constraint 3: Two events must have different periods if they are in hard conflict
-# Occurs in the following cases:
-#   - They are part of the same primary curriculum
-#   - They have the same teacher
-# M: Number of elements (rooms maybe - confirm with Michael) in the overlapping roomconcat
-# rc is room-composite   - Rooms that are composite
-# ro is room-overlapping - Rooms that overlap in a composite room
-
-HardConflicts = {
-    (cr, p): BMP.addConstr(
-        (len(R0[cr])) * quicksum(X[e, p, cr] for e in Events)
-        + quicksum(X[e, p, ro] for e in Events for ro in R0[cr])
-        <= (len(R0[cr]))
-    )
-    for cr in CompositeRooms
-    for p in Periods
+# Limits every event to be assigned exactly 1 period
+OnePeriodPerEvent = {
+    e: BMP.addConsstr(quicksum(Y[e, p] for p in Periods) == 1) for e in Events
 }
 
 # Constraint 4: Some events must precede other events (hard constraint).
@@ -701,7 +766,7 @@ Precendences = {(e1, e2): BMP.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
 # seems to give much more correct objective value from testing so far.
 
 PeriodScheduling = {
-    (e, p, r): BMP.addConstr(quicksum(X[e, p, r] for r in Rooms) == 0)
+    (e, p): BMP.addConstr(Y[e, p] == 0)
     for e in Events
     for p in Periods
     if p not in PA[e]
@@ -897,16 +962,78 @@ BMP.setObjective(
 
 # Solve master problem
 # solve subproblem
-#
+
+BSP = Model()
+BSP.setParam("OutputFlag", 0)
+
+# X = 1 if event e is assigned to period p and room r, 0 else
+X = {
+    (e, p, r): BSP.addVar(vtype=GRB.BINARY)
+    for e in Events
+    for p in Periods
+    for r in Rooms
+}
+
+# Constraint 1: Each event assigned to an available period and room.
+RoomRequest = {
+    e: BSP.addConstr(quicksum(X[e, p, r] for p in PA[e] for r in RA[e]) == 1)
+    for e in Events
+}
+
+# Constraint 2: At most one event can use a room at once.
+RoomOccupation = {
+    (r, p): BSP.addConstr(quicksum(X[e, p, r] for e in Events) <= 1)
+    for r in Rooms
+    if r is not dummy_room
+    for p in Periods
+}
+
+# Constraint 3: Two events must have different periods if they are in hard conflict
+# Occurs in the following cases:
+#   - They are part of the same primary curriculum
+#   - They have the same teacher
+# M: Number of elements in the overlapping roomconcat sum
+# rc is room-composite   - Rooms that are composite
+# ro is room-overlapping - Rooms that overlap in a composite room
+
+HardConflicts = {
+    (cr, p): BMP.addConstr(
+        (len(R0[cr])) * quicksum(X[e, p, cr] for e in Events)
+        + quicksum(X[e, p, ro] for e in Events for ro in R0[cr])
+        <= (len(R0[cr]))
+    )
+    for cr in CompositeRooms
+    for p in Periods
+}
+
+
+_SolveBSP = {}
+SolvesCalled = 0
+
+
+def SolveBSP(AZero):
+    global SolvesCalled
+    SolvesCalled += 1
+    if AZero not in _SolveBSP:
+        BSP.setObjective(
+            quicksum(
+                AZero[e, p, r] * X[e, p, r]
+                for e in Events
+                for p in Periods
+                for r in Rooms
+            ),
+            GRB.MAXIMIZE,
+        )
+        BSP.optimize()
+        _SolveBSP[AZero] = BSP.ObjVal
 
 
 def callback(model, where):
     if where == GRB.Callback.MIPSOL:
-        XV = model.cbGetSolution(X)
         YV = model.cbGetSolution(Y)
         YSet = {t for t in YV if YV[t] > 0.9}
 
-        ThetaV = model.cbGetSolution(Theta)
+        S1V = model.cbGetSolution(S1)
 
         TotalObj = 0
         CutsAdded = 0

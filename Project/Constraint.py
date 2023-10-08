@@ -98,7 +98,7 @@ class EventPeriodConstraint(Constraint):
 
         self.course_name = constraint_data.get(const.COURSE)
         self.period: Period = Period.from_period_number(
-            constraint_data.get("Period"), slots_per_day
+            constraint_data.get(const.PERIOD), slots_per_day
         )
         self.exam_ordinal = constraint_data.get(const.EXAM)
 
@@ -108,8 +108,9 @@ class EventPeriodConstraint(Constraint):
         """
         Get the 'Course' attribute.
         Returns:
-            Optional[str]: The 'Course' value or None if it doesn't exist.
+            str: The name of the course the event period constraint pertains to.
         """
+
         return self.course_name
 
     def __repr__(self):
@@ -124,6 +125,7 @@ class EventPeriodConstraint(Constraint):
         Returns:
             Optional[str]: The 'Period' value or None if it doesn't exist.
         """
+
         return self.period
 
     def get_exam_ordinal(self) -> int:
