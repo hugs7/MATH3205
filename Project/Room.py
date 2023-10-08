@@ -140,7 +140,7 @@ class RoomManager:
 
     def get_single_rooms(self) -> list[Room]:
         """
-        Gets list of non-composite (small and large) rooms stored by the RoomManager
+        Gets list of non-composite (small, medium and large) rooms stored by the RoomManager
         """
 
         return [
@@ -148,6 +148,27 @@ class RoomManager:
             for r in self.rooms
             if r.get_type() != const.COMPOSITE and r.get_type() != const.DUMMY
         ]
+
+    def get_small_rooms(self) -> list[Room]:
+        """
+        Gets list of small rooms stored by the RoomManager
+        """
+
+        return [r for r in self.rooms if r.get_type() == const.SMALL]
+
+    def get_medium_rooms(self) -> list[Room]:
+        """
+        Gets list of medium rooms stored by the RoomManager
+        """
+
+        return [r for r in self.rooms if r.get_type() == const.MEDIUM]
+
+    def get_large_rooms(self) -> list[Room]:
+        """
+        Gets list of large rooms stored by the RoomManager
+        """
+
+        return [r for r in self.rooms if r.get_type() == const.LARGE]
 
     def get_dummy_room(self) -> Room:
         """
