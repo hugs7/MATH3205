@@ -26,7 +26,7 @@ from Utils import concat
 previous_time = time.time()
 
 # ------ Import data ------
-instance_name = "D1-3-16.json"
+instance_name = "D3-3-16.json"
 data_file = os.path.join(".", "Project", "data", instance_name)
 
 with open(data_file, "r") as json_file:
