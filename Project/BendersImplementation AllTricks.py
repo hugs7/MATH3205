@@ -757,10 +757,11 @@ for p in Periods:
 
     # For now just constrain number of events to number of rooms available in the period
     # regardless of type
-    # BMP.addConstr(
-    #     quicksum(e.get_num_rooms() * Y[e, p] for e in Events if e.get_num_rooms() > 0)
-    #     <= rooms_available[p]
-    # )
+    
+    BMP.addConstr(
+        quicksum(e.get_num_rooms() * Y[e, p] for e in Events if e.get_num_rooms() > 0)
+        <= rooms_available[p]
+    )
 
     # Number of rooms available by size per period
     # This will be handy for callback
