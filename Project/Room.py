@@ -3,7 +3,7 @@ Class for handing rooms in the problem
 """
 
 import Constants as const
-from typing import Iterator, Dict, List
+from typing import Iterator, Dict, List, Tuple
 
 
 class Room:
@@ -18,7 +18,31 @@ class Room:
             self.members = room_data.get(const.MEMBERS, [])
 
     def __repr__(self) -> str:
+        """
+        Repr method for Room
+        """
+
+        if self.is_composite():
+            return f"{self.room} ({self.room_type}) - {self.members}"
+
         return f"{self.room} ({self.room_type})"
+
+    def __eq__(self, __value: object) -> bool:
+        """
+        Returns true if room is equal to other room
+        """
+
+        if not isinstance(__value, Room):
+            return False
+
+        return self.room == __value.room
+
+    def __hash__(self) -> int:
+        """
+        Returns hash of room
+        """
+
+        return hash(self.room)
 
     def get_room(self) -> str:
         """
@@ -137,6 +161,92 @@ class RoomManager:
         """
 
         return [r for r in self.rooms if r.get_type() == const.COMPOSITE]
+
+    def get_rooms_by_size(self) -> Dict[str, List[Room]]:
+        """
+        Gets list of all rooms stored by the RoomManager grouped by size and
+        number of members in a dictionary.
+        """
+
+        rooms_by_type_and_size: Dict[Tuple[str, int], List[Room]] = {}
+
+        for room_type in const.SINGLE_ROOM_TYPES:
+            rooms = self.get_rooms()
+            for room in rooms:
+                if room.is_composite():
+                    room_members = room.get_members()
+
+                    # Can just use the first room to get size given all rooms in composite room
+                    # are the same size (homogeneous)
+                    room_member_type = self.get_room_by_name(room_members[0]).get_type()
+
+                    num_room_members = len(room_members)
+                else:
+                    num_room_members = 1
+                    room_member_type = room.get_type()
+
+                if (room_type, num_room_members) not in rooms_by_type_and_size.keys():
+                    rooms_by_type_and_size[(room_type, num_room_members)] = []
+
+                if room_member_type != room_type:
+                    continue
+
+                rooms_by_type_and_size[(room_member_type, num_room_members)].append(
+                    room
+                )
+
+        return rooms_by_type_and_size
+
+    def get_rooms_given_size_and_num_rooms(
+        self, room_type: str, num_rooms: int
+    ) -> List[Room]:
+        """
+        Gets list of rooms stored by the RoomManager given a room type and number of room members
+        number of room members = 1 => single room
+        number of room members > 1 => composite room
+        """
+
+        get_rooms_by_type_and_size = self.get_rooms_by_size()
+
+        return get_rooms_by_type_and_size[(room_type, num_rooms)]
+
+    def get_max_members_by_room_type(self) -> Dict[str, int]:
+        """
+        Returns the maximum number of memers in a room by room type in a dictionary
+        1 if only single rooms of that room_type exist.
+        0 if no rooms of that room_type exist.
+        """
+
+        max_members_by_room_type: Dict[str, int] = {}
+
+        for size in const.SINGLE_ROOM_TYPES:
+            # Initialise max members for each room type to 0
+            if size not in max_members_by_room_type.keys():
+                max_members_by_room_type[size] = 0
+
+            rooms = self.get_rooms()
+            for room in rooms:
+                room: Room
+                if room.is_composite():
+                    room_members = room.get_members()
+
+                    # Can just use the first room to get size given all rooms in composite room
+                    # are the same size (homogeneous)
+                    room_member_type = self.get_room_by_name(room_members[0]).get_type()
+
+                    num_room_members = len(room_members)
+                else:
+                    num_room_members = 1
+                    room_member_type = room.get_type()
+
+                if room_member_type != size:
+                    continue
+
+                max_members_by_room_type[size] = max(
+                    max_members_by_room_type[size], num_room_members
+                )
+
+        return max_members_by_room_type
 
     def get_single_rooms(self) -> list[Room]:
         """

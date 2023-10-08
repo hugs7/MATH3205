@@ -65,11 +65,11 @@ class RoomPeriodConstraint(Constraint):
         return f"Forbidden Room {self.room} at Period {self.period}"
 
     # Getter method for 'Room' attribute
-    def get_room(self) -> str:
+    def get_room_name(self) -> str:
         """
         Get the 'Room' attribute.
         Returns:
-            str: The 'Room' value or None if it doesn't exist.
+            str: The name of the room the RoomPeriodConstraint pertains to.
         """
         return self.room
 
@@ -276,12 +276,12 @@ class ConstraintManager:
         )
 
     # Event room Constraiats
-    def get_event_room_constraints(self) -> Set[EventPeriodConstraint]:
+    def get_event_room_constraints(self) -> Set[EventRoomConstraint]:
         return set(
             constr for constr in self.constraints if constr.is_event_room_constraint()
         )
 
-    def get_forbidden_event_room_constraints(self) -> Set[EventPeriodConstraint]:
+    def get_forbidden_event_room_constraints(self) -> Set[EventRoomConstraint]:
         return set(
             constr
             for constr in self.constraints

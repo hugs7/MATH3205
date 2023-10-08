@@ -29,7 +29,8 @@ class RoomsRequested:
 
     def get_type(self) -> str:
         """
-        Returns the type of the room requested
+        Returns the type of the room requested. When the event is to be held in
+        multiple rooms (composite), the type returned is small, medium or large not composite
         """
 
         return self.type
