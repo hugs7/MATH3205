@@ -29,7 +29,7 @@ class Room:
 
     def get_type(self) -> str:
         """
-        Returns type of room
+        Returns type of room SMALL, MEDIUM, LARGE or COMPOSITE
         """
 
         return self.room_type
@@ -169,6 +169,13 @@ class RoomManager:
         """
 
         return [r for r in self.rooms if r.get_type() == const.LARGE]
+
+    def get_single_rooms_by_type(self, room_type: str) -> list[Room]:
+        """
+        Gets list of single rooms of a given type stored by the RoomManager
+        """
+
+        return [r for r in self.rooms if r.get_type() == room_type]
 
     def get_dummy_room(self) -> Room:
         """
