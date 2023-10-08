@@ -1,0 +1,600 @@
+{
+  "Assignments": [
+    {
+      "Course": "1425",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 0
+        }
+      ]
+    },
+    {
+      "Course": "1441",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 0
+        }
+      ]
+    },
+    {
+      "Course": "1418",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 0
+        }
+      ]
+    },
+    {
+      "Course": "1419",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Oral",
+          "Period": 0
+        }
+      ]
+    },
+    {
+      "Course": "1442",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Oral",
+          "Period": 0
+        }
+      ]
+    },
+    {
+      "Course": "1426-1427",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 0
+        },
+        {
+          "Exam": 0,
+          "Part": "Oral",
+          "Period": 17
+        }
+      ]
+    },
+    {
+      "Course": "1464-1465",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 0
+        },
+        {
+          "Exam": 0,
+          "Part": "Oral",
+          "Period": 23
+        }
+      ]
+    },
+    {
+      "Course": "1420",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 0
+        }
+      ]
+    },
+    {
+      "Course": "1451",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Oral",
+          "Period": 0
+        }
+      ]
+    },
+    {
+      "Course": "1435",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 0
+        }
+      ]
+    },
+    {
+      "Course": "1428",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 0
+        }
+      ]
+    },
+    {
+      "Course": "1466",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 0
+        }
+      ]
+    },
+    {
+      "Course": "1421",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 0
+        }
+      ]
+    },
+    {
+      "Course": "1452",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Oral",
+          "Period": 0
+        }
+      ]
+    },
+    {
+      "Course": "1436",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 0
+        }
+      ]
+    },
+    {
+      "Course": "1448",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 0
+        }
+      ]
+    },
+    {
+      "Course": "1429",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 0
+        }
+      ]
+    },
+    {
+      "Course": "1422",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 0
+        }
+      ]
+    },
+    {
+      "Course": "1460",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 0
+        }
+      ]
+    },
+    {
+      "Course": "1437",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 0
+        }
+      ]
+    },
+    {
+      "Course": "1423",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 0
+        }
+      ]
+    },
+    {
+      "Course": "1439",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 0
+        }
+      ]
+    },
+    {
+      "Course": "1431",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Oral",
+          "Period": 0
+        }
+      ]
+    },
+    {
+      "Course": "1469-1470",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 0
+        },
+        {
+          "Exam": 0,
+          "Part": "Oral",
+          "Period": 19
+        }
+      ]
+    },
+    {
+      "Course": "1417",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 0
+        }
+      ]
+    },
+    {
+      "Course": "1440",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 0
+        }
+      ]
+    },
+    {
+      "Course": "1432-1433",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 15
+        },
+        {
+          "Exam": 0,
+          "Part": "Oral",
+          "Period": 28
+        }
+      ]
+    },
+    {
+      "Course": "1457",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Oral",
+          "Period": 29
+        }
+      ]
+    },
+    {
+      "Course": "1474",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 29
+        }
+      ]
+    },
+    {
+      "Course": "1454",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 29
+        }
+      ]
+    },
+    {
+      "Course": "1462",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 42
+        }
+      ]
+    },
+    {
+      "Course": "1446",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 44
+        }
+      ]
+    },
+    {
+      "Course": "1455",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 59
+        }
+      ]
+    },
+    {
+      "Course": "1471",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 62
+        }
+      ]
+    },
+    {
+      "Course": "1472",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 64
+        }
+      ]
+    },
+    {
+      "Course": "1598",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Oral",
+          "Period": 69
+        }
+      ]
+    },
+    {
+      "Course": "1449",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 85
+        }
+      ]
+    },
+    {
+      "Course": "1468",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 90
+        }
+      ]
+    },
+    {
+      "Course": "1475",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 94
+        }
+      ]
+    },
+    {
+      "Course": "1459",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Oral",
+          "Period": 95
+        }
+      ]
+    },
+    {
+      "Course": "1447",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 95
+        }
+      ]
+    },
+    {
+      "Course": "1450",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Oral",
+          "Period": 96
+        }
+      ]
+    },
+    {
+      "Course": "1463",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 97
+        }
+      ]
+    },
+    {
+      "Course": "1597",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Oral",
+          "Period": 107
+        }
+      ]
+    },
+    {
+      "Course": "1444",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 126
+        }
+      ]
+    },
+    {
+      "Course": "1445",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 126
+        }
+      ]
+    },
+    {
+      "Course": "1453",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 126
+        }
+      ]
+    },
+    {
+      "Course": "1476-1477",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 126
+        },
+        {
+          "Exam": 0,
+          "Part": "Oral",
+          "Period": 155
+        }
+      ]
+    },
+    {
+      "Course": "1478",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 128
+        }
+      ]
+    },
+    {
+      "Course": "1424",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 128
+        }
+      ]
+    },
+    {
+      "Course": "1467",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 130
+        }
+      ]
+    },
+    {
+      "Course": "1434",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 142
+        }
+      ]
+    },
+    {
+      "Course": "1461",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 149
+        }
+      ]
+    },
+    {
+      "Course": "1456",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Oral",
+          "Period": 155
+        }
+      ]
+    },
+    {
+      "Course": "1458",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 155
+        }
+      ]
+    },
+    {
+      "Course": "1473",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 155
+        }
+      ]
+    },
+    {
+      "Course": "1430",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 155
+        }
+      ]
+    }
+  ],
+  "Cost": 424
+}

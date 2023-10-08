@@ -17,6 +17,26 @@ class Event:
 
         self.course: Course = examination.get_course()
 
+    def __eq__(self, other: object) -> bool:
+        """
+        Returns true if event is equal to other event
+        """
+
+        if not isinstance(other, Event):
+            return False
+
+        return (
+            self.examination == other.examination
+            and self.event_type == other.event_type
+        )
+
+    def __hash__(self) -> int:
+        """
+        Returns hash of event
+        """
+
+        return hash((self.examination, self.event_type))
+
     def get_examination(self) -> "Examination":
         """
         Returns course that exam event belongs to
