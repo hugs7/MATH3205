@@ -75,13 +75,12 @@ class Event:
         from Course import Course, WrittenOralSpecs
 
         examination: Examination = self.get_examination()
-        exam_type = examination.get_exam_type()
         course: Course = self.get_course()
 
         if examination.is_written():
-            return course.get_rooms_requested() > 0
+            return course.get_rooms_requested().get_number() > 0
         elif examination.is_oral():
-            return course.get_rooms_requested() > 0
+            return course.get_rooms_requested().get_number() > 0
         elif examination.is_written_and_oral():
             written_oral_specs: WrittenOralSpecs = course.get_written_oral_specs()
             room_required_for_oral = written_oral_specs.get_room_for_oral()
@@ -91,8 +90,14 @@ class Event:
         """
         Returns the number of rooms requested by the event
         """
+
+        from Course import Course, RoomsRequested
+
+        course: Course = self.get_course()
+        rooms_requested: RoomsRequested = course.get_rooms_requested()
+
         if self.room_required():
-            return self.course.get_rooms_requested().get_number()
+            return rooms_requested.get_number()
         return 0
 
     def get_room_type(self) -> str:
