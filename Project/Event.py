@@ -78,9 +78,9 @@ class Event:
         course: Course = self.get_course()
 
         if examination.is_written():
-            return course.get_rooms_requested().get_number() > 0
+            return self.get_num_rooms() > 0
         elif examination.is_oral():
-            return course.get_rooms_requested().get_number() > 0
+            return self.get_num_rooms() > 0
         elif examination.is_written_and_oral():
             written_oral_specs: WrittenOralSpecs = course.get_written_oral_specs()
             room_required_for_oral = written_oral_specs.get_room_for_oral()
