@@ -757,7 +757,7 @@ for p in Periods:
 
     # For now just constrain number of events to number of rooms available in the period
     # regardless of type
-    
+
     BMP.addConstr(
         quicksum(e.get_num_rooms() * Y[e, p] for e in Events if e.get_num_rooms() > 0)
         <= rooms_available[p]
@@ -1055,8 +1055,11 @@ BMP.setObjective(
 previous_time = time.time()
 print("Defined Gurobi Model:", time.time() - previous_time, const.SECONDS)
 
+counter = -1
+
 
 def Callback(model, where):
+    global counter
     if where != GRB.Callback.MIPSOL:
         return
 
@@ -1165,6 +1168,7 @@ def Callback(model, where):
 
         if BSP.status == GRB.INFEASIBLE:
             print("Infeasible subproblem")
+            counter += 1
             # Subproblem was infeasible. Add feasability cut
 
             # Find number of events allocated to period p that request small rooms
@@ -1194,7 +1198,7 @@ def Callback(model, where):
                     # Limit the number of events allocated to period p of type room_type
                     # with num_members members
                     print(
-                        f"Upper bound {room_type} {num_members} , {str(sum(len(available_rooms_by_period_type_and_size[(period, room_type_star, num_members)]) for room_type_star in inverse_room_types[room_type]))}"
+                        f"Upper bound {room_type} {num_members} , {str(sum(len(available_rooms_by_period_type_and_size[(period, room_type_star, num_members)]) for room_type_star in inverse_room_types[room_type])- counter) }"
                     )
                     model.cbLazy(
                         quicksum(
@@ -1209,6 +1213,7 @@ def Callback(model, where):
                             )
                             for room_type_star in inverse_room_types[room_type]
                         )
+                        - counter
                     )
 
                     numCuts += 1
