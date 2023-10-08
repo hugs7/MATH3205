@@ -67,14 +67,25 @@ class Event:
 
     def room_required(self) -> bool:
         """
-        Returns if any room(s) are required for this event
+        Returns if any room(s) excluding dummy are required for this event
+        If the event is oral, no room is required
+        If the event is written and a room is
         """
+        from Examination import Examination
+        from Course import Course, WrittenOralSpecs
 
-        return not (
-            self.get_event_type() == const.ORAL
-            and self.get_examination().get_exam_type() == const.WRITTEN_AND_ORAL
-            and not self.get_course().get_written_oral_specs().get_room_for_oral()
-        )
+        examination: Examination = self.get_examination()
+        exam_type = examination.get_exam_type()
+        course: Course = self.get_course()
+
+        if examination.is_written():
+            return course.get_rooms_requested() > 0
+        elif examination.is_oral():
+            return course.get_rooms_requested() > 0
+        elif examination.is_written_and_oral():
+            written_oral_specs: WrittenOralSpecs = course.get_written_oral_specs()
+            room_required_for_oral = written_oral_specs.get_room_for_oral()
+            return room_required_for_oral
 
     def get_num_rooms(self) -> int:
         """
