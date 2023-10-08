@@ -231,6 +231,11 @@ available_types[const.MEDIUM] = [const.MEDIUM, const.LARGE]
 available_types[const.LARGE] = [const.LARGE]
 available_types[const.COMPOSITE] = [const.COMPOSITE]
 
+inverse_room_types: Dict[str, str] = {}
+inverse_room_types[const.SMALL] = [const.SMALL]
+inverse_room_types[const.MEDIUM] = [const.SMALL, const.MEDIUM]
+inverse_room_types[const.LARGE] = [const.SMALL, const.MEDIUM, const.LARGE]
+
 for event in Events:
     if event.get_num_rooms() == 0:
         # No room required. Set of dummy room
@@ -1207,10 +1212,13 @@ while not reachedOptimal:
                             Y[e, p]
                             for e in events_p_by_type_and_size[(room_type, num_members)]
                         )
-                        <= len(
-                            available_rooms_by_period_type_and_size[
-                                (period, room_type, num_members)
-                            ]
+                        <= sum(
+                            len(
+                                available_rooms_by_period_type_and_size[
+                                    (period, room_type_star, num_members)
+                                ]
+                            )
+                            for room_type_star in inverse_room_types[room_type]
                         )
                     )
                 print()
