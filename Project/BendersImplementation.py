@@ -614,7 +614,7 @@ Y = {(e, p): BMP.addVar(vtype=GRB.BINARY) for e in Events for p in Periods}
 H = {e: BMP.addVar(vtype=GRB.INTEGER) for e in Events}
 
 # Theta variable for each timeslot in T
-Theta = {t: BMP.addVar() for t in T}
+Theta = {t: BMP.addVar() for t in Timeslots}
 
 # Soft constraint counting variables. The paper claims that all of these may be
 # relaxed to be continuous.
@@ -895,6 +895,10 @@ BMP.setObjective(
     GRB.MINIMIZE,
 )
 
+# Solve master problem
+# solve subproblem
+#
+
 
 def callback(model, where):
     if where == GRB.Callback.MIPSOL:
@@ -906,15 +910,17 @@ def callback(model, where):
 
         TotalObj = 0
         CutsAdded = 0
-        for t in Timeslots:
-            pass
-
+        for p in Periods:
+            for e in Events:
+                if YV[e, p].x > 0.9:
+                    print("Hello", e, p)
 
 
 print("Define Gurobi Model:", time.time() - previous_time, const.SECONDS)
 previous_time = time.time()
 # ------ Optimise -------
-BMP.optimize()
+BMP.setParam("OutputFlag", 0)
+BMP.optimize(callback)
 print("Optimise Gurobi Model:", time.time() - previous_time, const.SECONDS)
 previous_time = time.time()
 
