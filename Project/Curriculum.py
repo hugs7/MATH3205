@@ -55,5 +55,18 @@ class CurriculaManager:
 
         return self.curricula
 
+    def get_curricula_by_name(self, course_name: str) -> Curriculum:
+        """
+        Finds course by name and returns course instance
+        Raises a CourseNotFoundException if the course is not managed by
+        this CourseManager
+        """
+        curricula_list = []
+        for curricula in self.curricula:
+            if course_name in curricula.get_course_names():
+                curricula_list.append(curricula)
+
+        return curricula_list
+
     def __str__(self):
         return "\n\n".join([str(curriculum) for curriculum in self.curricula])

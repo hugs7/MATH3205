@@ -150,6 +150,8 @@ class EventRoomConstraint(Constraint):
         self.course_name = constraint_data.get(const.COURSE)
         self.room = constraint_data.get(const.ROOM)
         self.part = constraint_data.get(const.PART)
+        self.exam_ordinal = constraint_data.get(const.EXAM)
+
 
     def get_course_name(self) -> str:
         """
@@ -274,19 +276,19 @@ class ConstraintManager:
         )
 
     # Event room Constraiats
-    def get_event_room_constraints(self) -> Set[EventPeriodConstraint]:
+    def get_event_room_constraints(self) -> Set[EventRoomConstraint]:
         return set(
             constr for constr in self.constraints if constr.is_event_room_constraint()
         )
 
-    def get_forbidden_event_room_constraints(self) -> Set[EventPeriodConstraint]:
+    def get_forbidden_event_room_constraints(self) -> Set[EventRoomConstraint]:
         return set(
             constr
             for constr in self.constraints
             if constr.is_event_room_constraint() and constr.is_forbidden()
         )
 
-    def get_undesired_event_room_constraints(self) -> Set[EventPeriodConstraint]:
+    def get_undesired_event_room_constraints(self) -> Set[EventRoomConstraint]:
         return set(
             constr
             for constr in self.constraints

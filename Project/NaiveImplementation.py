@@ -25,7 +25,7 @@ import Constants as const
 previous_time = time.time()
 
 # ------ Import data ------
-instance_name = "toy.json"
+instance_name = "D2-1-18.json"
 data_file = os.path.join(".", "Project", "data", instance_name)
 
 with open(data_file, "r") as json_file:
