@@ -29,7 +29,7 @@ import Constants as const
 previous_time = time.time()
 
 # ------ Import data ------
-data_file = os.path.join(".", "Project", "data", "D1-3-16.json")
+data_file = os.path.join(".", "Project", "data", "D3-1-16.json")  #
 
 with open(data_file, "r") as json_file:
     json_data = json_file.read()
@@ -231,10 +231,14 @@ available_types[const.MEDIUM] = [const.MEDIUM, const.LARGE]
 available_types[const.LARGE] = [const.LARGE]
 available_types[const.COMPOSITE] = [const.COMPOSITE]
 
-inverse_room_types: Dict[str, str] = {}
-inverse_room_types[const.SMALL] = [const.SMALL]
-inverse_room_types[const.MEDIUM] = [const.SMALL, const.MEDIUM]
-inverse_room_types[const.LARGE] = [const.SMALL, const.MEDIUM, const.LARGE]
+inverse_room_types: Dict[Tuple[str, int], str] = {}
+inverse_room_types[(const.SMALL, 1)] = [const.SMALL, const.MEDIUM, const.LARGE]
+inverse_room_types[(const.MEDIUM, 1)] = [const.MEDIUM, const.LARGE]
+inverse_room_types[(const.LARGE, 1)] = [const.LARGE]
+for num_members in range(2, 6):
+    for room_type in const.ROOM_TYPES:
+        inverse_room_types[(room_type, num_members)] = [room_type]
+
 
 for event in Events:
     if event.get_num_rooms() == 0:
@@ -738,7 +742,8 @@ OnePeriodPerEvent = {
 num_rooms: int = len(Rooms.get_single_rooms())
 
 # Rooms available per period
-rooms_available: Dict[Period, int] = {}
+# Dict mapping (Period, room_type, room_size) to number of rooms available
+rooms_available: Dict[Tuple[Period, str, int], int] = {}
 
 print(time.time())
 # Rooms available by size per period
@@ -749,24 +754,45 @@ undesired_rooms_by_period_and_type: Dict[
     Tuple[Period, Union[const.SMALL, const.MEDIUM, const.LARGE]], List[Room]
 ] = {}
 
+# for room_type in const.ROOM_TYPES:
+#     print("\nRoom Type", room_type)
+#     for room_size in range(1, 4):
+#         print("\nRoom Size", room_size)
+#         print(Rooms.get_independence_number(room_type, room_size))
+
 for p in Periods:
-    rooms_available[p]: int = num_rooms
-    for forbidden_room_period_constraint in forbidden_room_period_constraints:
-        if forbidden_room_period_constraint.get_period() == p:
-            rooms_available[p] -= 1
+    for room_type in const.ROOM_TYPES:
+        for room_size in range(1, 4):
+            # Set to the number of rooms of this type and size
+            rooms_available[
+                p, room_type, room_size
+            ]: int = Rooms.get_num_compatible_rooms(room_type, room_size)
 
-    # For now just constrain number of events to number of rooms available in the period
-    # regardless of type
+            # Subtract any forbidden rooms. Only considering forbidden room period constraints here.
+            for forbidden_room_period_constraint in forbidden_room_period_constraints:
+                frpc_period = forbidden_room_period_constraint.get_period()
+                frpc_room: Room = Rooms.get_room_by_name(
+                    forbidden_room_period_constraint.get_room_name()
+                )
+                frpc_room_type = frpc_room.get_type()
+                frpc_room_size = frpc_room.get_size()
 
-    BMP.addConstr(
-        quicksum(e.get_num_rooms() * Y[e, p] for e in Events if e.get_num_rooms() > 0)
-        <= rooms_available[p]
-    )
+                if (
+                    frpc_period == p
+                    and frpc_room_type == room_type
+                    and frpc_room_size in inverse_room_types[room_type, room_size]
+                ):
+                    rooms_available[p, room_type, room_size] -= 1
+
+            BMP.addConstr(
+                quicksum(Y[e, p] for e in Events)
+                <= rooms_available[p, room_type, room_size]
+            )
 
     # Number of rooms available by size per period
     # This will be handy for callback
 
-    for room_type in const.SINGLE_ROOM_TYPES:
+    for room_type in const.ROOM_TYPES:
         # Initialise empty list for every period and room type
         forbidden_rooms_by_period_and_type[(p, room_type)] = []
         undesired_rooms_by_period_and_type[(p, room_type)] = []
@@ -790,7 +816,7 @@ for p in Periods:
             if room.get_type() != room_type:
                 continue
 
-            print("Adding forbidden room in period", p, room_type, room)
+            # print("Adding forbidden room in period", p, room_type, room)
 
             forbidden_rooms_by_period_and_type[(p, room_type)].append(room)
 
@@ -822,7 +848,7 @@ for p in Periods:
             if room.get_type() != room_type:
                 continue
 
-            print("Adding undesired room in period", p, room_type, room_name)
+            # print("Adding undesired room in period", p, room_type, room_name)
 
             undesired_rooms_by_period_and_type[(p, room_type)].append(room_name)
 
@@ -833,7 +859,7 @@ for p in Periods:
 available_rooms_by_period_type_and_size: Dict[Tuple[Period, str, int], List[Room]] = {}
 # Begin by assigning all periods to have the same number of available rooms
 for period in Periods:
-    for room_type in const.SINGLE_ROOM_TYPES:
+    for room_type in const.ROOM_TYPES:
         if max_members_by_room_type.get(room_type) == 0:
             continue
 
@@ -842,7 +868,7 @@ for period in Periods:
                 (period, room_type, num_members)
             ] = [
                 room
-                for room in Rooms.get_rooms_given_size_and_num_rooms(
+                for room in Rooms.get_rooms_by_size_and_num_rooms(
                     room_type, num_members
                 )
                 if room not in forbidden_rooms_by_period_and_type[(period, room_type)]
@@ -1028,13 +1054,7 @@ BMP.setObjective(
     + const.SC_SECONDARY_SECONDARY * quicksum(SSS[e, p] for e in Events for p in PA[e])
     # Cost S2
     + quicksum(UndesiredPeriodCost[e, p] * Y[e, p] for e in Events for p in PA[e])
-    + quicksum(const.P_UNDESIRED_ROOM * S2R[p] for p in Periods)
-    # + quicksum(
-    #     UndesiredRoomCost[e, r] * X[e, p, r]
-    #     for e in Events
-    #     for p in PA[e]
-    #     for r in RA[e]
-    # )
+    + const.P_UNDESIRED_ROOM * quicksum(S2R[p] for p in Periods)
     # Cost S3
     + const.DD_SAME_COURSE * quicksum(PMinE[e1, e2] for (e1, e2) in DPSameCourse)
     + const.DD_SAME_EXAMINATION
@@ -1078,7 +1098,7 @@ def Callback(model, where):
 
         # Set of events assigned to period p requiring room with type room_type and # members num_rooms
         events_p_by_type_and_size: Dict[Tuple[str, int], List[Event]] = {}
-        for room_type in const.SINGLE_ROOM_TYPES:
+        for room_type in const.ROOM_TYPES:
             for num_members in range(1, max_members_by_room_type[room_type] + 1):
                 events_p_by_type_and_size[(room_type, num_members)] = [
                     e
@@ -1166,13 +1186,13 @@ def Callback(model, where):
         # being allocated to this period
 
         if BSP.status == GRB.INFEASIBLE:
-            print("Infeasible subproblem")
+            print("##############Infeasible subproblem")
             counter += 1
             # Subproblem was infeasible. Add feasability cut
 
             # Find number of events allocated to period p that request small rooms
             room_allocations: Dict[str, int] = {}
-            for room_type in const.SINGLE_ROOM_TYPES:
+            for room_type in const.ROOM_TYPES:
                 # Initialise allocations to 0 if not set already
                 if room_allocations.get(room_type) is None:
                     room_allocations[room_type] = 0
@@ -1187,33 +1207,89 @@ def Callback(model, where):
 
             # Just remember that a room request of small can use larger rooms
             # but this doesn't apply to composite rooms
-            # print("Num rooms available", rooms_available[p])
 
-            for room_type in const.SINGLE_ROOM_TYPES:
+            for room_type in const.ROOM_TYPES:
                 if max_members_by_room_type[room_type] == 0:
                     continue
 
                 for num_members in range(1, max_members_by_room_type[room_type] + 1):
+                    room_size = num_members
                     # Limit the number of events allocated to period p of type room_type
                     # with num_members members
-                    print(
-                        f"Upper bound {room_type} {num_members} , {str(sum(len(available_rooms_by_period_type_and_size[(period, room_type_star, num_members)]) for room_type_star in inverse_room_types[room_type])- counter) }"
-                    )
+
+                    # For now just constrain number of events to number of rooms available in the period
+                    # regardless of type
                     model.cbLazy(
                         quicksum(
                             YV[e, p]
-                            for e in events_p_by_type_and_size[(room_type, num_members)]
+                            for e in Events
+                            if e.get_room_type() != const.DUMMY
+                            and e.get_num_rooms() == room_size
+                            and e.get_room_type()
+                            in inverse_room_types[room_type, room_size]
                         )
-                        <= sum(
-                            len(
-                                available_rooms_by_period_type_and_size[
-                                    (period, room_type_star, num_members)
-                                ]
-                            )
-                            for room_type_star in inverse_room_types[room_type]
+                        <= Rooms.get_num_compatible_rooms(room_type, room_size)
+                        - quicksum(
+                            room.get_num_members()
+                            * Rooms.get_independence_number(room.get_num_members())
+                            * YV[e, p]
+                            for e in Events
+                            for room in Rooms
+                            if room.get_num_members() == num_members
+                            and room.get_type()
+                            in inverse_room_types[room_type, num_members]
                         )
-                        - counter
                     )
+
+                    # BMP.addConstr(
+                    #     quicksum(e.get_num_rooms() * Y[e, p] for e in Events if e.get_num_rooms() > 0)
+                    #     <= rooms_available[p]
+                    # )
+
+                    # model.cbLazy(
+                    #     quicksum(
+                    #         X[e, r]
+                    #         for e in EventsP
+                    #         for r in Rooms
+                    #         if r
+                    #         in Rooms.get_rooms_given_size_and_num_rooms(
+                    #             room_type, num_rooms
+                    #         )
+                    #     )
+                    #     <= len(
+                    #         Rooms.get_rooms_given_size_and_num_rooms(
+                    #             room_type, num_rooms
+                    #         )
+                    #     )
+                    #     - quicksum(
+                    #         r.get_num_members()
+                    #         * Rooms.get_independence_number(
+                    #             r.get_type(), r.get_num_members()
+                    #         )
+                    #         * X[e, r]
+                    #         for e in EventsP
+                    #         for r in Rooms
+                    #         if r.get_num_members() == num_members
+                    #         and r.get_type()
+                    #         in inverse_room_types[room_type, num_members]
+                    #     )
+                    # )
+
+                    # model.cbLazy(
+                    #     quicksum(
+                    #         YV[e, p]
+                    #         for e in events_p_by_type_and_size[(room_type, num_members)]
+                    #     )
+                    #     <= sum(
+                    #         len(
+                    #             available_rooms_by_period_type_and_size[
+                    #                 (period, room_type_star, num_members)
+                    #             ]
+                    #         )
+                    #         for room_type_star in inverse_room_types[room_type]
+                    #     )
+                    #     - counter
+                    # )
 
                     numCuts += 1
 
