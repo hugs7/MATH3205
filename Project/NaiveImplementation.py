@@ -21,7 +21,6 @@ from Event import Event
 from Curriculum import CurriculaManager
 from Period import Period
 import Constants as const
-from Utils import concat
 
 previous_time = time.time()
 
@@ -279,7 +278,7 @@ for e in Events:
 
     # Conflicts with teachers
     teacher_name: str = next(
-        (c.get_teacher() for c in Courses if c.get_course_name() == course_name), None
+        (c.get_teacher() for c in Courses if c.get_course_name() == event_course_name), None
     )
     if teacher_name is None:
         raise Exception(f"No course found matching event {e}")
