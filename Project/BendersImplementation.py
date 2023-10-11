@@ -194,7 +194,7 @@ Periods = [
 CompositeRooms: List[Room] = Rooms.get_composite_rooms()
 
 # Maximum number of members in composite rooms by the type of room
-max_members_by_room_type: Dict[str, int] = Rooms.get_max_members_by_room_type()
+max_members_by_room_type: Dict[str, int] = Rooms.get_max_members_dict()
 
 # -- Room Equivalence Class --
 # TODO Yet to determine what this is

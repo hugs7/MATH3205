@@ -28,9 +28,8 @@ import Constants as const
 
 
 def solve(instance_name: str) -> None:
+    print("---------------- Instance: ", instance_name, "----------------")
     previous_time = time.time()
-
-    # ------ Import data ------
     data_file = os.path.join(".", "Project", "data", instance_name)
 
     with open(data_file, "r") as json_file:
@@ -72,36 +71,6 @@ def solve(instance_name: str) -> None:
 
     dummy_room = Rooms.get_dummy_room()
 
-    # Problem Constraints (from data)
-
-    # Event Period Constraints
-    event_period_constraints = constrManager.get_event_period_constraints()
-    undesired_event_period_constraints = (
-        constrManager.get_undesired_event_room_constraints()
-    )
-
-    # Room Period Constraints
-    room_period_constraints = constrManager.get_room_period_constraints()
-    undesired_room_period_constraints = (
-        constrManager.get_undesired_room_period_constraints()
-    )
-    forbidden_room_period_constraints = (
-        constrManager.get_forbidden_room_period_constraints()
-    )
-
-    # Event Room Constraint
-    event_room_constraints = constrManager.get_event_room_constraints()
-    undesired_event_room_constraints = (
-        constrManager.get_undesired_event_room_constraints()
-    )
-    forbidden_event_room_constraints = (
-        constrManager.get_forbidden_event_room_constraints()
-    )
-
-    # Period Constraints
-    period_constraints = constrManager.get_period_constraints()
-    undesired_period_constraints = constrManager.get_undesired_period_constraints()
-
     # Forbidden period constraints (any event any room)
     # Convert periods into day and timeslot tuples
     forbidden_period_constraints: List[Period] = [
@@ -134,7 +103,7 @@ def solve(instance_name: str) -> None:
         for examination in examinations:
             Examinations.add(examination)
 
-    # Extract Events from the set of Examinations and store as list
+    # Extract Events from the set of Examinations
     Events: Set[Event] = set(
         [event for examination in Examinations for event in examination.get_events()]
     )
@@ -142,7 +111,10 @@ def solve(instance_name: str) -> None:
     # Lookup dictionary of events for a given course
     CourseEvents: Dict[Course, List[Event]] = {
         course: [
-            event for examination in Examinations for event in examination.get_events()
+            event
+            for examination in Examinations
+            if examination.get_course() == course
+            for event in examination.get_events()
         ]
         for course in Courses
     }
@@ -154,7 +126,6 @@ def solve(instance_name: str) -> None:
 
     # Initialise dictionary with an empty list for each event
     for event in Events:
-        event: Event
         forbidden_event_period_constraints[event] = []
 
     # Iterate through forbidden_event_period_constraints and add to the right list as required
@@ -199,10 +170,7 @@ def solve(instance_name: str) -> None:
     ]
 
     # Set of composite rooms (R^C) in paper)
-    CompositeRooms: List[Room] = Rooms.get_composite_rooms()
-
-    # Maximum number of members in composite rooms by the type of room
-    max_members_by_room_type: Dict[str, int] = Rooms.get_max_members_by_room_type()
+    CompositeRooms = Rooms.get_composite_rooms()
 
     # -- Room Equivalence Class --
     # TODO Yet to determine what this is
@@ -239,14 +207,6 @@ def solve(instance_name: str) -> None:
     available_types[const.LARGE] = [const.LARGE]
     available_types[const.COMPOSITE] = [const.COMPOSITE]
 
-    inverse_room_types: Dict[Tuple[str, int], str] = {}
-    inverse_room_types[(const.SMALL, 1)] = [const.SMALL, const.MEDIUM, const.LARGE]
-    inverse_room_types[(const.MEDIUM, 1)] = [const.MEDIUM, const.LARGE]
-    inverse_room_types[(const.LARGE, 1)] = [const.LARGE]
-    for num_members in range(2, 6):
-        for room_type in const.ROOM_TYPES:
-            inverse_room_types[(room_type, num_members)] = [room_type]
-
     for event in Events:
         if event.get_num_rooms() == 0:
             # No room required. Set of dummy room
@@ -282,28 +242,13 @@ def solve(instance_name: str) -> None:
     # TODO Yet to determine what this is
     KE = {}
 
-    # F = the set of examination pairs with precendence constraints.
-    # But actually we use the event instead
-    # This occurs if they are written and oral parts of the same examination
-    # and they are part of two consecutive examinations of the same course
-
-    F: Set[Tuple[Event, Event]] = set()
-    # for examination in Examinations:
-    #     examination: Examination
-    #     corresponding_course: Course = examination.get_course()
-
-    #     if not corresponding_course.is_written_and_oral():
-    #         continue
-
-    #     F.add((examination.get_written_event(), examination.get_oral_event()))
-
     # dictionary mapping events e to the set of events in H3 hard conflict with e
     # HC_e in paper
-    HC: Dict[Event, Set[Event]] = {}
+    HC: Dict[Event, List[Event]] = {}
 
     # Initialise empty list for every event
     for e in Events:
-        HC[e] = set()
+        HC[e] = []
 
     for curriculum in curriculaManager.get_curricula():
         curriculum: Curriculum
@@ -336,7 +281,13 @@ def solve(instance_name: str) -> None:
                 for curriculum_event in curriculum_events_by_teacher[course_teacher]:
                     if event == curriculum_event:
                         continue
-                    HC[event].add(curriculum_event)
+                    HC[event].append(curriculum_event)
+
+    # F = the set of examination pairs with precendence constraints.
+    # But actually we use the event instead
+    # This occurs if they are written and oral parts of the same examination
+    # and they are part of two consecutive examinations of the same course
+    F: Set[Tuple[Event, Event]] = set()
 
     # The set of event pairs with a directed soft distance constraint. Occurs when
     # 1. Written and Oral events of the same examination
@@ -458,65 +409,6 @@ def solve(instance_name: str) -> None:
                             event_b = examination_b.get_oral_event()
 
                         DPUndirected.add((event_a, event_b))
-
-    # $P1$ the set of all unordered pairs $s$ of events $s = \{e_1, e_2\}$
-    # for which there exists a curriculum with courses $c_1 \neq c_2$, not
-    # both primary courses, such that $e_1$ and $e_2$ are examination events
-    # for $c_1$ and $c_2$ respectively.
-
-    P1: Set[frozenset[Event, Event]] = set()
-
-    # Loop over curriculums
-    for curricula in curriculaManager.get_curricula():
-        curriucla_course_names = curricula.get_course_names()
-        curricula_courses: List[Course] = []
-        for course_name in curriucla_course_names:
-            curricula_courses.append(courseManager.get_course_by_name(course_name))
-
-        course_exams: List[Examination] = []
-        for course_a in curricula_courses:
-            course_a: Course
-            course_exams.extend([exam for exam in course_a.get_examinations()])
-
-        for exam_a in course_exams:
-            for exam_b in course_exams:
-                exam_a: Examination
-                exam_b: Examination
-
-                exam_a_course: Course = exam_a.get_course()
-                exam_b_course: Course = exam_b.get_course()
-
-                if exam_a_course.__eq__(exam_b_course):
-                    continue
-
-                if curricula.get_primary_course_names().__contains__(
-                    exam_a_course.get_course_name()
-                ):
-                    continue
-
-                events_a: List[Event] = exam_a.get_events()
-                events_b: List[Event] = exam_b.get_events()
-
-                for event_a in events_a:
-                    for event_b in events_b:
-                        P1.add(frozenset([event_a, event_b]))
-
-    # P2R the set of all events with undesired room preferences
-    P2R: Set[Event] = set()
-    for event in Events:
-        for event_period_constraint in undesired_event_period_constraints:
-            course_name = event_period_constraint.get_course_name()
-            exam_num = event_period_constraint.get_exam_ordinal()
-            exam_part = event_period_constraint.get_part()
-
-            course: Course = courseManager.get_course_by_name(course_name)
-            exam: Examination = course.get_examination_by_index(exam_num)
-            if exam_part == const.ORAL:
-                event = exam.get_oral_event()
-            elif exam_part == const.WRITTEN:
-                event = exam.get_written_event()
-
-            P2R.add(event)
 
     # SCPS
     # Dictionary mapping each primary event to the set of secondary
@@ -644,17 +536,19 @@ def solve(instance_name: str) -> None:
     # Soft constraint undesired period violation cost for event e to be assigned to
     # period p
     UndesiredPeriodCost = {}
-    undesired_periods = set(
-        p.get_period() for p in period_constraints if p.is_undesired()
+    undesired_event_periods: Dict[Event, Set[Period]] = {}
+    global_undesired_periods = set(
+        p.get_period() for p in constrManager.get_undesired_period_constraints()
     )
     for e in Events:
-        undesired_periods = [
-            c.get_period()
-            for c in constrManager.get_undesired_event_period_constraints()
-            if c.get_course_name() == e.get_course_name()
-        ]
+        undesired_event_periods[e] = set()
+        for c in constrManager.get_undesired_event_period_constraints():
+            if c.get_course_name() == e.get_course_name():
+                undesired_event_periods[e].add(c.get_period())
+
+    for e in Events:
         for p in PA[e]:
-            if p in undesired_periods or p in undesired_periods:
+            if p in global_undesired_periods or p in undesired_event_periods[e]:
                 UndesiredPeriodCost[e, p] = const.P_UNDESIRED_PERIOD
             else:
                 UndesiredPeriodCost[e, p] = 0
@@ -662,17 +556,22 @@ def solve(instance_name: str) -> None:
     # Soft constraint undesired room violation cost for event e to be assigned to
     # period p. \alpha in the paper
     UndesiredRoomCost = {}
-    undesired_rooms: Dict[Event, List[Room]] = {}
+    undesired_event_rooms: Dict[Event, Set[Room]] = {}
+    for e in Events:
+        undesired_event_rooms[e] = set()
+
+        for (
+            event_room_constraint
+        ) in constrManager.get_undesired_event_room_constraints():
+            room_name: str = event_room_constraint.get_room_name()
+            room: Room = Rooms.get_room_by_name(room_name)
+
+            if event_room_constraint.get_course_name() == e.get_course_name():
+                undesired_event_rooms[e].add(room)
 
     for e in Events:
-        undesired_rooms[e] = [
-            event_room_constraint.get_room_name()
-            for event_room_constraint in undesired_event_room_constraints
-            if event_room_constraint.get_course_name() == e.get_course_name()
-        ]
-
         for r in RA[e]:
-            if r in undesired_rooms[e]:
+            if r in undesired_event_rooms[e]:
                 UndesiredRoomCost[e, r] = const.P_UNDESIRED_ROOM
             else:
                 UndesiredRoomCost[e, r] = 0
@@ -783,7 +682,7 @@ def solve(instance_name: str) -> None:
                 # Subtract any forbidden rooms. Only considering forbidden room period constraints here.
                 for (
                     forbidden_room_period_constraint
-                ) in forbidden_room_period_constraints:
+                ) in constrManager.get_forbidden_room_period_constraints():
                     frpc_period = forbidden_room_period_constraint.get_period()
                     frpc_room: Room = Rooms.get_room_by_name(
                         forbidden_room_period_constraint.get_room_name()
@@ -794,7 +693,8 @@ def solve(instance_name: str) -> None:
                     if (
                         frpc_period == p
                         and frpc_room_type == room_type
-                        and frpc_room_size in inverse_room_types[room_type, room_size]
+                        and frpc_room_size
+                        in Rooms.get_compatible_room_types(room_type, room_size)
                     ):
                         rooms_available[p, room_type, room_size] -= 1
 
@@ -816,7 +716,9 @@ def solve(instance_name: str) -> None:
             forbidden_rooms_by_period_and_type[(p, room_type)] = []
             undesired_rooms_by_period_and_type[(p, room_type)] = []
 
-            for forbidden_room_period_constraint in forbidden_room_period_constraints:
+            for (
+                forbidden_room_period_constraint
+            ) in constrManager.get_forbidden_room_period_constraints():
                 forbidden_room_period_constraint: RoomPeriodConstraint
 
                 room_period_constraint_period: Period = (
@@ -848,14 +750,16 @@ def solve(instance_name: str) -> None:
                             composite_room
                         )
 
-            for undesired_room_constraint in undesired_room_period_constraints:
-                undesired_room_constraint: RoomPeriodConstraint
+            for (
+                undesired_room_period_constraint
+            ) in constrManager.get_undesired_room_period_constraints():
+                undesired_room_period_constraint: RoomPeriodConstraint
 
                 room_period_constraint_period: Period = (
-                    undesired_room_constraint.get_period()
+                    undesired_room_period_constraint.get_period()
                 )
-                level: str = undesired_room_constraint.get_level()
-                room_name: str = undesired_room_constraint.get_room_name()
+                level: str = undesired_room_period_constraint.get_level()
+                room_name: str = undesired_room_period_constraint.get_room_name()
                 room: Room = Rooms.get_room_by_name(room_name)
 
                 if level != const.UNDESIRED:
@@ -881,10 +785,12 @@ def solve(instance_name: str) -> None:
     # Begin by assigning all periods to have the same number of available rooms
     for period in Periods:
         for room_type in const.ROOM_TYPES:
-            if max_members_by_room_type.get(room_type) == 0:
+            if Rooms.get_max_members_by_room_type(room_type) == 0:
                 continue
 
-            for num_members in range(1, max_members_by_room_type[room_type] + 1):
+            for num_members in range(
+                1, Rooms.get_max_members_by_room_type(room_type) + 1
+            ):
                 available_rooms_by_period_type_and_size[
                     (period, room_type, num_members)
                 ] = [
@@ -1126,12 +1032,14 @@ def solve(instance_name: str) -> None:
             # Set of events assigned to period p requiring room with type room_type and # members num_rooms
             events_p_by_type_and_size: Dict[Tuple[str, int], List[Event]] = {}
             for room_type in const.ROOM_TYPES:
-                for num_members in range(1, max_members_by_room_type[room_type] + 1):
-                    events_p_by_type_and_size[(room_type, num_members)] = [
+                for room_size in range(
+                    1, Rooms.get_max_members_by_room_type(room_type) + 1
+                ):
+                    events_p_by_type_and_size[(room_type, room_size)] = [
                         e
                         for e in EventsP
                         if e.get_room_type() == room_type
-                        and e.get_num_rooms() == num_members
+                        and e.get_num_rooms() == room_size
                     ]
 
             # Define Sub Problem
@@ -1201,7 +1109,8 @@ def solve(instance_name: str) -> None:
 
             UndesiredRooms = {
                 e: BSP.addConstr(
-                    UR[e] == quicksum(X[e, r] for r in Rooms if r in undesired_rooms[e])
+                    UR[e]
+                    == quicksum(X[e, r] for r in Rooms if r in undesired_event_rooms[e])
                 )
                 for e in EventsP
             }
@@ -1242,41 +1151,75 @@ def solve(instance_name: str) -> None:
                 # but this doesn't apply to composite rooms
 
                 for room_type in const.ROOM_TYPES:
-                    if max_members_by_room_type[room_type] == 0:
-                        continue
+                    # if Rooms.get_max_members_by_room_type(room_type) == 0:
+                    #     continue
 
-                    for num_members in range(
-                        1, max_members_by_room_type[room_type] + 1
+                    for room_size in range(
+                        1, Rooms.get_max_members_by_room_type(room_type) + 1
                     ):
-                        room_size = num_members
                         # Limit the number of events allocated to period p of type room_type
                         # with num_members members
 
                         # For now just constrain number of events to number of rooms available in the period
                         # regardless of type
-                        model.cbLazy(
-                            quicksum(
-                                YV[e, p]
-                                for e in Events
-                                if e.get_room_type() != const.DUMMY
-                                and e.get_num_rooms() == room_size
-                                and e.get_room_type()
-                                in inverse_room_types[room_type, room_size]
-                            )
-                            <= Rooms.get_num_compatible_rooms(room_type, room_size)
-                            - quicksum(
-                                room.get_num_members()
-                                * Rooms.get_independence_number(
-                                    room.get_type(), room.get_num_members()
+                        if room_size == 1:
+                            # Room type can vary
+                            # Room size is fixed.
+                            # model.cbLazy(
+                            #     quicksum(
+                            #         YV[e, p]
+                            #         for e in Events
+                            #         if e.get_room_type() != const.DUMMY
+                            #         and e.get_num_rooms() == room_size
+                            #         and room_type == e.get_room_type()
+                            #         # in Rooms.get_compatible_room_types(
+                            #         #     e.get_room_type(), e.get_num_rooms()
+                            #         # )
+                            #     )
+                            #     <= Rooms.get_num_compatible_rooms(room_type, room_size)
+                            #     - quicksum(
+                            #         room.get_num_members()
+                            #         * Rooms.get_independence_number(
+                            #             room.get_type(), room.get_num_members()
+                            #         )
+                            #         * YV[e, p]
+                            #         for e in Events
+                            #         for room in Rooms
+                            #         if room.get_num_members() >= room_size
+                            #         and room.get_type()
+                            #         in Rooms.get_compatible_room_types(
+                            #             room_type, room_size
+                            #         )
+                            #     )
+                            # )
+                            pass
+                        else:
+                            # Room type is fixed
+                            # Room size is fixed.
+                            model.cbLazy(
+                                quicksum(
+                                    YV[e, p]
+                                    for e in Events
+                                    if e.get_room_type() != const.DUMMY
+                                    and e.get_num_rooms() == room_size
+                                    and room_type == e.get_room_type()
+                                    # in Rooms.get_compatible_room_types(
+                                    #     e.get_room_type(), e.get_num_rooms()
+                                    # )
                                 )
-                                * YV[e, p]
-                                for e in Events
-                                for room in Rooms
-                                if room.get_num_members() == num_members
-                                and room.get_type()
-                                in inverse_room_types[room_type, num_members]
+                                <= Rooms.get_num_compatible_rooms(room_type, room_size)
+                                - quicksum(
+                                    room.get_num_members()
+                                    * Rooms.get_independence_number(
+                                        room.get_type(), room.get_num_members()
+                                    )
+                                    * YV[e, p]
+                                    for e in Events
+                                    for room in Rooms
+                                    if room.get_num_members() >= room_size
+                                    and room.get_type() == room_type
+                                )
                             )
-                        )
 
                         numCuts += 1
 
@@ -1322,7 +1265,7 @@ def solve(instance_name: str) -> None:
 def main():
     problem_path = os.path.join(".", "Project", "data")
     for filename in os.listdir(problem_path):
-        if filename != "D3-1-16.json":
+        if filename != "D4-1-17.json":
             continue
 
         if os.path.isfile(os.path.join(problem_path, filename)):

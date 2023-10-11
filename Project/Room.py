@@ -225,7 +225,7 @@ class RoomManager:
 
         return get_rooms_by_type_and_size.get((room_type, num_rooms), [])
 
-    def get_max_members_by_room_type(self) -> Dict[str, int]:
+    def get_max_members_dict(self) -> Dict[str, int]:
         """
         Returns the maximum number of memers in a room by room type in a dictionary
         1 if only single rooms of that room_type exist.
@@ -262,6 +262,13 @@ class RoomManager:
                 )
 
         return max_members_by_room_type
+
+    def get_max_members_by_room_type(self, room_type: str) -> int:
+        """
+        Returns the maximum number of memers in a room by room type
+        """
+
+        return self.get_max_members_dict().get(room_type, 0)
 
     def get_single_rooms(self) -> list[Room]:
         """
@@ -374,6 +381,26 @@ class RoomManager:
                 return len(self.get_medium_rooms()) + len(self.get_large_rooms())
             elif room_type == const.LARGE:
                 return len(self.get_large_rooms())
+
+    def get_compatible_room_types(self, room_type: str, room_size: int) -> List[str]:
+        """
+        Given a room type and room size, retrn the list of room types that are compatible
+        """
+
+        if room_size == 1:
+            if room_type == const.SMALL:
+                return [const.SMALL, const.MEDIUM, const.LARGE]
+            elif room_type == const.MEDIUM:
+                return [const.MEDIUM, const.LARGE]
+            elif room_type == const.LARGE:
+                return [const.LARGE]
+        else:
+            if room_type == const.SMALL:
+                return [const.SMALL]
+            elif room_type == const.MEDIUM:
+                return [const.MEDIUM]
+            elif room_type == const.LARGE:
+                return [const.LARGE]
 
     def get_num_rooms_by_type(self, room_type: str) -> int:
         """
