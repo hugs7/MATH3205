@@ -1241,61 +1241,14 @@ def Callback(model, where):
                         )
                     )
 
-                    # BMP.addConstr(
-                    #     quicksum(e.get_num_rooms() * Y[e, p] for e in Events if e.get_num_rooms() > 0)
-                    #     <= rooms_available[p]
-                    # )
-
-                    # model.cbLazy(
-                    #     quicksum(
-                    #         X[e, r]
-                    #         for e in EventsP
-                    #         for r in Rooms
-                    #         if r
-                    #         in Rooms.get_rooms_given_size_and_num_rooms(
-                    #             room_type, num_rooms
-                    #         )
-                    #     )
-                    #     <= len(
-                    #         Rooms.get_rooms_given_size_and_num_rooms(
-                    #             room_type, num_rooms
-                    #         )
-                    #     )
-                    #     - quicksum(
-                    #         r.get_num_members()
-                    #         * Rooms.get_independence_number(
-                    #             r.get_type(), r.get_num_members()
-                    #         )
-                    #         * X[e, r]
-                    #         for e in EventsP
-                    #         for r in Rooms
-                    #         if r.get_num_members() == num_members
-                    #         and r.get_type()
-                    #         in inverse_room_types[room_type, num_members]
-                    #     )
-                    # )
-
-                    # model.cbLazy(
-                    #     quicksum(
-                    #         YV[e, p]
-                    #         for e in events_p_by_type_and_size[(room_type, num_members)]
-                    #     )
-                    #     <= sum(
-                    #         len(
-                    #             available_rooms_by_period_type_and_size[
-                    #                 (period, room_type_star, num_members)
-                    #             ]
-                    #         )
-                    #         for room_type_star in inverse_room_types[room_type]
-                    #     )
-                    #     - counter
-                    # )
-
                     numCuts += 1
 
             # Now go solve the master problem again
         else:
-            # BSP is feasible. Update the objective function of the master problem
+            # BSP is feasible.
+            print("##############Feasible subproblem")
+            print("BSP Objective Value:", BSP.ObjVal)
+            # Update the objective function of the master problem
             S2RV[p] = BSP.objVal
 
 
