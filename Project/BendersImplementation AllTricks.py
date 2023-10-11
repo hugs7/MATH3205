@@ -1068,7 +1068,6 @@ def Callback(model, where):
 
     S2RV = model.cbGetSolution(S2R)
 
-    TotalObj = 0
     numCuts = 0
 
     for p in Periods:

@@ -1,7 +1,7 @@
 from gurobipy import Model, quicksum, GRB
 
-P = range(200, 355, 5)
-T = range(500, 805, 5)
+P = range(100, 250, 5)
+T = range(300, 450, 5)
 
 m = Model("Cafe")
 

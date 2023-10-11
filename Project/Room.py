@@ -104,8 +104,9 @@ class Room:
 
 class RoomManager:
     """
-    RoomManager handles all the rooms for the exam scheduling problem. This includes small, large and composite rooms.
-    As well as the dummy room for exams not assigned a room
+    RoomManager handles all the rooms for the exam scheduling problem.
+    This includes small, large and composite rooms. As well as the dummy
+    room for exams not assigned a room
     """
 
     def __init__(self):
