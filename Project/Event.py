@@ -17,6 +17,26 @@ class Event:
 
         self.course: Course = examination.get_course()
 
+    def __eq__(self, other: object) -> bool:
+        """
+        Returns true if event is equal to other event
+        """
+
+        if not isinstance(other, Event):
+            return False
+
+        return (
+            self.examination == other.examination
+            and self.event_type == other.event_type
+        )
+
+    def __hash__(self) -> int:
+        """
+        Returns hash of event
+        """
+
+        return hash((self.examination, self.event_type))
+
     def get_examination(self) -> "Examination":
         """
         Returns course that exam event belongs to
@@ -28,8 +48,11 @@ class Event:
         """
         Returns the course the event belongs to
         """
+        from Examination import Examination
 
-        return self.examination.get_course()
+        examination: Examination = self.get_examination()
+
+        return examination.get_course()
 
     def get_course_name(self) -> str:
         """
@@ -47,29 +70,55 @@ class Event:
 
     def room_required(self) -> bool:
         """
-        Returns if any room(s) are required for this event
+        Returns if any room(s) excluding dummy are required for this event
+        If the event is oral, no room is required
+        If the event is written and a room is
         """
+        from Examination import Examination
+        from Course import Course, WrittenOralSpecs
 
-        return not (
-            self.get_event_type() == const.ORAL
-            and self.get_examination().get_exam_type() == const.WRITTEN_AND_ORAL
-            and not self.get_course().get_written_oral_specs().get_room_for_oral()
-        )
+        examination: Examination = self.get_examination()
+        course: Course = self.get_course()
+
+        if examination.is_written():
+            return course.get_rooms_requested().get_number() > 0
+        elif examination.is_oral():
+            return course.get_rooms_requested().get_number() > 0
+        elif examination.is_written_and_oral():
+            written_oral_specs: WrittenOralSpecs = course.get_written_oral_specs()
+            room_required_for_oral = written_oral_specs.get_room_for_oral()
+            return room_required_for_oral
 
     def get_num_rooms(self) -> int:
         """
         Returns the number of rooms requested by the event
         """
+
+        from Course import Course, RoomsRequested
+
+        course: Course = self.get_course()
+        rooms_requested: RoomsRequested = course.get_rooms_requested()
+
         if self.room_required():
-            return self.course.get_rooms_requested().get_number()
+            return rooms_requested.get_number()
+
+        # If no room is required, return 0 (dummy room)
         return 0
 
     def get_room_type(self) -> str:
         """
         Returns the room type requested by the event
         """
+
+        from Course import Course, RoomsRequested
+
+        course: Course = self.get_course()
+
         if self.room_required():
-            return self.course.get_rooms_requested().get_type()
+            rooms_requested: RoomsRequested = course.get_rooms_requested()
+            return rooms_requested.get_type()
+
+        # If no room is required, return dummy
         return const.DUMMY
 
     def __repr__(self) -> str:
@@ -77,7 +126,7 @@ class Event:
         Defines repr method for events
         """
 
-        return f"{self.event_type} Event ({self.get_course_name()} - {self.examination.get_index()})"
+        return f"{self.event_type} Event ({self.get_course_name()} - {self.examination.get_index()}), {self.get_num_rooms()} {self.get_room_type()} room(s) required"
 
 
 Examination = ForwardRef("Examination.Examination")

@@ -41,7 +41,9 @@ class Solution:
 
     def export(self, filename=None):
         if filename is None:
-            filename = os.path.join("Project", self.instance_name + "_sol.json")
+            filename = os.path.join(
+                "Project", "OurSolutions", self.instance_name + "_sol.json"
+            )
 
         assignments: List[_Course] = [
             _Course(name, self.course_event_map[name]) for name in self.course_event_map
