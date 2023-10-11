@@ -543,13 +543,13 @@ def solve(instance_name: str):
         p.get_period() for p in period_constraints if p.is_undesired()
     )
     for e in Events:
-        undesired_periods = [
-            c.get_period()
-            for c in constrManager.get_undesired_event_period_constraints()
-            if c.get_course_name() == e.get_course_name()
-        ]
+        for c in constrManager.get_undesired_event_period_constraints():
+            if c.get_course_name() == e.get_course_name():
+                undesired_periods.add(c.get_period())
+    print("UNdesired periods:", undesired_periods)
+    for e in Events:
         for p in PA[e]:
-            if p in undesired_periods or p in undesired_periods:
+            if p in undesired_periods:
                 UndesiredPeriodCost[e, p] = const.P_UNDESIRED_PERIOD
             else:
                 UndesiredPeriodCost[e, p] = 0
@@ -653,6 +653,21 @@ def solve(instance_name: str):
         (r, p): m.addConstr(quicksum(X[e, p, r] for e in Events) <= 1)
         for r in Rooms
         for p in Periods
+    }
+
+    # Prevent Y from being assigned invalid period
+    PreventY = {
+        (e, p): m.addConstr(Y[e, p] == 0)
+        for e in Events
+        for p in Periods
+        if p not in PA[e]
+    }
+    PreventX = {
+        (e, p, r): m.addConstr(X[e, p, r] == 0)
+        for e in Events
+        for p in Periods
+        for r in Rooms
+        if p not in PA[e] or r not in RA[e]
     }
 
     # Constraint 3: Two events must have different periods if they are in hard conflict
@@ -844,7 +859,7 @@ def solve(instance_name: str):
         + const.SC_SECONDARY_SECONDARY
         * quicksum(SSS[e, p] for e in Events for p in PA[e])
         # Cost S2
-        + quicksum(UndesiredPeriodCost[e, p] * Y[e, p] for e in Events for p in PA[e])
+        + quicksum((UndesiredPeriodCost[e, p]) * Y[e, p] for e in Events for p in PA[e])
         + quicksum(
             UndesiredRoomCost[e, r] * X[e, p, r]
             for e in Events
