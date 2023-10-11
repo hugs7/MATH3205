@@ -125,6 +125,7 @@ class RoomManager:
         """
 
         # List of rooms the RoomManager Stores
+        # Add the dummy room
         self.rooms: list[Room] = [Room()]
 
         # Graph in the form of an ajacency list for storing joining rooms

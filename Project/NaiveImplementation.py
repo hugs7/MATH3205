@@ -245,21 +245,6 @@ def solve(instance_name: str):
     # TODO Yet to determine what this is
     KE = {}
 
-    # F = the set of examination pairs with precendence constraints.
-    # But actually we use the event instead
-    # This occurs if they are written and oral parts of the same examination
-    # and they are part of two consecutive examinations of the same course
-
-    F: Set[Tuple[Event, Event]] = set()
-    # for examination in Examinations:
-    #     examination: Examination
-    #     corresponding_course: Course = examination.get_course()
-
-    #     if not corresponding_course.is_written_and_oral():
-    #         continue
-
-    #     F.add((examination.get_written_event(), examination.get_oral_event()))
-
     # dictionary mapping events e to the set of events in H3 hard conflict with e
     # HC_e in paper
     HC: Dict[Event, List[Event]] = {}
@@ -300,6 +285,12 @@ def solve(instance_name: str):
                     if event == curriculum_event:
                         continue
                     HC[event].append(curriculum_event)
+
+    # F = the set of examination pairs with precendence constraints.
+    # But actually we use the event instead
+    # This occurs if they are written and oral parts of the same examination
+    # and they are part of two consecutive examinations of the same course
+    F: Set[Tuple[Event, Event]] = set()
 
     # The set of event pairs with a directed soft distance constraint. Occurs when
     # 1. Written and Oral events of the same examination
@@ -591,8 +582,6 @@ def solve(instance_name: str):
     teachers = parsed_data[const.TEACHERS]
 
     # -- Exam Distance --
-    primaryPrimaryDistance = parsed_data[const.PRIMARY_PRIMARY_DISTANCE]
-
     print(f"------\n{const.GUROBI}\n------")
 
     # ------ Define Model ------
@@ -663,7 +652,6 @@ def solve(instance_name: str):
     RoomOccupation = {
         (r, p): m.addConstr(quicksum(X[e, p, r] for e in Events) <= 1)
         for r in Rooms
-        if r is not dummy_room
         for p in Periods
     }
 
@@ -709,21 +697,16 @@ def solve(instance_name: str):
         for e in Events
     }
 
-    # Constraint 7a: Limit only 1 sum p of Y[e, p] to be turned on for each event
-    oneP = {e: m.addConstr(quicksum(Y[e, p] for p in Periods) == 1) for e in Events}
-    # for p in PA[e]
-    # oneP = {e: m.addConstr(quicksum(Y[e, p] for p in PA[e]) == 1) for e in Events}
-
     # Soft Constraints
 
     # Constraint 8 (S1): Soft Conflicts
     SoftConflicts = {
         (e, p): m.addConstr(
-            len({e2 for e2 in SCPS[e] if (e, e2) in DPDirected and p in PA[e2]})
+            len([e2 for e2 in SCPS[e] if (e, e2) in DPDirected and p in PA[e2]])
             * Y[e, p]
             + quicksum(Y[e2, p] for e2 in SCPS[e] if (e, e2) in DPDirected)
             <= SPS[e, p]
-            + len({e2 for e2 in SCPS[e] if (e, e2) in DPDirected and p in PA[e2]})
+            + len([e2 for e2 in SCPS[e] if (e, e2) in DPDirected and p in PA[e2]])
         )
         for e in Events
         for p in PA[e]
@@ -920,7 +903,7 @@ def solve(instance_name: str):
 
 
 def main():
-    instance_name = "D3-3-16.json"
+    instance_name = "D2-1-18.json"
     solve(instance_name)
 
 
