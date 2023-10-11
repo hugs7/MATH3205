@@ -687,8 +687,8 @@ def solve(instance_name: str) -> None:
                     frpc_room: Room = Rooms.get_room_by_name(
                         forbidden_room_period_constraint.get_room_name()
                     )
-                    frpc_room_type = frpc_room.get_type()
-                    frpc_room_size = frpc_room.get_size()
+                    frpc_room_type: str = frpc_room.get_type()
+                    frpc_room_size: int = frpc_room.get_num_members()
 
                     if (
                         frpc_period == p
@@ -1106,7 +1106,17 @@ def solve(instance_name: str) -> None:
                 for r in Rooms  # should be without dummy
                 if r not in RA[e] and r is not dummy_room
             }
-
+            print(
+                "NUm in undesired rooms",
+                len(
+                    [
+                        X[e, r]
+                        for r in Rooms
+                        for e in EventsP
+                        if r in undesired_event_rooms[e]
+                    ]
+                ),
+            )
             UndesiredRooms = {
                 e: BSP.addConstr(
                     UR[e]
@@ -1149,6 +1159,14 @@ def solve(instance_name: str) -> None:
 
                 # Just remember that a room request of small can use larger rooms
                 # but this doesn't apply to composite rooms
+
+                # Add a no good cut to say this exact combination isn't feasible
+                print("Adding no Good cut")
+                model.cbLazy(
+                    quicksum(YV[e, p] for e in Events if e not in EventsP)
+                    + quicksum((1 - YV[e, p]) for e in Events if e in EventsP)
+                    >= 1
+                )
 
                 for room_type in const.ROOM_TYPES:
                     # if Rooms.get_max_members_by_room_type(room_type) == 0:
@@ -1196,6 +1214,7 @@ def solve(instance_name: str) -> None:
                         else:
                             # Room type is fixed
                             # Room size is fixed.
+                            continue
                             model.cbLazy(
                                 quicksum(
                                     YV[e, p]
@@ -1221,7 +1240,7 @@ def solve(instance_name: str) -> None:
                                 )
                             )
 
-                        numCuts += 1
+                    numCuts += 1
 
                 # Now go solve the master problem again
             else:
@@ -1265,7 +1284,7 @@ def solve(instance_name: str) -> None:
 def main():
     problem_path = os.path.join(".", "Project", "data")
     for filename in os.listdir(problem_path):
-        if filename != "D4-1-17.json":
+        if filename != "D5-2-18.json":
             continue
 
         if os.path.isfile(os.path.join(problem_path, filename)):
