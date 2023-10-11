@@ -149,6 +149,8 @@ how events will be assigned to rooms within each time period).
             that $e_1$ and $e_2$ are examination events for $c_1$ and $c_2$
             respectively.
         \end{itemize}
+    \item $C$ the set of curricula.
+    \item $T$ the set of teachers.
 \end{itemize}
 
 \subsubsection*{Data}
@@ -169,6 +171,10 @@ how events will be assigned to rooms within each time period).
     \item $PP_e$ the set of preferred periods for $e \in PD$.
     \item $UR_e \subset RA_e$ the set of undesired rooms for $e \in P2$.
     \item $R_p$ the set of rooms available in the period $p \in P$.
+    \item $C^P_c$ the set of events belonging to primary courses of curriculum
+        $c \in C$.
+    \item $C^T_t$ the set of events belonging to courses taught by teacher $t
+        \in T$.
 \end{itemize}
 
 \subsubsection*{Variables}
@@ -177,21 +183,21 @@ how events will be assigned to rooms within each time period).
         periods $p$.
     \item $S1_s$ the penalty for a soft conflict between the events in the
         unordered pair events $s$, for all $s \in P1$.
-    \item $S2_p$ the estimate of the penalty for assigning events to undesrired
+    \item $S2_p$ the estimate of the number of events allocated to undesired
         rooms in period $p \in P$.
     \item $S3_s$ the estimate of the penalty for non-ideal distances between the
         events in the unordered pair $s$, for all $s \in P3$.
 \end{itemize}
 
 \subsubsection*{Objective}
-\begin{multline*}
+\begin{multline}
     \min \quad \sum_{s \in P1} S1_s \quad + \quad \text{UNDESIRED\_PERIOD}
         \left( \sum_{p \in PB} \sum_{e \in E} y_{e, PB} +
         \sum_{e \in PU} \sum_{p \in UP_e} y_{e, p} \right) \\
     + \quad \text{NOT\_PREFERRED} \sum_{e \in PD} \sum_{p \in PP_e} (1 - y_{ep})
         \quad + \quad \text{UNDESIRED\_ROOM} \sum_{p \in P} S2_p \quad + \quad
         \sum_{s \in P3} S3_s
-\end{multline*}
+\end{multline}
 
 \subsubsection*{Constraints}
 Each event must be scheduled to exactly one time period (BSP (\S\ref{BSP}) will
@@ -210,6 +216,15 @@ only if two events are in soft conflict:
     S1_{\{e_1, e_2\}} \geq \text{SOFT\_CONFLICT}_{\{e_1, e_2\}}
         (y_{e_1, p} + y_{e_2, p} - 1)
         \qquad \forall \{e_1, e_2\} \in P1, \ \forall p \in P
+\end{gather}
+
+We can enforce that no two courses in H3-conflict are scheduled in the same time
+period with the following constraints:
+\begin{gather}
+    \sum_{e \in C^P_c \; : \; p \in PA_e} y_{e,p} \leq 1
+        \qquad \forall c \in C, \ \forall p \in P \\
+    \sum_{e \in C^T_t \; : \; p \in PA_e} y_{e, p} \leq 1
+        \qquad \forall t \in T \ \forall p \in P
 \end{gather}
 
 \subsubsection*{Lazy Constraints}
@@ -238,24 +253,37 @@ The sub-problem will allocate events to rooms within a fixed time period $p$
 once they have been scheduled by the master problem, minimizing the number of
 events assigned to an undesired room.
 
+\subsubsection*{Sets}
+\begin{itemize}
+    \item $R^c \subseteq R$ the set of composite rooms.
+    \item $R^0_{r^c}$ the set of rooms (irreducible or composite) overlapping
+        with the composite room $r^c \in R^c$.
+\end{itemize}
+
 \subsubsection*{Variables}
 Let $x_{e,r}$ be the decision variable assigning events $e \in E_p$ to rooms $r
 \in RA_e \cap R_p$.
 
 \subsubsection*{Objective}
-$$
+\begin{equation}
     \min \qquad \sum_{e \in E_p \cap P2} \
         \sum_{r \in UR_e \cap R_p} x_{e,r}
-$$
+\end{equation}
 
 \subsubsection*{Constraints}
 First we add constraints ensuring each event is allocated exactly one room, and
 no two events are allocated the same room:
-\begin{gather*}
+\begin{gather}
     \sum_{r \in RA_e \cap R_p} x_{e,r} = 1 \qquad \forall e \in E_p \\
     \sum_{e \in E_p \; : \; r \in RA_e} x_{e, r} \leq 1 \qquad \forall r \in R_p
-\end{gather*}
+\end{gather}
 
-TODO constraint(s) to check composite overlaps
+We can ensure that, whenever an event is allocated to a composite room, no event
+is allocated to an overlapping room:
+\begin{equation}
+    |R^0_{r^c} \cap R_p| \sum_{e \in E_p} x_{e, r^c}
+        + \sum_{r^0 \in R^0_{r^c} \cap R_p} \ \sum_{e \in E_p} x_{e, r^0}
+        \leq |R^0_{r^c} \cap R_p| \qquad \forall r^c \in R^c \cap R_p
+\end{equation}
 
 \end{document}
