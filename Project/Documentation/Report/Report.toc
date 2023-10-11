@@ -1,3 +1,0 @@
-\contentsline {section}{\numberline {1}Benders Formulation}{2}{section.1}%
-\contentsline {subsection}{\numberline {1.1}Master Problem (BMP)}{2}{subsection.1.1}%
-\contentsline {subsection}{\numberline {1.2}Sub-problem (BSP)}{4}{subsection.1.2}%

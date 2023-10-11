@@ -189,7 +189,8 @@ how events will be assigned to rooms within each time period).
         \left( \sum_{p \in PB} \sum_{e \in E} y_{e, PB} +
         \sum_{e \in PU} \sum_{p \in UP_e} y_{e, p} \right) \\
     + \quad \text{NOT\_PREFERRED} \sum_{e \in PD} \sum_{p \in PP_e} (1 - y_{ep})
-        \quad + \quad \sum_{p \in P} S2_p \quad + \quad \sum_{s \in P3} S3_s
+        \quad + \quad \text{UNDESIRED\_ROOM} \sum_{p \in P} S2_p \quad + \quad
+        \sum_{s \in P3} S3_s
 \end{multline*}
 
 \subsubsection*{Constraints}
@@ -224,8 +225,7 @@ BMP. For each period $p \in P$, let $E_p := \set{e \in E \given y^*_{e, p} =
         of BSP, the minimal number of undesired room allocations given $E_p$),
         we add the constraint:
         \begin{equation}
-            S2_p \geq \text{UNDESIRED\_ROOM} \cdot M \left(1 + M -
-            \sum_{e \in E_p \cap P2} y_{e, p}\right)
+            S2_p \geq M \left(1 - \sum_{e \in E_p \cap P2} (1 - y_{e, p})\right)
         \end{equation}
         Indeed, we can add this constraint on $S2_{p'}$ for each $p' \in P$ with
         $R_{p'} \subseteq R_p$.
