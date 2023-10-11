@@ -641,12 +641,14 @@ def solve(instance_name: str) -> None:
         (e1, e2): BMP.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events
     }
 
+    print("Variables Defined:", time.time() - previous_time, const.SECONDS)
+    previous_time = time.time()
     # ------ Constraints ------
 
     # Limits every event to be assigned exactly 1 period
-    OnePeriodPerEvent = {
-        e: BMP.addConstr(quicksum(Y[e, p] for p in Periods) == 1) for e in Events
-    }
+    # OnePeriodPerEvent = {
+    #     e: BMP.addConstr(quicksum(Y[e, p] for p in Periods) == 1) for e in Events
+    # }
 
     # Hard upper limit on the number of events assigned to a period
     # Total number of rooms around campus
@@ -656,7 +658,6 @@ def solve(instance_name: str) -> None:
     # Dict mapping (Period, room_type, room_size) to number of rooms available
     rooms_available: Dict[Tuple[Period, str, int], int] = {}
 
-    print(time.time())
     # Rooms available by size per period
     forbidden_rooms_by_period_and_type: Dict[
         Tuple[Period, Union[const.SMALL, const.MEDIUM, const.LARGE]], List[Room]
@@ -664,12 +665,6 @@ def solve(instance_name: str) -> None:
     undesired_rooms_by_period_and_type: Dict[
         Tuple[Period, Union[const.SMALL, const.MEDIUM, const.LARGE]], List[Room]
     ] = {}
-
-    # for room_type in const.ROOM_TYPES:
-    #     print("\nRoom Type", room_type)
-    #     for room_size in range(1, 4):
-    #         print("\nRoom Size", room_size)
-    #         print(Rooms.get_independence_number(room_type, room_size))
 
     for p in Periods:
         for room_type in const.ROOM_TYPES:
@@ -698,15 +693,33 @@ def solve(instance_name: str) -> None:
                     ):
                         rooms_available[p, room_type, room_size] -= 1
 
-                # BMP.addConstr(
-                #     quicksum(
-                #         Y[e, p]
-                #         for e in Events
-                #         if e.get_room_type() in inverse_room_types[room_type, room_size]
-                #         and e.get_num_rooms() == room_size
-                #     )
-                #     <= rooms_available[p, room_type, room_size]
-                # )
+                BMP.addConstr(
+                    quicksum(
+                        Y[e, p]
+                        for e in Events
+                        if e.get_room_type() != const.DUMMY
+                        and e.get_num_rooms() == room_size
+                        and e.get_room_type() == room_type
+                        # in Rooms.get_compatible_room_types(
+                        #     e.get_room_type(), e.get_num_rooms()
+                        # )
+                    )
+                    <= Rooms.get_num_rooms_by_type_and_size(room_type, room_size)
+                    # - quicksum(
+                    #     room.get_num_members()
+                    #     * Rooms.get_independence_number(
+                    #         room.get_type(), room.get_num_members()
+                    #     )
+                    #     * Y[e, p]
+                    #     for e in Events
+                    #     for room in Rooms
+                    #     if room.get_num_members() == e.get_num_rooms()
+                    #     and room.get_type()
+                    #     in Rooms.get_compatible_room_types(
+                    #         e.get_room_type(), e.get_num_rooms()
+                    #     )
+                    # )
+                )
 
         # Number of rooms available by size per period
         # This will be handy for callback
@@ -975,7 +988,9 @@ def solve(instance_name: str) -> None:
         e1_course: Course = e1.get_course()
         e2_course: Course = e2.get_course()
 
-        Constraint24[(e1, e2)] = BMP.addConstr(PMinPS[e1, e2] + D_abs[e1, e2] >= 1)
+        Constraint24[(e1, e2)] = BMP.addConstr(
+            PMinPS[e1, e2] + D_abs[e1, e2] >= primary_primary_distance
+        )
 
     print("Constraints defined", time.time())
 
@@ -1171,37 +1186,43 @@ def solve(instance_name: str) -> None:
                         if room_size == 1:
                             # Room type can vary
                             # Room size is fixed.
-                            # model.cbLazy(
-                            #     quicksum(
-                            #         YV[e, p]
-                            #         for e in Events
-                            #         if e.get_room_type() != const.DUMMY
-                            #         and e.get_num_rooms() == room_size
-                            #         and room_type == e.get_room_type()
-                            #         # in Rooms.get_compatible_room_types(
-                            #         #     e.get_room_type(), e.get_num_rooms()
-                            #         # )
-                            #     )
-                            #     <= Rooms.get_num_compatible_rooms(room_type, room_size)
-                            #     - quicksum(
-                            #         room.get_num_members()
-                            #         * Rooms.get_independence_number(
-                            #             room.get_type(), room.get_num_members()
-                            #         )
-                            #         * YV[e, p]
-                            #         for e in Events
-                            #         for room in Rooms
-                            #         if room.get_num_members() >= room_size
-                            #         and room.get_type()
-                            #         in Rooms.get_compatible_room_types(
-                            #             room_type, room_size
-                            #         )
-                            #     )
-                            # )
-                            pass
+                            continue
+                            model.cbLazy(
+                                quicksum(
+                                    YV[e, p]
+                                    for e in EventsP
+                                    if e.get_room_type() != const.DUMMY
+                                    and e.get_num_rooms() == room_size
+                                    and e.get_room_type() == room_type
+                                    # in Rooms.get_compatible_room_types(
+                                    #     e.get_room_type(), e.get_num_rooms()
+                                    # )
+                                )
+                                <= Rooms.get_num_compatible_rooms(room_type, room_size)
+                                # - quicksum(
+                                #     room.get_num_members()
+                                #     * Rooms.get_independence_number(
+                                #         room.get_type(), room.get_num_members()
+                                #     )
+                                #     * Y[e, p]
+                                #     for e in EventsP
+                                #     for room in Rooms
+                                #     if room.get_num_members() == e.get_num_rooms()
+                                #     and room.get_type()
+                                #     in Rooms.get_compatible_room_types(
+                                #         e.get_room_type(), e.get_num_rooms()
+                                #     )
+                                # )
+                            )
+                            print(
+                                room_type,
+                                room_size,
+                                Rooms.get_num_compatible_rooms(room_type, room_size),
+                            )
                         else:
                             # Room type is fixed
                             # Room size is fixed.
+                            continue
                             model.cbLazy(
                                 quicksum(
                                     YV[e, p]
@@ -1222,7 +1243,7 @@ def solve(instance_name: str) -> None:
                                     * YV[e, p]
                                     for e in Events
                                     for room in Rooms
-                                    if room.get_num_members() >= room_size
+                                    if room.get_num_members() == room_size
                                     and room.get_type() == room_type
                                 )
                             )
@@ -1267,7 +1288,7 @@ def solve(instance_name: str) -> None:
 def main():
     problem_path = os.path.join(".", "Project", "data")
     for filename in os.listdir(problem_path):
-        if filename != "D1-1-17.json":
+        if filename != "D1-3-16.json":
             continue
 
         if os.path.isfile(os.path.join(problem_path, filename)):
