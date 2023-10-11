@@ -652,7 +652,7 @@ undesired_rooms: Dict[Event, List[Room]] = {}
 
 for e in Events:
     undesired_rooms[e] = [
-        event_room_constraint.get_room()
+        event_room_constraint.get_room_name()
         for event_room_constraint in undesired_event_room_constraints
         if event_room_constraint.get_course_name() == e.get_course_name()
     ]

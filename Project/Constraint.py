@@ -161,11 +161,11 @@ class EventRoomConstraint(Constraint):
         """
         return self.course_name
 
-    def get_room(self) -> str:
+    def get_room_name(self) -> str:
         """
         Get the 'Room' attribute.
         Returns:
-            str: The 'Room' value
+            str: The 'Room' name
         """
         return self.room
 

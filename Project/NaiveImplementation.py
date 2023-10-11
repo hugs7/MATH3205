@@ -539,17 +539,19 @@ def solve(instance_name: str):
     # Soft constraint undesired period violation cost for event e to be assigned to
     # period p
     UndesiredPeriodCost = {}
-    undesired_periods = set(
+    undesired_event_periods: Dict[Event, Set[Period]] = {}
+    global_undesired_periods = set(
         p.get_period() for p in period_constraints if p.is_undesired()
     )
     for e in Events:
+        undesired_event_periods[e] = set()
         for c in constrManager.get_undesired_event_period_constraints():
             if c.get_course_name() == e.get_course_name():
-                undesired_periods.add(c.get_period())
-    print("UNdesired periods:", undesired_periods)
+                undesired_event_periods[e].add(c.get_period())
+
     for e in Events:
         for p in PA[e]:
-            if p in undesired_periods:
+            if p in global_undesired_periods or p in undesired_event_periods[e]:
                 UndesiredPeriodCost[e, p] = const.P_UNDESIRED_PERIOD
             else:
                 UndesiredPeriodCost[e, p] = 0
@@ -557,19 +559,22 @@ def solve(instance_name: str):
     # Soft constraint undesired room violation cost for event e to be assigned to
     # period p. \alpha in the paper
     UndesiredRoomCost = {}
+    undesired_event_rooms: Dict[Event, Set[Room]] = {}
     for e in Events:
-        undesired_event_room_constraints: Set[
-            EventRoomConstraint
-        ] = constrManager.get_undesired_event_room_constraints()
+        undesired_event_rooms[e] = set()
 
-        undesired_rooms = [
-            event_room_constraint.get_room()
-            for event_room_constraint in undesired_event_room_constraints
-            if event_room_constraint.get_course_name() == e.get_course_name()
-        ]
+        for (
+            event_room_constraint
+        ) in constrManager.get_undesired_event_room_constraints():
+            room_name: str = event_room_constraint.get_room_name()
+            room: Room = Rooms.get_room_by_name(room_name)
 
+            if event_room_constraint.get_course_name() == e.get_course_name():
+                undesired_event_rooms[e].add(room)
+
+    for e in Events:
         for r in RA[e]:
-            if r in undesired_rooms:
+            if r in undesired_event_rooms[e]:
                 UndesiredRoomCost[e, r] = const.P_UNDESIRED_ROOM
             else:
                 UndesiredRoomCost[e, r] = 0
