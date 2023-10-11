@@ -1233,8 +1233,8 @@ def solve(instance_name: str) -> None:
                 # Now go solve the master problem again
             else:
                 # BSP is feasible.
-                print("Feasible subproblem - Period", p)
-                print("BSP Objective Value:", BSP.ObjVal)
+                # print("Feasible subproblem - Period", p)
+                # print("BSP Objective Value:", BSP.ObjVal)
                 # Update the objective function of the master problem
                 S2RV[p] = BSP.objVal
 
