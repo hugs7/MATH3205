@@ -15,7 +15,7 @@ from SolutionExport import Solution
 
 # Custom Imports
 from Room import RoomManager, Room
-from Constraint import ConstraintManager, EventRoomConstraint
+from Constraint import ConstraintManager
 from Course import CourseManager, Course
 from Event import Event
 from Curriculum import CurriculaManager, Curriculum
@@ -67,12 +67,6 @@ def solve(instance_name: str):
     Rooms.construct_composite_map()
 
     dummy_room = Rooms.get_dummy_room()
-
-    room_constraints = constrManager.get_room_period_constraints()
-
-    # Event period Constraints
-    event_constraints = constrManager.get_event_period_constraints()
-    period_constraints = constrManager.get_period_constraints()
 
     # Forbidden period constraints (any event any room)
     # Convert periods into day and timeslot tuples
@@ -541,7 +535,7 @@ def solve(instance_name: str):
     UndesiredPeriodCost = {}
     undesired_event_periods: Dict[Event, Set[Period]] = {}
     global_undesired_periods = set(
-        p.get_period() for p in period_constraints if p.is_undesired()
+        p.get_period() for p in constrManager.get_undesired_period_constraints()
     )
     for e in Events:
         undesired_event_periods[e] = set()
@@ -925,7 +919,7 @@ def solve(instance_name: str):
 
 
 def main():
-    instance_name = "D2-1-18.json"
+    instance_name = "D3-1-16.json"
     solve(instance_name)
 
 
