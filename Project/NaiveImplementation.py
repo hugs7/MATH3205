@@ -609,7 +609,7 @@ X = {
 Y = {(e, p): m.addVar(vtype=GRB.BINARY) for e in Events for p in Periods}
 
 # The ordinal (order) value of the period assigned to event e
-H = {e: m.addVar(vtype=GRB.INTEGER) for e in Events}
+H = {e: m.addVar(vtype=GRB.INTEGER, lb=0) for e in Events}
 
 # Soft constraint counting variables. The paper claims that all of these may be
 # relaxed to be continuous.
@@ -690,32 +690,6 @@ Unavailabilities = {
     for e in Events
     for p in PA[e]
 }
-
-# Unavailabilities = {
-#     (e, p): m.addConstr(
-#         quicksum(Y[e2, p] for e2 in HC[e]) <= (len(HC[e]) + 2) * (1 - Y[e, p])
-#     )
-#     for e in Events
-#     if len(HC[e]) > 0
-#     for p in PA[e]
-# }
-
-# Prevent events scheduled when they aren't allowed. Alternative to constraint 5 atm
-# seems to give much more correct objective value from testing so far.
-
-# PeriodScheduling = {
-#     (e, p, r): m.addConstr(quicksum(X[e, p, r] for r in Rooms) == 0)
-#     for e in Events
-#     for p in Periods
-#     if p not in PA[e]
-# }
-
-# RoomScheduling = {
-#     (e, p, r): m.addConstr(quicksum(X[e, p, r] for p in Periods) == 0)
-#     for e in Events
-#     for r in Rooms  # should be without dummy
-#     if r not in RA[e]
-# }
 
 # Constraint 6: Set values of Y_(e,p)
 setY = {
@@ -889,10 +863,9 @@ m.setObjective(
     + const.DD_SAME_EXAMINATION
     * quicksum(PMinWO[e1, e2] + PMaxWO[e1, e2] for (e1, e2) in DPWrittenOral)
     + const.UD_PRIMARY_PRIMARY
-    / 2  # divided by 2 because both undirected pairs exist
-    * quicksum(PMinPP[e1, e2] for (e1, e2) in DPPrimaryPrimary),
-    # + const.UD_PRIMARY_SECONDARY
-    # * quicksum(PMinPS[e1, e2] for (e1, e2) in DPPrimarySecondary),
+    * quicksum(PMinPP[e1, e2] for (e1, e2) in DPPrimaryPrimary)
+    + const.UD_PRIMARY_SECONDARY
+    * quicksum(PMinPS[e1, e2] for (e1, e2) in DPPrimarySecondary),
     GRB.MINIMIZE,
 )
 

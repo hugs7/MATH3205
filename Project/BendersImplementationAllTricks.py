@@ -798,10 +798,15 @@ def solve(instance_name: str) -> None:
                     ):
                         rooms_available[p, room_type, room_size] -= 1
 
-                BMP.addConstr(
-                    quicksum(Y[e, p] for e in Events)
-                    <= rooms_available[p, room_type, room_size]
-                )
+                # BMP.addConstr(
+                #     quicksum(
+                #         Y[e, p]
+                #         for e in Events
+                #         if e.get_room_type() in inverse_room_types[room_type, room_size]
+                #         and e.get_num_rooms() == room_size
+                #     )
+                #     <= rooms_available[p, room_type, room_size]
+                # )
 
         # Number of rooms available by size per period
         # This will be handy for callback
@@ -1155,6 +1160,13 @@ def solve(instance_name: str) -> None:
                 e: BSP.addConstr(quicksum(X[e, r] for r in RA[e]) == 1) for e in EventsP
             }
 
+            RoomForbidden = {
+                e: BSP.addConstr(
+                    quicksum(X[e, r] for r in Rooms if r not in RA[e]) == 0
+                )
+                for e in EventsP
+            }
+
             # Constraint 2: At most one event can use a room at once.
             RoomOccupation = {
                 r: BSP.addConstr(quicksum(X[e, r] for e in EventsP) <= 1)
@@ -1209,7 +1221,6 @@ def solve(instance_name: str) -> None:
 
             if BSP.status == GRB.INFEASIBLE:
                 print("##############Infeasible subproblem")
-                counter += 1
                 # Subproblem was infeasible. Add feasability cut
 
                 # Find number of events allocated to period p that request small rooms
@@ -1255,7 +1266,9 @@ def solve(instance_name: str) -> None:
                             <= Rooms.get_num_compatible_rooms(room_type, room_size)
                             - quicksum(
                                 room.get_num_members()
-                                * Rooms.get_independence_number(room.get_num_members())
+                                * Rooms.get_independence_number(
+                                    room.get_type(), room.get_num_members()
+                                )
                                 * YV[e, p]
                                 for e in Events
                                 for room in Rooms
@@ -1270,8 +1283,12 @@ def solve(instance_name: str) -> None:
                 # Now go solve the master problem again
             else:
                 # BSP is feasible.
-                print("##############Feasible subproblem")
+                print("##############Feasible subproblem - Period", p)
                 print("BSP Objective Value:", BSP.ObjVal)
+                for e in EventsP:
+                    for r in Rooms:
+                        if X[e, r].x > 0.9:
+                            print("Event", e, "is assigned to room", r)
                 # Update the objective function of the master problem
                 S2RV[p] = BSP.objVal
 
@@ -1305,6 +1322,9 @@ def solve(instance_name: str) -> None:
 def main():
     problem_path = os.path.join(".", "Project", "data")
     for filename in os.listdir(problem_path):
+        if filename != "D3-1-16.json":
+            continue
+
         if os.path.isfile(os.path.join(problem_path, filename)):
             print(f"------- Solving {filename} -------")
             solve(filename)
