@@ -9,25 +9,27 @@ import time
 from gurobipy import Model, quicksum, GRB
 import json  # For importing the data as JSON format
 import os
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Set, Tuple, Union
 from Examination import Examination
 
 # Custom Imports
 from Room import RoomManager, Room
 from Constraint import (
     ConstraintManager,
+    EventPeriodConstraint,
     EventRoomConstraint,
+    RoomPeriodConstraint,
 )
 from Course import CourseManager, Course
 from Event import Event
-from Curriculum import CurriculaManager
+from Curriculum import CurriculaManager, Curriculum
 from Period import Period
 import Constants as const
 
 previous_time = time.time()
 
 # ------ Import data ------
-data_file = os.path.join(".", "Project", "data", "D2-1-18.json")
+data_file = os.path.join(".", "Project", "data", "D1-3-16.json")
 
 with open(data_file, "r") as json_file:
     json_data = json_file.read()
@@ -68,11 +70,31 @@ Rooms.construct_composite_map()
 
 dummy_room = Rooms.get_dummy_room()
 
-room_constraints = constrManager.get_room_period_constraints()
+# Problem Constraints (from data)
 
-# Event period Constraints
-event_constraints = constrManager.get_event_period_constraints()
+# Event Period Constraints
+event_period_constraints = constrManager.get_event_period_constraints()
+undesired_event_period_constraints = (
+    constrManager.get_undesired_event_room_constraints()
+)
+
+# Room Period Constraints
+room_period_constraints = constrManager.get_room_period_constraints()
+undesired_room_period_constraints = (
+    constrManager.get_undesired_room_period_constraints()
+)
+forbidden_room_period_constraints = (
+    constrManager.get_forbidden_room_period_constraints()
+)
+
+# Event Room Constraint
+event_room_constraints = constrManager.get_event_room_constraints()
+undesired_event_room_constraints = constrManager.get_undesired_event_room_constraints()
+forbidden_event_room_constraints = constrManager.get_forbidden_event_room_constraints()
+
+# Period Constraints
 period_constraints = constrManager.get_period_constraints()
+undesired_period_constraints = constrManager.get_undesired_period_constraints()
 
 # Forbidden period constraints (any event any room)
 # Convert periods into day and timeslot tuples
@@ -106,7 +128,7 @@ for course in Courses:
     for examination in examinations:
         Examinations.add(examination)
 
-# Extract Events from the set of Examinations
+# Extract Events from the set of Examinations and store as list
 Events: Set[Event] = set(
     [event for examination in Examinations for event in examination.get_events()]
 )
@@ -126,6 +148,7 @@ forbidden_event_period_constraints: Dict[Event, List[Period]] = {}
 
 # Initialise dictionary with an empty list for each event
 for event in Events:
+    event: Event
     forbidden_event_period_constraints[event] = []
 
 # Iterate through forbidden_event_period_constraints and add to the right list as required
@@ -168,7 +191,10 @@ Periods = [
 ]
 
 # Set of composite rooms (R^C) in paper)
-CompositeRooms = Rooms.get_composite_rooms()
+CompositeRooms: List[Room] = Rooms.get_composite_rooms()
+
+# Maximum number of members in composite rooms by the type of room
+max_members_by_room_type: Dict[str, int] = Rooms.get_max_members_by_room_type()
 
 # -- Room Equivalence Class --
 # TODO Yet to determine what this is
@@ -189,7 +215,6 @@ for event in Events:
             continue
 
         if period in forbidden_event_period_constraints[event]:
-            print("Skipping period", period, "for event", event)
             continue
 
         PA[event].append(period)
@@ -205,6 +230,11 @@ available_types[const.SMALL] = [const.SMALL, const.MEDIUM, const.LARGE]
 available_types[const.MEDIUM] = [const.MEDIUM, const.LARGE]
 available_types[const.LARGE] = [const.LARGE]
 available_types[const.COMPOSITE] = [const.COMPOSITE]
+
+inverse_room_types: Dict[str, str] = {}
+inverse_room_types[const.SMALL] = [const.SMALL]
+inverse_room_types[const.MEDIUM] = [const.SMALL, const.MEDIUM]
+inverse_room_types[const.LARGE] = [const.SMALL, const.MEDIUM, const.LARGE]
 
 for event in Events:
     if event.get_num_rooms() == 0:
@@ -259,47 +289,44 @@ F: Set[Tuple[Event, Event]] = set()
 
 # dictionary mapping events e to the set of events in H3 hard conflict with e
 # HC_e in paper
-HC: Dict[Event, set[Event]] = {}
+HC: Dict[Event, Set[Event]] = {}
 
-for course, examinations in CourseExaminations.items():
-    course: Course
-    event_course_name = course.get_course_name()
-    event_course_teacher = course.get_teacher()
+# Initialise empty list for every event
+for e in Events:
+    HC[e] = set()
 
-    overlapping_primary_curriculum_courses = []
+for curriculum in curriculaManager.get_curricula():
+    curriculum: Curriculum
 
-    for curriculum in curriculaManager.get_curricula():
-        primary_course_names = curriculum.get_primary_course_names()
-        if event_course_name not in primary_course_names:
-            continue
+    curriculum_events_by_teacher: Dict[str, List[Event]] = {}
 
-        # This curricula containing the course in the primary section
-        # Add all the courses from here into the overlapping_primary_curriculum
-        for primary_course_name in primary_course_names:
-            primary_course = courseManager.get_course_by_name(primary_course_name)
-            if primary_course not in overlapping_primary_curriculum_courses:
-                overlapping_primary_curriculum_courses.append(primary_course)
+    # Get all the primary events that are part of this curriculum and taught by the same teacher
+    for course_name in curriculum.get_primary_course_names():
+        course: Course = courseManager.get_course_by_name(course_name)
 
-    # Now convert all these courses into events using the CourseEvent dictionary
-    primary_curricula_events = []
-    for course in overlapping_primary_curriculum_courses:
-        primary_curricula_events.extend(CourseEvents.get(course))
+        course_teacher = course.get_teacher()
 
-    # Find Teachers teaching the same course
-    same_teacher_courses: List[Course] = []
-    for course in courseManager.get_courses():
-        if course.get_teacher() == event_course_teacher:
-            same_teacher_courses.append(course)
+        # Get the set of events for this course
+        course_events: List[Event] = CourseEvents.get(course)
 
-    # Now convert all those same teacher courses to events
-    same_teacher_events = []
-    for course in same_teacher_courses:
-        same_teacher_events.extend(CourseEvents.get(course))
+        if course_teacher not in curriculum_events_by_teacher.keys():
+            curriculum_events_by_teacher[course_teacher] = []
 
-    conflict_set = set(primary_curricula_events).union(set(same_teacher_events))
+        curriculum_events_by_teacher[course_teacher].extend(course_events)
 
-    for event in CourseEvents[course]:
-        HC[event] = conflict_set
+    for course_name in curriculum.get_primary_course_names():
+        course: Course = courseManager.get_course_by_name(course_name)
+
+        course_teacher = course.get_teacher()
+
+        # Get the set of events for this course
+        course_events: List[Event] = CourseEvents.get(course)
+
+        for event in course_events:
+            for curriculum_event in curriculum_events_by_teacher[course_teacher]:
+                if event == curriculum_event:
+                    continue
+                HC[event].add(curriculum_event)
 
 
 # The set of event pairs with a directed soft distance constraint. Occurs when
@@ -423,6 +450,65 @@ for curricula in curriculaManager.get_curricula():
                         event_b = examination_b.get_oral_event()
 
                     DPUndirected.add((event_a, event_b))
+
+# $P1$ the set of all unordered pairs $s$ of events $s = \{e_1, e_2\}$
+# for which there exists a curriculum with courses $c_1 \neq c_2$, not
+# both primary courses, such that $e_1$ and $e_2$ are examination events
+# for $c_1$ and $c_2$ respectively.
+
+P1: Set[frozenset[Event, Event]] = set()
+
+# Loop over curriculums
+for curricula in curriculaManager.get_curricula():
+    curriucla_course_names = curricula.get_course_names()
+    curricula_courses: List[Course] = []
+    for course_name in curriucla_course_names:
+        curricula_courses.append(courseManager.get_course_by_name(course_name))
+
+    course_exams: List[Examination] = []
+    for course_a in curricula_courses:
+        course_a: Course
+        course_exams.extend([exam for exam in course_a.get_examinations()])
+
+    for exam_a in course_exams:
+        for exam_b in course_exams:
+            exam_a: Examination
+            exam_b: Examination
+
+            exam_a_course: Course = exam_a.get_course()
+            exam_b_course: Course = exam_b.get_course()
+
+            if exam_a_course.__eq__(exam_b_course):
+                continue
+
+            if curricula.get_primary_course_names().__contains__(
+                exam_a_course.get_course_name()
+            ):
+                continue
+
+            events_a: List[Event] = exam_a.get_events()
+            events_b: List[Event] = exam_b.get_events()
+
+            for event_a in events_a:
+                for event_b in events_b:
+                    P1.add(frozenset([event_a, event_b]))
+
+# P2R the set of all events with undesired room preferences
+P2R: Set[Event] = set()
+for event in Events:
+    for event_period_constraint in undesired_event_period_constraints:
+        course_name = event_period_constraint.get_course_name()
+        exam_num = event_period_constraint.get_exam_ordinal()
+        exam_part = event_period_constraint.get_part()
+
+        course: Course = courseManager.get_course_by_name(course_name)
+        exam: Examination = course.get_examination_by_index(exam_num)
+        if exam_part == const.ORAL:
+            event = exam.get_oral_event()
+        elif exam_part == const.WRITTEN:
+            event = exam.get_written_event()
+
+        P2R.add(event)
 
 # SCPS
 # Dictionary mapping each primary event to the set of secondary
@@ -562,19 +648,17 @@ for e in Events:
 # Soft constraint undesired room violation cost for event e to be assigned to
 # period p. \alpha in the paper
 UndesiredRoomCost = {}
-for e in Events:
-    undesired_event_room_constraints: Set[
-        EventRoomConstraint
-    ] = constrManager.get_undesired_event_room_constraints()
+undesired_rooms: Dict[Event, List[Room]] = {}
 
-    undesired_rooms = [
+for e in Events:
+    undesired_rooms[e] = [
         event_room_constraint.get_room()
         for event_room_constraint in undesired_event_room_constraints
         if event_room_constraint.get_course_name() == e.get_course_name()
     ]
 
     for r in RA[e]:
-        if r in undesired_rooms:
+        if r in undesired_rooms[e]:
             UndesiredRoomCost[e, r] = const.P_UNDESIRED_ROOM
         else:
             UndesiredRoomCost[e, r] = 0
@@ -595,145 +679,213 @@ print(f"------\n{const.GUROBI}\n------")
 
 # ------ Define Model ------
 
-m = Model(const.UNIVERSITY_EXAMINATIONS)
+BMP = Model(const.UNIVERSITY_EXAMINATIONS)
 
 # ------ Variables ------
-# X = 1 if event e is assigned to period p and room r, 0 else
-X = {
-    (e, p, r): m.addVar(vtype=GRB.BINARY)
-    for e in Events
-    for p in Periods
-    for r in Rooms
-}
-
-
 # Y = 1 if event e is assigned to day d and timeslot t, 0 else (auxiliary variable)
-Y = {(e, p): m.addVar(vtype=GRB.BINARY) for e in Events for p in Periods}
+Y = {(e, p): BMP.addVar(vtype=GRB.BINARY) for e in Events for p in Periods}
 
 # The ordinal (order) value of the period assigned to event e
-H = {e: m.addVar(vtype=GRB.INTEGER) for e in Events}
+H = {e: BMP.addVar(vtype=GRB.INTEGER) for e in Events}
+
+# Replacing cost of undesired rooms in the BMP objective function
+S2R = {p: BMP.addVar(vtype=GRB.INTEGER) for p in Periods}
 
 # Soft constraint counting variables. The paper claims that all of these may be
 # relaxed to be continuous.
 # S1
-SPS = {(e, p): m.addVar(vtype=GRB.CONTINUOUS) for e in Events for p in Periods}
-SSS = {(e, p): m.addVar(vtype=GRB.CONTINUOUS) for e in Events for p in Periods}
+SPS = {(e, p): BMP.addVar(vtype=GRB.CONTINUOUS) for e in Events for p in Periods}
+SSS = {(e, p): BMP.addVar(vtype=GRB.CONTINUOUS) for e in Events for p in Periods}
 
 # S3
-PMinE = {(e1, e2): m.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPSameCourse}
-PMinWO = {(e1, e2): m.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPWrittenOral}
-PMaxWO = {(e1, e2): m.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPWrittenOral}
-PMinPP = {(e1, e2): m.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPPrimaryPrimary}
-PMinPS = {(e1, e2): m.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPPrimarySecondary}
+PMinE = {(e1, e2): BMP.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPSameCourse}
+PMinWO = {(e1, e2): BMP.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPWrittenOral}
+PMaxWO = {(e1, e2): BMP.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPWrittenOral}
+PMinPP = {(e1, e2): BMP.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPPrimaryPrimary}
+PMinPS = {(e1, e2): BMP.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPPrimarySecondary}
 
 # Variables for S3 soft constraints
 # Abs distances between assignment of e1 and e2
-D_abs = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events}
+D_abs = {(e1, e2): BMP.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events}
 
 # Actual distances between assignments of e1 and e2
 D_actual = {
-    (e1, e2): m.addVar(vtype=GRB.INTEGER, lb=-GRB.INFINITY)
+    (e1, e2): BMP.addVar(vtype=GRB.INTEGER, lb=-GRB.INFINITY)
     for e1 in Events
     for e2 in Events
 }
 # 1 if D_actual[e1, e2] is positive
-G = {(e1, e2): m.addVar(vtype=GRB.BINARY) for e1 in Events for e2 in Events}
+G = {(e1, e2): BMP.addVar(vtype=GRB.BINARY) for e1 in Events for e2 in Events}
 
 # Abs Val of D_actual[e1, e2] or Zero
 D_actual_abs_1 = {
-    (e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events
+    (e1, e2): BMP.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events
 }
 # Abs value of D_actual[e1, e2] or Zero
 D_actual_abs_2 = {
-    (e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events
+    (e1, e2): BMP.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events
 }
 
 # ------ Constraints ------
 
-# Constraint 1: Each event assigned to an available period and room.
-RoomRequest = {
-    e: m.addConstr(quicksum(X[e, p, r] for p in PA[e] for r in RA[e]) == 1)
-    for e in Events
+# Limits every event to be assigned exactly 1 period
+OnePeriodPerEvent = {
+    e: BMP.addConstr(quicksum(Y[e, p] for p in Periods) == 1) for e in Events
 }
 
-# Constraint 2: At most one event can use a room at once.
-RoomOccupation = {
-    (r, p): m.addConstr(quicksum(X[e, p, r] for e in Events) <= 1)
-    for r in Rooms
-    if r is not dummy_room
-    for p in Periods
-}
+# Hard upper limit on the number of events assigned to a period
+# Total number of rooms around campus
+num_rooms: int = len(Rooms.get_single_rooms())
 
-# Constraint 3: Two events must have different periods if they are in hard conflict
-# Occurs in the following cases:
-#   - They are part of the same primary curriculum
-#   - They have the same teacher
-# M: Number of elements (rooms maybe - confirm with Michael) in the overlapping roomconcat
-# rc is room-composite   - Rooms that are composite
-# ro is room-overlapping - Rooms that overlap in a composite room
+# Rooms available per period
+rooms_available: Dict[Period, int] = {}
 
-HardConflicts = {
-    (cr, p): m.addConstr(
-        (len(R0[cr])) * quicksum(X[e, p, cr] for e in Events)
-        + quicksum(X[e, p, ro] for e in Events for ro in R0[cr])
-        <= (len(R0[cr]))
-    )
-    for cr in CompositeRooms
-    for p in Periods
-}
+print(time.time())
+# Rooms available by size per period
+forbidden_rooms_by_period_and_type: Dict[
+    Tuple[Period, Union[const.SMALL, const.MEDIUM, const.LARGE]], List[Room]
+] = {}
+undesired_rooms_by_period_and_type: Dict[
+    Tuple[Period, Union[const.SMALL, const.MEDIUM, const.LARGE]], List[Room]
+] = {}
+
+for p in Periods:
+    rooms_available[p]: int = num_rooms
+    for forbidden_room_period_constraint in forbidden_room_period_constraints:
+        if forbidden_room_period_constraint.get_period() == p:
+            rooms_available[p] -= 1
+
+    # For now just constrain number of events to number of rooms available in the period
+    # regardless of type
+    # BMP.addConstr(
+    #     quicksum(e.get_num_rooms() * Y[e, p] for e in Events if e.get_num_rooms() > 0)
+    #     <= rooms_available[p]
+    # )
+
+    # Number of rooms available by size per period
+    # This will be handy for callback
+
+    for room_type in const.SINGLE_ROOM_TYPES:
+        # Initialise empty list for every period and room type
+        forbidden_rooms_by_period_and_type[(p, room_type)] = []
+        undesired_rooms_by_period_and_type[(p, room_type)] = []
+
+        for forbidden_room_period_constraint in forbidden_room_period_constraints:
+            forbidden_room_period_constraint: RoomPeriodConstraint
+
+            room_period_constraint_period: Period = (
+                forbidden_room_period_constraint.get_period()
+            )
+            level: str = forbidden_room_period_constraint.get_level()
+            room_name: str = forbidden_room_period_constraint.get_room_name()
+            room: Room = Rooms.get_room_by_name(room_name)
+
+            if level != const.FORBIDDEN:
+                continue
+
+            if room_period_constraint_period != p:
+                continue
+
+            if room.get_type() != room_type:
+                continue
+
+            print("Adding forbidden room in period", p, room_type, room)
+
+            forbidden_rooms_by_period_and_type[(p, room_type)].append(room)
+
+            # Check if room is part of any composite rooms
+            # If so, add the composite room to the forbidden list as well
+            for composite_room in CompositeRooms:
+                composite_room_members = composite_room.get_members()
+                if room_name in composite_room_members:
+                    forbidden_rooms_by_period_and_type[(p, room_type)].append(
+                        composite_room
+                    )
+
+        for undesired_room_constraint in undesired_room_period_constraints:
+            undesired_room_constraint: RoomPeriodConstraint
+
+            room_period_constraint_period: Period = (
+                undesired_room_constraint.get_period()
+            )
+            level: str = undesired_room_constraint.get_level()
+            room_name: str = undesired_room_constraint.get_room_name()
+            room: Room = Rooms.get_room_by_name(room_name)
+
+            if level != const.UNDESIRED:
+                continue
+
+            if room_period_constraint_period != p:
+                continue
+
+            if room.get_type() != room_type:
+                continue
+
+            print("Adding undesired room in period", p, room_type, room_name)
+
+            undesired_rooms_by_period_and_type[(p, room_type)].append(room_name)
+
+# Number of available rooms by period, type of room, and number of joining members
+# Excludes forbidden room_period constraints
+# Number of joining members = 1 => single room
+# Number of joining members > 1 => composite room
+available_rooms_by_period_type_and_size: Dict[Tuple[Period, str, int], List[Room]] = {}
+# Begin by assigning all periods to have the same number of available rooms
+for period in Periods:
+    for room_type in const.SINGLE_ROOM_TYPES:
+        if max_members_by_room_type.get(room_type) == 0:
+            continue
+
+        for num_members in range(1, max_members_by_room_type[room_type] + 1):
+            available_rooms_by_period_type_and_size[
+                (period, room_type, num_members)
+            ] = [
+                room
+                for room in Rooms.get_rooms_given_size_and_num_rooms(
+                    room_type, num_members
+                )
+                if room not in forbidden_rooms_by_period_and_type[(period, room_type)]
+            ]
 
 # Constraint 4: Some events must precede other events (hard constraint).
-Precendences = {(e1, e2): m.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
+Precendences = {(e1, e2): BMP.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
 
 # Constraint 5: Some rooms, day and timeslot configurations are unavailable.
-# Unavailabilities = {
-#     (e, p): m.addConstr(
-#         len(HC[e]) * Y[e, p] + quicksum(Y[e2, p] for e2 in HC[e]) <= len(HC[e])
-#     )
-#     for e in Events
-#     for p in PA[e]
-# }
-
-# Prevent events scheduled when they aren't allowed. Alternative to constraint 5 atm
-# seems to give much more correct objective value from testing so far.
-
-PeriodScheduling = {
-    (e, p, r): m.addConstr(quicksum(X[e, p, r] for r in Rooms) == 0)
-    for e in Events
-    for p in Periods
-    if p not in PA[e]
-}
-
-RoomScheduling = {
-    (e, p, r): m.addConstr(quicksum(X[e, p, r] for p in Periods) == 0)
-    for e in Events
-    for r in Rooms  # should be without dummy
-    if r not in RA[e]
-}
-
-# Constraint 6: Set values of Y_(e,p)
-setY = {
-    (e, p): m.addConstr(Y[e, p] - quicksum(X[e, p, r] for r in RA[e]) == 0)
+Unavailabilities = {
+    (e, p): BMP.addConstr(
+        len(HC[e]) * Y[e, p] + quicksum(Y[e2, p] for e2 in HC[e]) <= len(HC[e])
+    )
     for e in Events
     for p in PA[e]
 }
 
+# Prevent events scheduled when they aren't allowed. Alternative to constraint 5 atm
+# seems to give much more correct objective value from testing so far.
+
+# PeriodScheduling = {
+#     (e, p): BMP.addConstr(Y[e, p] == 0)
+#     for e in Events
+#     for p in Periods
+#     if p not in PA[e]
+# }
+
 # Constraint 7: Set values of H_e
 setH = {
-    e: m.addConstr(quicksum(p.get_ordinal_value() * Y[e, p] for p in PA[e]) == H[e])
+    e: BMP.addConstr(quicksum(p.get_ordinal_value() * Y[e, p] for p in PA[e]) == H[e])
     for e in Events
 }
 
 # Constraint 7a: Limit only 1 sum p of Y[e, p] to be turned on for each event
-oneP = {e: m.addConstr(quicksum(Y[e, p] for p in Periods) == 1) for e in Events}
+# oneP = {e: BMP.addConstr(quicksum(Y[e, p] for p in Periods) == 1) for e in Events}
 # for p in PA[e]
 # oneP = {e: m.addConstr(quicksum(Y[e, p] for p in PA[e]) == 1) for e in Events}
 
+print("Hard Constraints defined", time.time())
 # Soft Constraints
 
 # Constraint 8 (S1): Soft Conflicts
 SoftConflicts = {
-    (e, p): m.addConstr(
+    (e, p): BMP.addConstr(
         len({e2 for e2 in SCPS[e] if (e, e2) in DPDirected and p in PA[e2]}) * Y[e, p]
         + quicksum(Y[e2, p] for e2 in SCPS[e] if (e, e2) in DPDirected)
         <= SPS[e, p]
@@ -745,7 +897,7 @@ SoftConflicts = {
 
 # Constraint 9 (S2): Preferences
 Preferences = {
-    (e, p): m.addConstr(
+    (e, p): BMP.addConstr(
         len({e2 for e2 in SCSS[e] if (e, e2) in DPDirected and p in PA[e2]}) * Y[e, p]
         + quicksum(Y[e2, p] for e2 in SCSS[e] if (e, e2) in DPDirected)
         <= SSS[e, p]
@@ -757,59 +909,59 @@ Preferences = {
 
 # Constraint 10 (S3): DirectedDistances
 Constraint10 = {
-    (e1, e2): m.addConstr(D_abs[e1, e2] == H[e2] - H[e1]) for (e1, e2) in DPDirected
+    (e1, e2): BMP.addConstr(D_abs[e1, e2] == H[e2] - H[e1]) for (e1, e2) in DPDirected
 }
 
 # Constraint 11: (S4): UndirectedDifferences
 Constraint11 = {
-    (e1, e2): m.addConstr(D_actual[e1, e2] == H[e2] - H[e1])
+    (e1, e2): BMP.addConstr(D_actual[e1, e2] == H[e2] - H[e1])
     for (e1, e2) in DPUndirected
 }
 
 # Constraint 12:
 Constraint12 = {
-    (e1, e2): m.addConstr(D_actual[e1, e2] <= len(Periods) * G[e1, e2])
+    (e1, e2): BMP.addConstr(D_actual[e1, e2] <= len(Periods) * G[e1, e2])
     for (e1, e2) in DPUndirected
 }
 
 Constraint13 = {
-    (e1, e2): m.addConstr(D_actual[e1, e2] >= -len(Periods) * (1 - G[e1, e2]))
+    (e1, e2): BMP.addConstr(D_actual[e1, e2] >= -len(Periods) * (1 - G[e1, e2]))
     for (e1, e2) in DPUndirected
 }
 
 Constraint14 = {
-    (e1, e2): m.addConstr(D_actual_abs_1[e1, e2] <= len(Periods) * G[e1, e2])
+    (e1, e2): BMP.addConstr(D_actual_abs_1[e1, e2] <= len(Periods) * G[e1, e2])
     for (e1, e2) in DPUndirected
 }
 
 Constraint15 = {
-    (e1, e2): m.addConstr(D_actual_abs_1[e1, e2] >= -len(Periods) * G[e1, e2])
+    (e1, e2): BMP.addConstr(D_actual_abs_1[e1, e2] >= -len(Periods) * G[e1, e2])
     for (e1, e2) in DPUndirected
 }
 
 Constraint16 = {
-    (e1, e2): m.addConstr(
+    (e1, e2): BMP.addConstr(
         D_actual_abs_1[e1, e2] <= D_actual[e1, e2] + len(Periods) * (1 - G[e1, e2])
     )
     for (e1, e2) in DPUndirected
 }
 
 Constraint17 = {
-    (e1, e2): m.addConstr(
+    (e1, e2): BMP.addConstr(
         D_actual_abs_1[e1, e2] >= D_actual[e1, e2] - len(Periods) * (1 - G[e1, e2])
     )
     for (e1, e2) in DPUndirected
 }
 
 Constraint18 = {
-    (e1, e2): m.addConstr(
+    (e1, e2): BMP.addConstr(
         D_actual_abs_2[e1, e2] == D_actual_abs_1[e1, e2] - D_actual[e1, e2]
     )
     for (e1, e2) in DPUndirected
 }
 
 Constraint19 = {
-    (e1, e2): m.addConstr(
+    (e1, e2): BMP.addConstr(
         D_abs[e1, e2] == D_actual_abs_1[e1, e2] + D_actual_abs_2[e1, e2]
     )
     for (e1, e2) in DPUndirected
@@ -825,7 +977,9 @@ for e1, e2 in DPSameCourse:
     exam_min_dist_2 = e2_course.get_min_distance_between_exams()
     exam_min_dist = max(exam_min_dist_1, exam_min_dist_2)
 
-    Constraint20[(e1, e2)]: m.addConstr(PMinE[e1, e2] + D_abs[e1, e2] >= exam_min_dist)
+    Constraint20[(e1, e2)]: BMP.addConstr(
+        PMinE[e1, e2] + D_abs[e1, e2] >= exam_min_dist
+    )
 
 Constraint21 = {}
 Constraint22 = {}
@@ -840,11 +994,11 @@ for written_event, oral_event in DPWrittenOral:
     min_distance = written_oral_specs.get_min_distance()
     max_distance = written_oral_specs.get_max_distance()
 
-    Constraint21[(written_event, oral_event)]: m.addConstr(
+    Constraint21[(written_event, oral_event)]: BMP.addConstr(
         PMinWO[written_event, oral_event] + D_abs[written_event, oral_event]
         >= min_distance
     )
-    Constraint22[(written_event, oral_event)]: m.addConstr(
+    Constraint22[(written_event, oral_event)]: BMP.addConstr(
         D_abs[written_event, oral_event] - PMaxWO[written_event, oral_event]
         <= max_distance
     )
@@ -854,7 +1008,7 @@ for e1, e2 in DPPrimaryPrimary:
     e1_course: Course = e1.get_course()
     e2_course: Course = e2.get_course()
 
-    Constraint23[(e1, e2)]: m.addConstr(
+    Constraint23[(e1, e2)]: BMP.addConstr(
         PMinPP[e1, e2] + D_abs[e1, e2] >= primary_primary_distance
     )
 
@@ -863,21 +1017,22 @@ for e1, e2 in DPPrimarySecondary:
     e1_course: Course = e1.get_course()
     e2_course: Course = e2.get_course()
 
-    Constraint24[(e1, e2)]: m.addConstr(PMinPS[e1, e2] + D_abs[e1, e2] >= 1)
-
+    Constraint24[(e1, e2)]: BMP.addConstr(PMinPS[e1, e2] + D_abs[e1, e2] >= 1)
+print("Constraints defined", time.time())
 # ------ Objective Function ------
-m.setObjective(
+BMP.setObjective(
     # Cost S1
     const.SC_PRIMARY_SECONDARY * quicksum(SPS[e, p] for e in Events for p in PA[e])
     + const.SC_SECONDARY_SECONDARY * quicksum(SSS[e, p] for e in Events for p in PA[e])
     # Cost S2
     + quicksum(UndesiredPeriodCost[e, p] * Y[e, p] for e in Events for p in PA[e])
-    + quicksum(
-        UndesiredRoomCost[e, r] * X[e, p, r]
-        for e in Events
-        for p in PA[e]
-        for r in RA[e]
-    )
+    + quicksum(const.P_UNDESIRED_ROOM * S2R[p] for p in Periods)
+    # + quicksum(
+    #     UndesiredRoomCost[e, r] * X[e, p, r]
+    #     for e in Events
+    #     for p in PA[e]
+    #     for r in RA[e]
+    # )
     # Cost S3
     + const.DD_SAME_COURSE * quicksum(PMinE[e1, e2] for (e1, e2) in DPSameCourse)
     + const.DD_SAME_EXAMINATION
@@ -890,13 +1045,227 @@ m.setObjective(
     GRB.MINIMIZE,
 )
 
+# ---- Define Subproblem
 
-print("Define Gurobi Model:", time.time() - previous_time, const.SECONDS)
+# Dictionary to store subproblem objective valujes (one for each period)
+# _SolveBSP: Dict[Period, float] = {}
+
 previous_time = time.time()
-# ------ Optimise -------
-m.optimize()
-print("Optimise Gurobi Model:", time.time() - previous_time, const.SECONDS)
-previous_time = time.time()
+print("Defined Gurobi Model:", time.time() - previous_time, const.SECONDS)
+
+reachedOptimal = False
+iter = 0
+BMP.setParam("OutputFlag", 1)
+
+while not reachedOptimal:
+    print("Iteration " + str(iter))
+    # ------ Optimise -------
+    BMP.optimize()
+    print(
+        f"Optimise Gurobi Model ({str(iter)}): {time.time() - previous_time} {const.SECONDS}"
+    )
+    previous_time = time.time()
+
+    print("Master Problem Objective: " + str(BMP.objVal))
+    print("------" * 10)
+
+    numCuts = 0
+
+    for p in Periods:
+        # Sets
+
+        # Set of events that are assigned to period p (from the master problem)
+        EventsP = [e for e in Events if Y[e, p].x > 0.9]
+
+        # Set of events assigned to period p requiring room with type room_type and # members num_rooms
+        events_p_by_type_and_size: Dict[Tuple[str, int], List[Event]] = {}
+        for room_type in const.SINGLE_ROOM_TYPES:
+            for num_members in range(1, max_members_by_room_type[room_type] + 1):
+                events_p_by_type_and_size[(room_type, num_members)] = [
+                    e
+                    for e in EventsP
+                    if e.get_room_type() == room_type
+                    and e.get_num_rooms() == num_members
+                ]
+
+        # Define Sub Problem
+        BSP = Model("BSP for Period " + str(p))
+
+        # Set output flag off/on
+        BSP.setParam("OutputFlag", 1)
+
+        # Variables in Subproblem
+
+        # X = 1 if event e is assigned to period p and room r, 0 else
+        X = {(e, r): BSP.addVar(vtype=GRB.BINARY) for e in EventsP for r in Rooms}
+
+        # Undesired Room. 1 if event e is assigned to an undesired room
+        # (only in this period), 0 else
+        UR = {e: BSP.addVar(vtype=GRB.BINARY) for e in EventsP}
+
+        # Subproblem objective function
+
+        BSP.setObjective(
+            quicksum(UR[e] for e in EventsP),
+            GRB.MINIMIZE,
+        )
+
+        # Subproblem Constraints
+
+        # Constraint 1: Each event assigned to an available period and exactly 1 room.
+        RoomRequest = {
+            e: BSP.addConstr(quicksum(X[e, r] for r in RA[e]) == 1) for e in EventsP
+        }
+
+        # Constraint 2: At most one event can use a room at once.
+        RoomOccupation = {
+            r: BSP.addConstr(quicksum(X[e, r] for e in EventsP) <= 1)
+            for r in Rooms
+            if r is not dummy_room
+        }
+
+        # Constraint 3: Two events must have different periods if they are in hard conflict
+        # Occurs in the following cases:
+        #   - They are part of the same primary curriculum
+        #   - They have the same teacher
+        # M: Number of elements in the overlapping roomconcat sum
+        # rc is room-composite   - Rooms that are composite
+        # ro is room-overlapping - Rooms that overlap in a composite room
+
+        HardConflicts = {
+            cr: BSP.addConstr(
+                (len(R0[cr])) * quicksum(X[e, cr] for e in EventsP)
+                + quicksum(X[e, ro] for e in EventsP for ro in R0[cr])
+                <= (len(R0[cr]))
+            )
+            for cr in CompositeRooms
+        }
+
+        # Events can't be scheduled to a room if that room is forbidden for the event
+        ForbiddenRooms = {
+            (e, r): BSP.addConstr(X[e, r] == 0)
+            for e in EventsP
+            for r in Rooms  # should be without dummy
+            if r not in RA[e] and r is not dummy_room
+        }
+
+        UndesiredRooms = {
+            e: BSP.addConstr(
+                UR[e] == quicksum(X[e, r] for r in Rooms if r in undesired_rooms[e])
+            )
+            for e in EventsP
+        }
+
+        # Constraint 6: Set values of Y_(e,p)
+        # This is now implicitly handled in the subproblem
+        # setY = {
+        #     (e, p): BMP.addConstr(Y[e, p] - quicksum(X[e, r] for r in RA[e]) == 0)
+        #     for e in Events
+        #     for p in PA[e]
+        # }
+
+        BSP.optimize()
+
+        # Check if BSP is infeasible. If it is, I need to add a feasability cut to prevent as many events
+        # being allocated to this period
+
+        if BSP.status == GRB.INFEASIBLE:
+            print("Infeasible")
+            # Subproblem was infeasible. Add feasability cut
+
+            # Find number of events allocated to period p that request small rooms
+            room_allocations: Dict[str, int] = {}
+            for room_type in const.SINGLE_ROOM_TYPES:
+                # Initialise allocations to 0 if not set already
+                if room_allocations.get(room_type) is None:
+                    room_allocations[room_type] = 0
+
+                # Loop over events and add to allocations if event is allocated to room
+                # ensuring to add the number of rooms for composite events.
+                for e in EventsP:
+                    # If the event was scheduled in this period
+                    if Y[e, p].x > 0.9 and e.get_room_type() == room_type:
+                        # Add the number of rooms required by the event.
+                        room_allocations[room_type] += e.get_num_rooms()
+
+            # Just remember that a room request of small can use larger rooms
+            # but this doesn't apply to composite rooms
+            # print("Num rooms available", rooms_available[p])
+
+            for room_type in const.SINGLE_ROOM_TYPES:
+                print(room_type)
+
+                if max_members_by_room_type[room_type] == 0:
+                    continue
+
+                for num_members in range(1, max_members_by_room_type[room_type] + 1):
+                    print(
+                        available_rooms_by_period_type_and_size[
+                            (period, room_type, num_members)
+                        ]
+                    )
+
+                    # Limit the number of events allocated to period p of type room_type
+                    # with num_members members
+                    BMP.addConstr(
+                        quicksum(
+                            Y[e, p]
+                            for e in events_p_by_type_and_size[(room_type, num_members)]
+                        )
+                        <= sum(
+                            len(
+                                available_rooms_by_period_type_and_size[
+                                    (period, room_type_star, num_members)
+                                ]
+                            )
+                            for room_type_star in inverse_room_types[room_type]
+                        )
+                    )
+                print()
+
+            numCuts += 1
+
+        # Optimality cut
+        iter += 1
+
+        if numCuts == 0:
+            # If we haven't added any cuts in the current iteration, we can concludee have reached the optimal solution and therefore we can break
+            reachedOptimal = True
+            print("No Cuts Added")
+
+
+# def SolveBSP(p: Period, YV):
+#     """
+#     Solves the subproblem
+#     """
+
+#     global SolvesCalled
+#     SolvesCalled += 1
+
+#     _SolveBSP[p] = BSP.ObjVal
+#     return BSP.ObjVal
+
+
+# def Callback(model, where):
+#     """
+#     Callback is called when the master problem reaches an objective
+#     """
+
+#     if where == GRB.Callback.MIPSOL:
+#         YV = model.cbGetSolution(Y)
+#         YSet = {t for t in YV if YV[t] > 0.9}
+
+#         S2RV = model.cbGetSolution(S2R)
+
+#         TotalObj = 0
+#         CutsAdded = 0
+#         for p in Periods:
+#             for e in Events:
+#                 Obj = SolveBSP(p, YV)
+#                 TotalObj += Obj
+
+#                 if Obj < 0:
+#                     CutsAdded += 1
 
 # ------ Print output ------
 
@@ -905,7 +1274,8 @@ previous_time = time.time()
 #         if Y[event, period].x > 0.9:
 #             print(event, period, Y[event, period].x)
 
-print("\n\nObjective Value:", m.ObjVal, "\n\n")
+print("----")
+print("\n\nFinal Objective Value:", BMP.ObjVal, "\n\n")
 
 for d in Days:
     print("------" * 10 + "\nDay ", d)
@@ -913,8 +1283,12 @@ for d in Days:
         if p.get_day() == d:
             # print(f"{' '*4}Period ", p)
             for e in Events:
-                for r in Rooms:
-                    if X[e, p, r].x > 0.9:
-                        print(f"{' '*4} Period {p}: exam {e} in in room {r}")
+                if Y[e, p].x > 0.9:
+                    print(f"{' '*4} Period {p}: exam {e}")
+
+                    # If we know event e is assigned period p, loop over the rooms to find out which one
+                    # for r in RA[e]:
+                    #     if X[e, r].x > 0.9:
+                    #         print(f"{' '*4} Period {p}: exam {e} in in room {r}")
 
 print("------" * 10)
