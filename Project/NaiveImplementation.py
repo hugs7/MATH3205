@@ -625,7 +625,9 @@ def solve(instance_name: str):
 
     # Variables for S3 soft constraints
     # Abs distances between assignment of e1 and e2
-    D_abs = {(e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events}
+    D_abs = {
+        (e1, e2): m.addVar(vtype=GRB.INTEGER, lb=0) for e1 in Events for e2 in Events
+    }
 
     # Actual distances between assignments of e1 and e2
     D_actual = {
@@ -638,11 +640,11 @@ def solve(instance_name: str):
 
     # Abs Val of D_actual[e1, e2] or Zero
     D_actual_abs_1 = {
-        (e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events
+        (e1, e2): m.addVar(vtype=GRB.INTEGER, lb=0) for e1 in Events for e2 in Events
     }
     # Abs value of D_actual[e1, e2] or Zero
     D_actual_abs_2 = {
-        (e1, e2): m.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events
+        (e1, e2): m.addVar(vtype=GRB.INTEGER, lb=0) for e1 in Events for e2 in Events
     }
 
     # ------ Constraints ------
@@ -815,7 +817,7 @@ def solve(instance_name: str):
         exam_min_dist_2 = e2_course.get_min_distance_between_exams()
         exam_min_dist = max(exam_min_dist_1, exam_min_dist_2)
 
-        Constraint20[(e1, e2)]: m.addConstr(
+        Constraint20[(e1, e2)] = m.addConstr(
             PMinE[e1, e2] + D_abs[e1, e2] >= exam_min_dist
         )
 
@@ -832,11 +834,11 @@ def solve(instance_name: str):
         min_distance = written_oral_specs.get_min_distance()
         max_distance = written_oral_specs.get_max_distance()
 
-        Constraint21[(written_event, oral_event)]: m.addConstr(
+        Constraint21[(written_event, oral_event)] = m.addConstr(
             PMinWO[written_event, oral_event] + D_abs[written_event, oral_event]
             >= min_distance
         )
-        Constraint22[(written_event, oral_event)]: m.addConstr(
+        Constraint22[(written_event, oral_event)] = m.addConstr(
             D_abs[written_event, oral_event] - PMaxWO[written_event, oral_event]
             <= max_distance
         )
@@ -846,7 +848,7 @@ def solve(instance_name: str):
         e1_course: Course = e1.get_course()
         e2_course: Course = e2.get_course()
 
-        Constraint23[(e1, e2)]: m.addConstr(
+        Constraint23[(e1, e2)] = m.addConstr(
             PMinPP[e1, e2] + D_abs[e1, e2] >= primary_primary_distance
         )
 
@@ -855,7 +857,7 @@ def solve(instance_name: str):
         e1_course: Course = e1.get_course()
         e2_course: Course = e2.get_course()
 
-        Constraint24[(e1, e2)]: m.addConstr(PMinPS[e1, e2] + D_abs[e1, e2] >= 1)
+        Constraint24[(e1, e2)] = m.addConstr(PMinPS[e1, e2] + D_abs[e1, e2] >= 1)
 
     # ------ Objective Function ------
     m.setObjective(
@@ -916,7 +918,7 @@ def solve(instance_name: str):
                                 p.get_ordinal_value(),
                                 r.get_room(),
                             )
-                            print(f"{' '*4} Period {p}: exam {e} in in room {r}")
+                            print(f"{' '*4} Period {p}: exam {e} in room {r}")
 
     print("------" * 10)
     sol.export()
