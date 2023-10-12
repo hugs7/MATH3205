@@ -576,7 +576,7 @@ def solve(instance_name: str):
         for p in PA[e]:
             if p in global_undesired_periods or p in undesired_event_periods[e]:
                 UndesiredPeriodCost[e, p] = const.P_UNDESIRED_PERIOD
-            elif p not in preferred_periods[e]:
+            elif len(preferred_periods[e]) > 0 and p not in preferred_periods[e]:
                 UndesiredPeriodCost[e, p] = const.P_NOT_PREFERED_PERIOD
             else:
                 UndesiredPeriodCost[e, p] = 0
@@ -877,12 +877,12 @@ def solve(instance_name: str):
             PMinPP[e1, e2] + D_abs[e1, e2] >= primary_primary_distance
         )
 
-    Constraint24 = {}
-    for e1, e2 in DPPrimarySecondary:
-        e1_course: Course = e1.get_course()
-        e2_course: Course = e2.get_course()
+    # Constraint24 = {}
+    # for e1, e2 in DPPrimarySecondary:
+    #     e1_course: Course = e1.get_course()
+    #     e2_course: Course = e2.get_course()
 
-        Constraint24[(e1, e2)] = m.addConstr(PMinPS[e1, e2] + D_abs[e1, e2] >= 1)
+    #     Constraint24[(e1, e2)] = m.addConstr(PMinPS[e1, e2] + D_abs[e1, e2] >= 1)
 
     # ------ Objective Function ------
     m.setObjective(
