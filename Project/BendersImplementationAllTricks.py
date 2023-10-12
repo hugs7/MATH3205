@@ -1100,13 +1100,17 @@ def solve(instance_name: str) -> None:
             # X = 1 if event e is assigned to period p and room r, 0 else
             X = {(e, r): BSP.addVar(vtype=GRB.BINARY) for e in EventsP for r in Rooms}
 
-            # Undesired Room. 1 if event e is assigned to an undesired room
-            # (only in this period), 0 else
-            UR = {e: BSP.addVar(vtype=GRB.BINARY) for e in EventsP}
-
             # Subproblem objective function
 
-            BSP.setObjective(quicksum(UR[e] for e in EventsP), GRB.MINIMIZE)
+            BSP.setObjective(
+                quicksum(
+                    X[e, r]
+                    for e in EventsP
+                    for r in RA[e]
+                    if r in undesired_event_rooms[e]
+                ),
+                GRB.MINIMIZE,
+            )
 
             # Subproblem Constraints
 
@@ -1153,13 +1157,6 @@ def solve(instance_name: str) -> None:
                 for r in Rooms  # should be without dummy
                 if r not in RA[e]
             }
-            UndesiredRooms = {
-                e: BSP.addConstr(
-                    UR[e]
-                    == quicksum(X[e, r] for r in Rooms if r in undesired_event_rooms[e])
-                )
-                for e in EventsP
-            }
 
             # Constraint 6: Set values of Y_(e,p)
             # This is now implicitly handled in the subproblem
@@ -1198,17 +1195,17 @@ def solve(instance_name: str) -> None:
                 # but this doesn't apply to composite rooms
 
                 # Add a no good cut to say this exact combination isn't feasible
-                print(
-                    "Adding no Good cut",
-                    p,
-                    len([e for e in Events if e in EventsP]),
-                    len(Events),
-                )
-                model.cbLazy(
-                    # quicksum(YV[e, p] for e in Events if e not in EventsP) +
-                    quicksum((1 - YV[e, p]) for e in Events if e in EventsP)
-                    >= 1
-                )
+                # print(
+                #     "Adding no Good cut",
+                #     p,
+                #     len([e for e in Events if e in EventsP]),
+                #     len(Events),
+                # )
+                # model.cbLazy(
+                #     # quicksum(YV[e, p] for e in Events if e not in EventsP) +
+                #     quicksum((1 - YV[e, p]) for e in Events if e in EventsP)
+                #     >= 1
+                # )
 
                 # Idea of other constraint I had - commented out.
 
