@@ -537,6 +537,35 @@ def solve(instance_name: str) -> None:
     # period p
     UndesiredPeriodCost = {}
     undesired_event_periods: Dict[Event, Set[Period]] = {}
+    preferred_periods: Dict[Event, Set[Period]] = {}
+
+    for e in Events:
+        if event not in preferred_periods.keys():
+            preferred_periods[e] = set()
+
+    for (
+        preferred_event_period_constraint
+    ) in constrManager.get_preferred_event_period_constraints():
+        preferred_event_period_constraint: EventPeriodConstraint
+
+        exam_number: int = preferred_event_period_constraint.get_exam_ordinal()
+
+        course_name: str = preferred_event_period_constraint.get_course_name()
+        course: Course = courseManager.get_course_by_name(course_name)
+
+        period: Period = preferred_event_period_constraint.get_period()
+
+        examination: Examination = course.get_examination_by_index(exam_number)
+        exam_part: str = preferred_event_period_constraint.get_part()
+
+        if exam_part is None:
+            # exam only has one part
+            event: event = examination.get_first_event()
+        else:
+            event: Event = examination.get_event_by_part(exam_part)
+
+        preferred_periods[event].add(period)
+
     global_undesired_periods = set(
         p.get_period() for p in constrManager.get_undesired_period_constraints()
     )
@@ -550,6 +579,8 @@ def solve(instance_name: str) -> None:
         for p in PA[e]:
             if p in global_undesired_periods or p in undesired_event_periods[e]:
                 UndesiredPeriodCost[e, p] = const.P_UNDESIRED_PERIOD
+            elif p not in preferred_periods[e]:
+                UndesiredPeriodCost[e, p] = const.P_NOT_PREFERED_PERIOD
             else:
                 UndesiredPeriodCost[e, p] = 0
 

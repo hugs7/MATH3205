@@ -51,7 +51,7 @@ class Examination:
 
     def get_index(self) -> int:
         """
-        Returns the index of the course
+        Returns the index of the exam of the course
         """
 
         return self.index
@@ -93,6 +93,18 @@ class Examination:
         """
 
         return self.events
+
+    def get_event_by_part(self, exam_part: str) -> Event:
+        """
+        Returns the event by part
+        """
+
+        if exam_part == const.WRITTEN:
+            return self.written_event
+        elif exam_part == const.ORAL:
+            return self.oral_event
+        else:
+            raise Exception(f"Event '{exam_part}' not Found Error")
 
     def get_written_event(self) -> Event:
         """

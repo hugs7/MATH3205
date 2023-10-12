@@ -182,6 +182,13 @@ class Course:
 
         return self.examinations
 
+    def get_examination_by_index(self, index: int) -> Examination:
+        """
+        Returns the examination by index
+        """
+
+        return self.examinations[index]
+
     def is_written(self) -> bool:
         """
         Returns true if the course's exams have written events only
