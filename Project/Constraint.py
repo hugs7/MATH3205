@@ -169,15 +169,6 @@ class EventRoomConstraint(Constraint):
         """
         return self.room
 
-    # Getter method for 'Period' attribute
-    def get_period(self) -> Period:
-        """
-        Get the 'Period' attribute.
-        Returns:
-            str: The 'Period' value
-        """
-        return self.period
-
     # Getter method for 'Part' attribute
     def get_part(self) -> str:
         """
