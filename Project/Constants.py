@@ -54,7 +54,7 @@ COMPOSITE = "Composite"
 LARGE = "Large"
 MEDIUM = "Medium"
 SMALL = "Small"
-SINGLE_ROOM_TYPES = [SMALL, MEDIUM, LARGE]
+ROOM_TYPES = [SMALL, MEDIUM, LARGE]
 DUMMY = "Dummy"
 MEMBERS = "Members"
 
@@ -71,7 +71,7 @@ PERIOD_CONSTRAINT = "PeriodConstraint"
 
 FORBIDDEN = "Forbidden"
 UNDESIRED = "Undesired"
-
+PREFERRED = "Preferred"
 
 # ------ Weights of Soft Constraints ------
 # S1 soft conflicts
@@ -80,7 +80,8 @@ SC_SECONDARY_SECONDARY = 1
 
 # S2 preferences
 P_UNDESIRED_PERIOD = 10
-P_NOT_PREFERED_ROOM = 2
+P_NOT_PREFERED_PERIOD = 2
+
 P_UNDESIRED_ROOM = 5
 
 # S3 directed and undirected distance

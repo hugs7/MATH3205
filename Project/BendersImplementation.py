@@ -194,7 +194,7 @@ Periods = [
 CompositeRooms: List[Room] = Rooms.get_composite_rooms()
 
 # Maximum number of members in composite rooms by the type of room
-max_members_by_room_type: Dict[str, int] = Rooms.get_max_members_by_room_type()
+max_members_by_room_type: Dict[str, int] = Rooms.get_max_members_dict()
 
 # -- Room Equivalence Class --
 # TODO Yet to determine what this is
@@ -652,7 +652,7 @@ undesired_rooms: Dict[Event, List[Room]] = {}
 
 for e in Events:
     undesired_rooms[e] = [
-        event_room_constraint.get_room()
+        event_room_constraint.get_room_name()
         for event_room_constraint in undesired_event_room_constraints
         if event_room_constraint.get_course_name() == e.get_course_name()
     ]
@@ -765,7 +765,7 @@ for p in Periods:
     # Number of rooms available by size per period
     # This will be handy for callback
 
-    for room_type in const.SINGLE_ROOM_TYPES:
+    for room_type in const.ROOM_TYPES:
         # Initialise empty list for every period and room type
         forbidden_rooms_by_period_and_type[(p, room_type)] = []
         undesired_rooms_by_period_and_type[(p, room_type)] = []
@@ -832,7 +832,7 @@ for p in Periods:
 available_rooms_by_period_type_and_size: Dict[Tuple[Period, str, int], List[Room]] = {}
 # Begin by assigning all periods to have the same number of available rooms
 for period in Periods:
-    for room_type in const.SINGLE_ROOM_TYPES:
+    for room_type in const.ROOM_TYPES:
         if max_members_by_room_type.get(room_type) == 0:
             continue
 
@@ -841,7 +841,7 @@ for period in Periods:
                 (period, room_type, num_members)
             ] = [
                 room
-                for room in Rooms.get_rooms_given_size_and_num_rooms(
+                for room in Rooms.get_rooms_by_size_and_num_rooms(
                     room_type, num_members
                 )
                 if room not in forbidden_rooms_by_period_and_type[(period, room_type)]
@@ -1079,7 +1079,7 @@ while not reachedOptimal:
 
         # Set of events assigned to period p requiring room with type room_type and # members num_rooms
         events_p_by_type_and_size: Dict[Tuple[str, int], List[Event]] = {}
-        for room_type in const.SINGLE_ROOM_TYPES:
+        for room_type in const.ROOM_TYPES:
             for num_members in range(1, max_members_by_room_type[room_type] + 1):
                 events_p_by_type_and_size[(room_type, num_members)] = [
                     e
@@ -1175,7 +1175,7 @@ while not reachedOptimal:
 
             # Find number of events allocated to period p that request small rooms
             room_allocations: Dict[str, int] = {}
-            for room_type in const.SINGLE_ROOM_TYPES:
+            for room_type in const.ROOM_TYPES:
                 # Initialise allocations to 0 if not set already
                 if room_allocations.get(room_type) is None:
                     room_allocations[room_type] = 0
@@ -1192,7 +1192,7 @@ while not reachedOptimal:
             # but this doesn't apply to composite rooms
             # print("Num rooms available", rooms_available[p])
 
-            for room_type in const.SINGLE_ROOM_TYPES:
+            for room_type in const.ROOM_TYPES:
                 print(room_type)
 
                 if max_members_by_room_type[room_type] == 0:

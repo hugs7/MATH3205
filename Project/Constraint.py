@@ -3,7 +3,7 @@ Class for handing constraints (hard and soft) in the problem
 """
 
 from abc import ABC
-from typing import List, Optional, Set
+from typing import Dict, List, Optional, Set
 from Period import Period
 import Constants as const
 
@@ -49,6 +49,9 @@ class Constraint(ABC):
 
     def is_undesired(self) -> bool:
         return self.level == const.UNDESIRED
+
+    def is_preferred(self) -> bool:
+        return self.level == const.PREFERRED
 
 
 class RoomPeriodConstraint(Constraint):
@@ -161,22 +164,13 @@ class EventRoomConstraint(Constraint):
         """
         return self.course_name
 
-    def get_room(self) -> str:
+    def get_room_name(self) -> str:
         """
         Get the 'Room' attribute.
         Returns:
-            str: The 'Room' value
+            str: The 'Room' name
         """
         return self.room
-
-    # Getter method for 'Period' attribute
-    def get_period(self) -> Period:
-        """
-        Get the 'Period' attribute.
-        Returns:
-            str: The 'Period' value
-        """
-        return self.period
 
     # Getter method for 'Part' attribute
     def get_part(self) -> str:
@@ -273,6 +267,17 @@ class ConstraintManager:
             constr
             for constr in self.constraints
             if constr.is_room_constraint() and constr.is_undesired()
+        )
+
+    def get_preferred_event_period_constraints(self) -> Set[EventPeriodConstraint]:
+        """
+        Returns a set of preferred event period constraints
+        """
+
+        return set(
+            constr
+            for constr in self.constraints
+            if constr.is_event_period_constraint() and constr.is_preferred()
         )
 
     # Event room Constraiats

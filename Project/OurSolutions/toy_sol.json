@@ -1,64 +1,18 @@
 {
   "Assignments": [
     {
-      "Course": "OpRes",
-      "Events": [
-        {
-          "Exam": 0,
-          "Part": "Written",
-          "Period": 0,
-          "Room": "G"
-        },
-        {
-          "Exam": 0,
-          "Part": "Oral",
-          "Period": 1,
-          "Room": "H"
-        },
-        {
-          "Exam": 1,
-          "Part": "Written",
-          "Period": 18,
-          "Room": "H"
-        },
-        {
-          "Exam": 1,
-          "Part": "Oral",
-          "Period": 19,
-          "Room": "A"
-        }
-      ]
-    },
-    {
-      "Course": "Algorithms",
-      "Events": [
-        {
-          "Exam": 0,
-          "Part": "Written",
-          "Period": 0,
-          "Room": "B"
-        },
-        {
-          "Exam": 1,
-          "Part": "Written",
-          "Period": 17,
-          "Room": "C"
-        }
-      ]
-    },
-    {
       "Course": "Programming",
       "Events": [
         {
           "Exam": 0,
           "Part": "Written",
-          "Period": 1,
+          "Period": 0,
           "Room": "AC"
         },
         {
           "Exam": 1,
           "Part": "Written",
-          "Period": 9,
+          "Period": 6,
           "Room": "AC"
         }
       ]
@@ -69,26 +23,68 @@
         {
           "Exam": 0,
           "Part": "Written",
-          "Period": 6,
-          "Room": "AC"
-        },
-        {
-          "Exam": 0,
-          "Part": "Oral",
-          "Period": 10,
-          "Room": "AB"
+          "Period": 1
         },
         {
           "Exam": 1,
           "Part": "Written",
-          "Period": 11,
-          "Room": "AB"
+          "Period": 6
+        },
+        {
+          "Exam": 0,
+          "Part": "Oral",
+          "Period": 8
         },
         {
           "Exam": 1,
           "Part": "Oral",
+          "Period": 12
+        }
+      ]
+    },
+    {
+      "Course": "OpRes",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 12,
+          "Room": "A"
+        },
+        {
+          "Exam": 0,
+          "Part": "Oral",
+          "Period": 13,
+          "Room": "A"
+        },
+        {
+          "Exam": 1,
+          "Part": "Written",
+          "Period": 16,
+          "Room": "H"
+        },
+        {
+          "Exam": 1,
+          "Part": "Oral",
+          "Period": 17,
+          "Room": "C"
+        }
+      ]
+    },
+    {
+      "Course": "Algorithms",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 13,
+          "Room": "C"
+        },
+        {
+          "Exam": 1,
+          "Part": "Written",
           "Period": 18,
-          "Room": "AC"
+          "Room": "A"
         }
       ]
     },
@@ -98,7 +94,7 @@
         {
           "Exam": 0,
           "Part": "Oral",
-          "Period": 9
+          "Period": 17
         }
       ]
     }

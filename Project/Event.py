@@ -126,7 +126,20 @@ class Event:
         Defines repr method for events
         """
 
-        return f"{self.event_type} Event ({self.get_course_name()} - {self.examination.get_index()}), {self.get_num_rooms()} {self.get_room_type()} room(s) required"
+        event_types = {
+            const.WRITTEN: "wr",
+            const.ORAL: "or",
+            const.WRITTEN_AND_ORAL: "wo",
+        }
+        room_types = {
+            const.DUMMY: "DU",
+            const.SMALL: "SM",
+            const.MEDIUM: "MD",
+            const.LARGE: "LG",
+            const.COMPOSITE: "CP",
+        }
+
+        return f"{self.get_course_name()}-{self.examination.get_index()} ({event_types[self.event_type]}, {self.get_num_rooms()}x{room_types.get(self.get_room_type(), self.get_room_type())})"
 
 
 Examination = ForwardRef("Examination.Examination")

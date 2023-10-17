@@ -69,6 +69,16 @@ class Room:
 
         return self.members
 
+    def get_num_members(self) -> int:
+        """
+        Returns number of members in room
+        """
+
+        if not self.is_composite():
+            return 1
+
+        return len(self.members)
+
     def is_composite(self) -> bool:
         """
         Returns true if room is composite
@@ -115,6 +125,7 @@ class RoomManager:
         """
 
         # List of rooms the RoomManager Stores
+        # Add the dummy room
         self.rooms: list[Room] = [Room()]
 
         # Graph in the form of an ajacency list for storing joining rooms
@@ -122,6 +133,9 @@ class RoomManager:
 
         # Flag for if Composite room graph has been constructed
         self.constructed = False
+
+        self.room_joining_map: Dict[Room, List[Room]] = {}
+        self.construct_joining_map()
 
     def add_room(self, room_data: any) -> Room:
         """
@@ -171,7 +185,7 @@ class RoomManager:
 
         rooms_by_type_and_size: Dict[Tuple[str, int], List[Room]] = {}
 
-        for room_type in const.SINGLE_ROOM_TYPES:
+        for room_type in const.ROOM_TYPES:
             rooms = self.get_rooms()
             for room in rooms:
                 if room.is_composite():
@@ -198,7 +212,7 @@ class RoomManager:
 
         return rooms_by_type_and_size
 
-    def get_rooms_given_size_and_num_rooms(
+    def get_rooms_by_size_and_num_rooms(
         self, room_type: str, num_rooms: int
     ) -> List[Room]:
         """
@@ -209,9 +223,9 @@ class RoomManager:
 
         get_rooms_by_type_and_size = self.get_rooms_by_size()
 
-        return get_rooms_by_type_and_size[(room_type, num_rooms)]
+        return get_rooms_by_type_and_size.get((room_type, num_rooms), [])
 
-    def get_max_members_by_room_type(self) -> Dict[str, int]:
+    def get_max_members_dict(self) -> Dict[str, int]:
         """
         Returns the maximum number of memers in a room by room type in a dictionary
         1 if only single rooms of that room_type exist.
@@ -220,7 +234,7 @@ class RoomManager:
 
         max_members_by_room_type: Dict[str, int] = {}
 
-        for size in const.SINGLE_ROOM_TYPES:
+        for size in const.ROOM_TYPES:
             # Initialise max members for each room type to 0
             if size not in max_members_by_room_type.keys():
                 max_members_by_room_type[size] = 0
@@ -248,6 +262,13 @@ class RoomManager:
                 )
 
         return max_members_by_room_type
+
+    def get_max_members_by_room_type(self, room_type: str) -> int:
+        """
+        Returns the maximum number of memers in a room by room type
+        """
+
+        return self.get_max_members_dict().get(room_type, 0)
 
     def get_single_rooms(self) -> list[Room]:
         """
@@ -288,6 +309,39 @@ class RoomManager:
 
         return [r for r in self.rooms if r.get_type() == room_type]
 
+    def get_independence_number(self, room_type: str, room_size: int) -> int:
+        """
+        Gets the independence number for the given room type and room size
+        """
+
+        # base case
+        if room_size == 1:
+            return self.get_num_rooms_by_type_and_size(room_type, room_size)
+
+        # find joining rooms
+        rooms: List[Room] = self.get_rooms_by_size_and_num_rooms(room_type, room_size)
+
+        visited_members = []
+        ind_num = 0
+        for room in rooms:
+            room: Room
+            room_members: List[str] = room.get_members()
+
+            add = True
+            for member in room_members:
+                if member in visited_members:
+                    # We have seen a room that joins to this room before. Don't add to independence number
+                    add = False
+                    break
+
+            if add:
+                ind_num += 1
+
+                # Only add the members of rooms that count towards the independence number
+                visited_members.extend(room_members)
+
+        return ind_num
+
     def get_dummy_room(self) -> Room:
         """
         Returns dummy room
@@ -297,6 +351,127 @@ class RoomManager:
             if r.get_type() == const.DUMMY:
                 return r
         raise Exception("No dummy room big sad")
+
+    def get_room_joining_map(self) -> Dict[Room, List[Room]]:
+        """
+        Returns the joining map
+        Maps rooms to a list of rooms they are joining.
+        Only maps to size of room 1 larger than current size
+        """
+
+        return self.room_joining_map
+
+    def get_num_compatible_rooms(self, room_type: str, room_size: int) -> int:
+        """
+        Given a room type, return the number of rooms that are compatible with an event
+        that would fit into a room of room_type, room_size
+        Return: int
+        """
+
+        if room_size > 1:
+            return self.get_num_rooms_by_type(room_type)
+        else:
+            if room_type == const.SMALL:
+                return (
+                    len(self.get_small_rooms())
+                    + len(self.get_medium_rooms())
+                    + len(self.get_large_rooms())
+                )
+            elif room_type == const.MEDIUM:
+                return len(self.get_medium_rooms()) + len(self.get_large_rooms())
+            elif room_type == const.LARGE:
+                return len(self.get_large_rooms())
+
+    def get_compatible_room_types(self, room_type: str, room_size: int) -> List[str]:
+        """
+        Given a room type and room size, retrn the list of room types that are compatible
+        """
+
+        if room_size == 1:
+            if room_type == const.SMALL:
+                return [const.SMALL, const.MEDIUM, const.LARGE]
+            elif room_type == const.MEDIUM:
+                return [const.MEDIUM, const.LARGE]
+            elif room_type == const.LARGE:
+                return [const.LARGE]
+        else:
+            if room_type == const.SMALL:
+                return [const.SMALL]
+            elif room_type == const.MEDIUM:
+                return [const.MEDIUM]
+            elif room_type == const.LARGE:
+                return [const.LARGE]
+
+    def get_num_rooms_by_type(self, room_type: str) -> int:
+        """
+        Given a room type, return the number of rooms of that type
+        """
+
+        if room_type == const.SMALL:
+            return len(self.get_small_rooms())
+        elif room_type == const.MEDIUM:
+            return len(self.get_medium_rooms())
+        elif room_type == const.LARGE:
+            return len(self.get_large_rooms())
+        else:
+            raise Exception("Room Type not found")
+
+    def get_num_rooms_by_type_and_size(self, room_type: str, room_size: int) -> int:
+        """
+        Given a room type and room size, return the number of rooms of that type and size
+        """
+
+        return len(self.get_rooms_by_size_and_num_rooms(room_type, room_size))
+
+    def get_immediate_parent_rooms(self, room: Room) -> List[Room]:
+        """
+        Given a room, returns the list of Rooms that are the immediate parent rooms of the given room
+        """
+
+        return self.room_joining_map.get(room, [])
+
+    def construct_joining_map(self) -> Dict[Room, List[Room]]:
+        """
+        Maps rooms to a list of rooms they are joining.
+        Only maps to size of room 1 larger than current size
+        """
+
+        self.room_joining_map: Dict[Room, List[Room]] = {}
+
+        for room_type in const.ROOM_TYPES:
+            for room_size in range(1, 6 + 1 - 1):
+                rooms: List[Room] = self.get_rooms_by_size_and_num_rooms(
+                    room_type, room_size
+                )
+                for room in rooms:
+                    room: Room
+
+                    direct_parent_rooms: List[Room] = []
+
+                    for super_room in self.get_rooms_by_size_and_num_rooms(
+                        room_type, room_size + 1
+                    ):
+                        super_room: Room
+                        if not super_room.is_composite():
+                            raise Exception("Error. Composite Room Expected")
+
+                        if room.get_room() in super_room.get_members():
+                            direct_parent_rooms.append(super_room)
+
+                    self.room_joining_map[room] = direct_parent_rooms
+
+    def get_adjacent_rooms(self, room: Room) -> List[Room]:
+        """
+        Gets the joining rooms of a given room (composite)
+        """
+
+        joining_rooms: List[Room] = []
+
+        for comp_room in self.get_composite_rooms():
+            if room.get_room() in comp_room.get_members():
+                joining_rooms.append(comp_room)
+
+        return joining_rooms
 
     def construct_composite_map(self) -> Dict[Room, List[Room]]:
         """
