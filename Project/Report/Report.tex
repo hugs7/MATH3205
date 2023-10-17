@@ -120,6 +120,12 @@
 
 \newpage
 
+\section{Problem Description}
+TODO
+
+\section{Incumbent Formulation}
+TODO
+
 \section{Benders Formulation}
 \subsection{Master Problem (BMP)}
 The master problem will assign events to time periods (with no consideration of
@@ -200,7 +206,7 @@ how events will be assigned to rooms within each time period).
 \end{multline}
 
 \subsubsection*{Constraints}
-Each event must be scheduled to exactly one time period (BSP (\S\ref{BSP}) will
+Each event must be scheduled to exactly one time period (BSP in \S\ref{BSP} will
 allocate events to rooms once the period assignment has been fixed here):
 \begin{equation}
     \sum_{p \in P} y_{e,p} = 1 \qquad \forall e \in E
@@ -228,9 +234,8 @@ period with the following constraints:
 \end{gather}
 
 \subsubsection*{Lazy Constraints}
-We write $(\cdot)^*$ to denote the value of a variable in some fixed solution to
-BMP. For each period $p \in P$, let $E_p := \set{e \in E \given y^*_{e, p} =
-1}$, the set of events allocated to period $p$, and do the following:
+For each period $p \in P$, let $E_p := \set{e \in E \given y^*_{e, p} = 1}$, the
+set of events allocated to period $p$, and do the following:
 \begin{itemize}
     \item Solve BSP to obtain a room allocation for the events of $E_p$ to the
         rooms available in $p$ which minimizes the number of events allocated to
@@ -281,9 +286,9 @@ no two events are allocated the same room:
 We can ensure that, whenever an event is allocated to a composite room, no event
 is allocated to an overlapping room:
 \begin{equation}
-    |R^0_{r^c} \cap R_p| \sum_{e \in E_p} x_{e, r^c}
-        + \sum_{r^0 \in R^0_{r^c} \cap R_p} \ \sum_{e \in E_p} x_{e, r^0}
-        \leq |R^0_{r^c} \cap R_p| \qquad \forall r^c \in R^c \cap R_p
+    |R^0_{r^c} \cap R_p| \sum_{e \in E_p \; : \; r^c \in RA_e} x_{e, r^c}
+        + \sum_{r^0 \in R^0_{r^c} \cap R_p} \ \sum_{e \in E_p \; : \; r^0 \in RA_e}
+        x_{e, r^0} \leq |R^0_{r^c} \cap R_p| \qquad \forall r^c \in R^c \cap R_p
 \end{equation}
 
 \end{document}
