@@ -183,30 +183,28 @@ def solve(instance_name: str) -> None:
 
     # -- Period Availabilities (P_e in paper) --
     # Set of periods available for event e
-    PA: Dict[Event, List[Period]] = {}
-    for event in Events:
-        PA[event] = []
-
-        for period in Periods:
-            if period in forbidden_period_constraints:
-                continue
-
-            if period in forbidden_event_period_constraints[event]:
-                continue
-
-            PA[event].append(period)
+    PA: Dict[Event, Set[Period]] = {
+        event: {
+            p
+            for p in Periods
+            if p not in forbidden_period_constraints
+            and p not in forbidden_event_period_constraints[event]
+        }
+        for event in Events
+    }
 
     # -- Room availabilities --
     # Dictionary mapping events to a set of rooms in which it can be held
     # R_e in paper
-    RA: Dict[Event, List[Room]] = {}
+    RA: Dict[Event, Set[Room]] = {}
 
-    available_types: Dict[str, List[str]] = {}
-    available_types[const.DUMMY] = [const.DUMMY]
-    available_types[const.SMALL] = [const.SMALL, const.MEDIUM, const.LARGE]
-    available_types[const.MEDIUM] = [const.MEDIUM, const.LARGE]
-    available_types[const.LARGE] = [const.LARGE]
-    available_types[const.COMPOSITE] = [const.COMPOSITE]
+    available_types: Dict[str, List[str]] = {
+        const.DUMMY: [const.DUMMY],
+        const.SMALL: [const.SMALL, const.MEDIUM, const.LARGE],
+        const.MEDIUM: [const.MEDIUM, const.LARGE],
+        const.LARGE: [const.LARGE],
+        const.COMPOSITE: [const.COMPOSITE]
+    }
 
     for event in Events:
         if event.get_num_rooms() == 0:
