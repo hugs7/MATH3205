@@ -262,6 +262,12 @@ class ConstraintManager:
             if constr.is_room_constraint() and constr.is_forbidden()
         )
 
+    def is_forbidden(self, room_name: str, period: Period):
+        for constr in self.get_forbidden_room_period_constraints():
+            if constr.get_room_name() == room_name and constr.get_period() == period:
+                return True
+        return False
+
     def get_undesired_room_period_constraints(self) -> Set[RoomPeriodConstraint]:
         return set(
             constr

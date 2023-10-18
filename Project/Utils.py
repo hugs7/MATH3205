@@ -1,4 +1,3 @@
-# Intersection of a collection of sets
 def intersection(iter):
     """
     Determine the intersection of a collection of sets. The collection may be
@@ -11,3 +10,13 @@ def intersection(iter):
         else:
             ret &= s
     return ret
+
+
+def disjoint(set1, set2):
+    """
+    Determine if two sets are disjoint
+    """
+    for s in set1:
+        if s in set2:
+            return False
+    return True
