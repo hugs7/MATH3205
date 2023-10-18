@@ -13,6 +13,7 @@ from typing import Dict, List, Set, Tuple, Union
 from Examination import Examination
 
 # Custom Imports
+import Utils as utils
 from Room import RoomManager, Room
 from Constraint import (
     ConstraintManager,
@@ -625,21 +626,20 @@ def solve(instance_name: str) -> None:
 
     # ------ Variables ------
     # Y = 1 if event e is assigned to day d and timeslot t, 0 else (auxiliary variable)
-    Y = {(e, p): BMP.addVar(vtype=GRB.BINARY) for e in Events for p in Periods}
+    Y = {(e, p): BMP.addVar(vtype=GRB.BINARY) for e in Events for p in PA[e]}
 
     # The ordinal (order) value of the period assigned to event e
     H = {e: BMP.addVar(vtype=GRB.INTEGER) for e in Events}
 
-    # Replacing cost of undesired rooms in the BMP objective function
-    S2R = {p: BMP.addVar(vtype=GRB.INTEGER) for p in Periods}
+    # The penalty for an S1 soft conflict between a pair of events.
+    # Can definitely be relaxed to continuous
+    S1 = {s: BMP.addVar() for s in P1}
 
-    # Soft constraint counting variables. The paper claims that all of these may be
-    # relaxed to be continuous.
-    # S1
-    SPS = {(e, p): BMP.addVar(vtype=GRB.CONTINUOUS) for e in Events for p in Periods}
-    SSS = {(e, p): BMP.addVar(vtype=GRB.CONTINUOUS) for e in Events for p in Periods}
+    # estimate of the number of events allocated to undesired rooms in each period
+    # Can definitely be relaxed to continuous
+    S2 = {p: BMP.addVar() for p in Periods}
 
-    # S3
+    # S3 things
     PMinE = {(e1, e2): BMP.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPSameCourse}
     PMinWO = {(e1, e2): BMP.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPWrittenOral}
     PMaxWO = {(e1, e2): BMP.addVar(vtype=GRB.CONTINUOUS) for (e1, e2) in DPWrittenOral}
@@ -652,6 +652,8 @@ def solve(instance_name: str) -> None:
 
     # Variables for S3 soft constraints
     # Abs distances between assignment of e1 and e2
+    # NOOOOOOO why does this exist; we should ALWAYS write D_actual_abs_1 +
+    #   D_actual_abs_2 instead TODO TODO
     D_abs = {(e1, e2): BMP.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events}
 
     # Actual distances between assignments of e1 and e2
@@ -827,6 +829,7 @@ def solve(instance_name: str) -> None:
     available_rooms_by_period_type_and_size: Dict[
         Tuple[Period, str, int], List[Room]
     ] = {}
+
     # Begin by assigning all periods to have the same number of available rooms
     for period in Periods:
         for room_type in const.ROOM_TYPES:
@@ -847,16 +850,26 @@ def solve(instance_name: str) -> None:
                     not in forbidden_rooms_by_period_and_type[(period, room_type)]
                 ]
 
-    # Constraint 4: Some events must precede other events (hard constraint).
+    # Each event is scheduled to exactly one time period
+    ScheduledOnce = {e: BMP.addConstr(quicksum(Y[e, p] for p in PA[e]) == 1)}
+
+    # Constraint 4: Some events must precede other events
     Precendences = {(e1, e2): BMP.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
 
-    # Constraint 5: Some rooms, day and timeslot configurations are unavailable.
-    Unavailabilities = {
-        (e, p): BMP.addConstr(
-            len(HC[e]) * Y[e, p] + quicksum(Y[e2, p] for e2 in HC[e]) <= len(HC[e])
+    # Constraint 5: H3 hard conflicts
+    HardConflictsPrimary = {
+        (c, p): BMP.addConstr(
+            quicksum(Y[e, p] for e in PrimaryCourseEvents[c] if p in PA[e]) <= 1
         )
-        for e in Events
-        for p in PA[e]
+        for c in curriculaManager.get_curricula()
+        for p in Periods
+    }
+    HardConflictsTeacher = {
+        (t, p): BMP.addConstr(
+            quicksum(Y[e, p] for e in TeacherEvents[t] if p in PA[e]) <= 1
+        )
+        for t in Teachers
+        for p in Periods
     }
 
     # Prevent events scheduled when they aren't allowed. Alternative to constraint 5 atm
@@ -883,30 +896,14 @@ def solve(instance_name: str) -> None:
     print("Hard Constraints defined", time.time())
     # Soft Constraints
 
-    # Constraint 8 (S1): Soft Conflicts
+    # Sharp lower bound on the of S1 estimation variables.
+    # Note that, by default, there is already a lower bound of 0
     SoftConflicts = {
-        (e, p): BMP.addConstr(
-            len({e2 for e2 in SCPS[e] if (e, e2) in DPDirected and p in PA[e2]})
-            * Y[e, p]
-            + quicksum(Y[e2, p] for e2 in SCPS[e] if (e, e2) in DPDirected)
-            <= SPS[e, p]
-            + len({e2 for e2 in SCPS[e] if (e, e2) in DPDirected and p in PA[e2]})
+        (s, p): BMP.addConstr(
+            S1[s] >= SOFT_CONFLICT[s] * (-1 + quicksum(Y[e, p] for e in s))
         )
-        for e in Events
-        for p in PA[e]
-    }
-
-    # Constraint 9 (S2): Preferences
-    Preferences = {
-        (e, p): BMP.addConstr(
-            len({e2 for e2 in SCSS[e] if (e, e2) in DPDirected and p in PA[e2]})
-            * Y[e, p]
-            + quicksum(Y[e2, p] for e2 in SCSS[e] if (e, e2) in DPDirected)
-            <= SSS[e, p]
-            + len({e2 for e2 in SCSS[e] if (e, e2) in DPDirected and p in PA[e2]})
-        )
-        for e in Events
-        for p in PA[e]
+        for s in P1
+        for p in utils.intersection(PA[e] for e in s)
     }
 
     # Constraint 10 (S3): DirectedDistances
@@ -1030,12 +1027,16 @@ def solve(instance_name: str) -> None:
 
     BMP.setObjective(
         # Cost S1
-        const.SC_PRIMARY_SECONDARY * quicksum(SPS[e, p] for e in Events for p in PA[e])
-        + const.SC_SECONDARY_SECONDARY
-        * quicksum(SSS[e, p] for e in Events for p in PA[e])
+        quicksum(S1[s] for s in P1)
         # Cost S2
-        + quicksum(UndesiredPeriodCost[e, p] * Y[e, p] for e in Events for p in PA[e])
-        + const.P_UNDESIRED_ROOM * quicksum(S2R[p] for p in Periods)
+        + const.P_UNDESIRED_PERIOD
+        * (
+            quicksum(Y[e, p] for e in Events for p in BadPeriods & PA[e])
+            + quicksum(Y[e, p] for e in Events for p in UndesiredPeriods[e])
+        )
+        + const.P_NOT_PREFERED_PERIOD
+        * quicksum(1 - Y[e, p] for e in EventsWithPreferred for p in Preferred[e])
+        + const.P_UNDESIRED_ROOM * quicksum(S2[p] for p in Periods)
         # Cost S3
         + const.DD_SAME_COURSE * quicksum(PMinE[e1, e2] for (e1, e2) in DPSameCourse)
         + const.DD_SAME_EXAMINATION
@@ -1065,7 +1066,7 @@ def solve(instance_name: str) -> None:
         print("Callback")
         YV = model.cbGetSolution(Y)
 
-        S2RV = model.cbGetSolution(S2R)
+        S2RV = model.cbGetSolution(S2)
 
         numCuts = 0
 
@@ -1114,57 +1115,41 @@ def solve(instance_name: str) -> None:
 
             # Subproblem Constraints
 
-            # Constraint 1: Each event assigned to an available period and exactly 1 room.
-            RoomRequest = {
-                e: BSP.addConstr(quicksum(X[e, r] for r in RA[e]) == 1) for e in EventsP
-            }
-
-            RoomForbidden = {
+            # Each event assigned to an available period and exactly 1 room.
+            AssignedRooms = {
                 e: BSP.addConstr(
-                    quicksum(X[e, r] for r in Rooms if r not in RA[e]) == 0
+                    quicksum(X[e, r] for r in RA[e] & RoomsAvailable[p]) == 1
                 )
                 for e in EventsP
             }
 
-            # Constraint 2: At most one event can use a room at once.
-            RoomOccupation = {
-                r: BSP.addConstr(quicksum(X[e, r] for e in EventsP) <= 1)
-                for r in Rooms
+            # At most one event can use a room at once.
+            RoomClashes = {
+                r: BSP.addConstr(quicksum(X[e, r] for e in EventsP if r in RA[e]) <= 1)
+                for r in RoomsAvailable[p]
                 if r is not dummy_room
             }
 
-            # Constraint 3: Two events must have different periods if they are in hard conflict
-            # Occurs in the following cases:
-            #   - They are part of the same primary curriculum
-            #   - They have the same teacher
-            # M: Number of elements in the overlapping roomconcat sum
-            # rc is room-composite   - Rooms that are composite
-            # ro is room-overlapping - Rooms that overlap in a composite room
-
-            HardConflicts = {
-                cr: BSP.addConstr(
-                    (len(R0[cr])) * quicksum(X[e, cr] for e in EventsP)
-                    + quicksum(X[e, ro] for e in EventsP for ro in R0[cr])
-                    <= (len(R0[cr]))
+            # Composite room overlap
+            # Define dictionary to avoid recomputation
+            OverlappingP = {
+                rc: CompositeOverlapping[rc] & RoomsAvailable[p]
+                for rc in CompositeRooms
+            }
+            CompositeOverlap = {
+                rc: BSP.addConstr(
+                    len(OverlappingP[rc])
+                    * quicksum(X[e, rc] for e in EventsP if rc in RA[e])
+                    + quicksum(
+                        X[e, r0]
+                        for r0 in OverlappingP[rc]
+                        for e in EventsP
+                        if r0 in RA[e]
+                    )
+                    <= len(OverlappingP[rc])
                 )
-                for cr in CompositeRooms
+                for rc in CompositeRooms & RoomsAvailable[p]
             }
-
-            # Events can't be scheduled to a room if that room is forbidden for the event
-            ForbiddenRooms = {
-                (e, r): BSP.addConstr(X[e, r] == 0)
-                for e in EventsP
-                for r in Rooms  # should be without dummy
-                if r not in RA[e]
-            }
-
-            # Constraint 6: Set values of Y_(e,p)
-            # This is now implicitly handled in the subproblem
-            # setY = {
-            #     (e, p): BSP.addConstr(Y[e, p] - quicksum(X[e, r] for r in RA[e]) == 0)
-            #     for e in Events
-            #     for p in PA[e]
-            # }
 
             BSP.optimize()
 

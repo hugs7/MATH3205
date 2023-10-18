@@ -145,16 +145,6 @@ how events will be assigned to rooms within each time period).
         both primary courses, such that $e_1$ and $e_2$ are examination events
         for $c_1$ and $c_2$ respectively.
     \item $P2 \subseteq E$ the set of all events which have undesired rooms.
-    \item $P3$ the set of all unordered pairs $s$ of events $s = \{e_1, e_2\}$
-        which satisfy any of:
-        \begin{itemize}
-            \item events from the same (written and oral) examination,
-            \item events of \emph{consecutive} examinations from the same
-                course, or
-            \item there exists a curriculum with courses $c_1 \neq c_2$ such
-            that $e_1$ and $e_2$ are examination events for $c_1$ and $c_2$
-            respectively.
-        \end{itemize}
     \item $C$ the set of curricula.
     \item $T$ the set of teachers.
 \end{itemize}
@@ -186,19 +176,17 @@ how events will be assigned to rooms within each time period).
 \subsubsection*{Variables}
 \begin{itemize}
     \item $y_{e, p} \in \{0,1\}$ the decision variable assigning events $e$ to
-        periods $p$.
+        periods $p \in PA_e$.
     \item $S1_s$ the penalty for a soft conflict between the events in the
         unordered pair events $s$, for all $s \in P1$.
     \item $S2_p$ the estimate of the number of events allocated to undesired
         rooms in period $p \in P$.
-    \item $S3_s$ the estimate of the penalty for non-ideal distances between the
-        events in the unordered pair $s$, for all $s \in P3$.
 \end{itemize}
 
 \subsubsection*{Objective}
 \begin{multline}
     \min \quad \sum_{s \in P1} S1_s \quad + \quad \text{UNDESIRED\_PERIOD}
-        \left( \sum_{p \in PB} \sum_{e \in E} y_{e, PB} +
+        \left( \sum_{e \in E} \ \sum_{p \in PB \cap PA_e} y_{e, p} +
         \sum_{e \in PU} \sum_{p \in UP_e} y_{e, p} \right) \\
     + \quad \text{NOT\_PREFERRED} \sum_{e \in PD} \sum_{p \in PP_e} (1 - y_{ep})
         \quad + \quad \text{UNDESIRED\_ROOM} \sum_{p \in P} S2_p \quad + \quad
@@ -220,9 +208,14 @@ only if two events are in soft conflict:
 \begin{gather}
     S1_s \geq 0 \qquad \forall s \in P1 \\
     S1_{\{e_1, e_2\}} \geq \text{SOFT\_CONFLICT}_{\{e_1, e_2\}}
-        (y_{e_1, p} + y_{e_2, p} - 1)
-        \qquad \forall \{e_1, e_2\} \in P1, \ \forall p \in P
+        (y_{e_1, p} + y_{e_2, p} - 1) \qquad \forall \{e_1, e_2\} \in P1, \
+        \forall p \in PA_{e_1} \cap PA_{e_2}
 \end{gather}
+
+Precedences
+\begin{equation}
+    TODO
+\end{equation}
 
 We can enforce that no two courses in H3-conflict are scheduled in the same time
 period with the following constraints:
@@ -250,8 +243,6 @@ set of events allocated to period $p$, and do the following:
         Indeed, we can add this constraint on $S2_{p'}$ for each $p' \in P$ with
         $R_{p'} \subseteq R_p$.
 \end{itemize}
-We also need to calculate the $S3$ penalties at the current solution and add
-optimality cuts. TODO
 
 \subsection{Sub-problem (BSP)} \label{BSP}
 The sub-problem will allocate events to rooms within a fixed time period $p$
