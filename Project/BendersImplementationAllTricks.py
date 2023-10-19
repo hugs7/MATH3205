@@ -105,9 +105,9 @@ def solve(instance_name: str) -> None:
             Examinations.add(examination)
 
     # Extract Events from the set of Examinations
-    Events: Set[Event] = set(
-        [event for examination in Examinations for event in examination.get_events()]
-    )
+    Events: Set[Event] = {
+        event for examination in Examinations for event in examination.get_events()
+    }
 
     # Lookup dictionary of events for a given course
     CourseEvents: Dict[Course, List[Event]] = {
@@ -179,7 +179,6 @@ def solve(instance_name: str) -> None:
 
     # The set of overlapping rooms of composite room
     # Indexed by rc
-    R0 = Rooms.get_overlapping_rooms()
 
     # -- Period Availabilities (P_e in paper) --
     # Set of periods available for event e
@@ -203,7 +202,7 @@ def solve(instance_name: str) -> None:
         const.SMALL: [const.SMALL, const.MEDIUM, const.LARGE],
         const.MEDIUM: [const.MEDIUM, const.LARGE],
         const.LARGE: [const.LARGE],
-        const.COMPOSITE: [const.COMPOSITE]
+        const.COMPOSITE: [const.COMPOSITE],
     }
 
     for event in Events:
@@ -627,7 +626,7 @@ def solve(instance_name: str) -> None:
             e
             for name in curr.get_primary_course_names()
             for exam in courseManager.get_course_by_name(name).get_examinations()
-            for e in exam
+            for e in exam.get_events()
         }
         for curr in curriculaManager.get_curricula()
     }
@@ -889,9 +888,11 @@ def solve(instance_name: str) -> None:
 
                 undesired_rooms_by_period_and_type[(p, room_type)].append(room_name)
 
-    # The set of rooms available (i.e. not forbidden) in period P. Used in BSP
+    # Dictionary mapping periods to the set of rooms available (i.e. not forbidden)
+    # in that period. Used in BSP
     RoomsAvailable = {
-        p: r for r in Rooms if not constrManager.is_forbidden(r.get_room(), p)
+        p: {r for r in Rooms if not constrManager.is_forbidden(r.get_room(), p)}
+        for p in Periods
     }
 
     # Number of available rooms by period, type of room, and number of joining members
@@ -923,7 +924,9 @@ def solve(instance_name: str) -> None:
                 ]
 
     # Each event is scheduled to exactly one time period
-    ScheduledOnce = {e: BMP.addConstr(quicksum(Y[e, p] for p in PA[e]) == 1)}
+    ScheduledOnce = {
+        e: BMP.addConstr(quicksum(Y[e, p] for p in PA[e]) == 1) for e in Events
+    }
 
     # Constraint 4: Some events must precede other events
     Precendences = {(e1, e2): BMP.addConstr(H[e1] - H[e2] <= -1) for (e1, e2) in F}
@@ -1135,7 +1138,7 @@ def solve(instance_name: str) -> None:
             # Sets
 
             # Set of events that are assigned to period p (from the master problem)
-            EventsP = [e for e in Events if YV[e, p] > 0.9]
+            EventsP = {e for e in Events if p in PA[e] and YV[e, p] > 0.9}
 
             # Set of events assigned to period p requiring room with type room_type and # members num_rooms
             events_p_by_type_and_size: Dict[Tuple[str, int], List[Event]] = {}
