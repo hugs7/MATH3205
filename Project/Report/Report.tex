@@ -120,6 +120,12 @@
 
 \newpage
 
+\section{Problem Description}
+TODO
+
+\section{Incumbent Formulation}
+TODO
+
 \section{Benders Formulation}
 \subsection{Master Problem (BMP)}
 The master problem will assign events to time periods (with no consideration of
@@ -139,16 +145,8 @@ how events will be assigned to rooms within each time period).
         both primary courses, such that $e_1$ and $e_2$ are examination events
         for $c_1$ and $c_2$ respectively.
     \item $P2 \subseteq E$ the set of all events which have undesired rooms.
-    \item $P3$ the set of all unordered pairs $s$ of events $s = \{e_1, e_2\}$
-        which satisfy any of:
-        \begin{itemize}
-            \item events from the same (written and oral) examination,
-            \item events of \emph{consecutive} examinations from the same
-                course, or
-            \item there exists a curriculum with courses $c_1 \neq c_2$ such
-            that $e_1$ and $e_2$ are examination events for $c_1$ and $c_2$
-            respectively.
-        \end{itemize}
+    \item $C$ the set of curricula.
+    \item $T$ the set of teachers.
 \end{itemize}
 
 \subsubsection*{Data}
@@ -168,32 +166,35 @@ how events will be assigned to rooms within each time period).
     \item $UP_e$ the set of undesired periods for $e \in PU$.
     \item $PP_e$ the set of preferred periods for $e \in PD$.
     \item $UR_e \subset RA_e$ the set of undesired rooms for $e \in P2$.
+    \item $R_p$ the set of rooms available in the period $p \in P$.
+    \item $C^P_c$ the set of events belonging to primary courses of curriculum
+        $c \in C$.
+    \item $C^T_t$ the set of events belonging to courses taught by teacher $t
+        \in T$.
 \end{itemize}
 
 \subsubsection*{Variables}
 \begin{itemize}
     \item $y_{e, p} \in \{0,1\}$ the decision variable assigning events $e$ to
-        periods $p$.
+        periods $p \in PA_e$.
     \item $S1_s$ the penalty for a soft conflict between the events in the
         unordered pair events $s$, for all $s \in P1$.
-    \item $S2_{ep}$ the estimate of the penalty for assigning the event $e \in
-        P2$ to an undesired room in period $p \in P$.
-    \item $S3_s$ the estimate of the penalty for non-ideal distances between the
-        events in the unordered pair $s$, for all $s \in P3$.
+    \item $S2_p$ the estimate of the number of events allocated to undesired
+        rooms in period $p \in P$.
 \end{itemize}
 
 \subsubsection*{Objective}
-\begin{multline*}
+\begin{multline}
     \min \quad \sum_{s \in P1} S1_s \quad + \quad \text{UNDESIRED\_PERIOD}
-        \left( \sum_{p \in PB} \sum_{e \in E} y_{e, PB} +
+        \left( \sum_{e \in E} \ \sum_{p \in PB \cap PA_e} y_{e, p} +
         \sum_{e \in PU} \sum_{p \in UP_e} y_{e, p} \right) \\
     + \quad \text{NOT\_PREFERRED} \sum_{e \in PD} \sum_{p \in PP_e} (1 - y_{ep})
-        \quad + \quad \sum_{e \in P2} \sum_{p \in P} S2_{ep} \quad + \quad
+        \quad + \quad \text{UNDESIRED\_ROOM} \sum_{p \in P} S2_p \quad + \quad
         \sum_{s \in P3} S3_s
-\end{multline*}
+\end{multline}
 
 \subsubsection*{Constraints}
-Each event must be scheduled to exactly one time period (BSP (\S\ref{BSP}) will
+Each event must be scheduled to exactly one time period (BSP in \S\ref{BSP} will
 allocate events to rooms once the period assignment has been fixed here):
 \begin{equation}
     \sum_{p \in P} y_{e,p} = 1 \qquad \forall e \in E
@@ -207,64 +208,78 @@ only if two events are in soft conflict:
 \begin{gather}
     S1_s \geq 0 \qquad \forall s \in P1 \\
     S1_{\{e_1, e_2\}} \geq \text{SOFT\_CONFLICT}_{\{e_1, e_2\}}
-        (y_{e_1, p} + y_{e_2, p} - 1)
-        \qquad \forall \{e_1, e_2\} \in P1, \ \forall p \in P
+        (y_{e_1, p} + y_{e_2, p} - 1) \qquad \forall \{e_1, e_2\} \in P1, \
+        \forall p \in PA_{e_1} \cap PA_{e_2}
+\end{gather}
+
+Precedences
+\begin{equation}
+    TODO
+\end{equation}
+
+We can enforce that no two courses in H3-conflict are scheduled in the same time
+period with the following constraints:
+\begin{gather}
+    \sum_{e \in C^P_c \; : \; p \in PA_e} y_{e,p} \leq 1
+        \qquad \forall c \in C, \ \forall p \in P \\
+    \sum_{e \in C^T_t \; : \; p \in PA_e} y_{e, p} \leq 1
+        \qquad \forall t \in T \ \forall p \in P
 \end{gather}
 
 \subsubsection*{Lazy Constraints}
-We write $(\cdot)^*$ to denote the value of a variable in some fixed solution to
-BMP. For each period $p \in P$, let $E_p := \set{e \in E \given y^*_{e, p} =
-1}$, the set of events allocated to period $p$, and do the following:
+For each period $p \in P$, let $E_p := \set{e \in E \given y^*_{e, p} = 1}$, the
+set of events allocated to period $p$, and do the following:
 \begin{itemize}
     \item Solve BSP to obtain a room allocation for the events of $E_p$ to the
         rooms available in $p$ which minimizes the number of events allocated to
         undesired rooms. Let $RM_e$ be the room assigned to event $e \in E_p$.
     \item If BSP is infeasible, add feasibility cuts TODO.
-    \item If BSP has a non-zero objective value, there does not exist any way
-        to allocate each of the events scheduled in the current period such that
-        no event is in an undesired room. Indeed, the number of undesired room
-        allocations has been minimized. Let $UR \subset E_p$ be the set of
-        events allocated to an undesired room and, for each $e \in UR$ define
-        $K_e := \set{e' \in E_p \cap P2 \given RM_{e'} \in RA_e}$. Observe that
-        $e \in K_e$ and, whenever BMP schedules any set of events $\mathcal{E}$
-        with $K_e \subseteq \mathcal{E}$ to the current period $p$, the penalty
-        $S2_{ep}$ \emph{cannot} decrease. Therefore we add the following
-        optimality cut:
+    \item If BSP has a non-zero objective value $M$ (which is, by construction
+        of BSP, the minimal number of undesired room allocations given $E_p$),
+        we add the constraint:
         \begin{equation}
-            S2_{e,p} \geq \text{UNDESIRED\_ROOM} \left(
-                \sum_{e' \in K_e} y_{e',p} - |K_e| + 1
-            \right) \qquad \forall e \in UR
+            S2_p \geq M \left(1 - \sum_{e \in E_p \cap P2} (1 - y_{e, p})\right)
         \end{equation}
-        Notice that we cannot generalize this to every period because the rooms
-        available is \emph{not} constant across periods.
+        Indeed, we can add this constraint on $S2_{p'}$ for each $p' \in P$ with
+        $R_{p'} \subseteq R_p$.
 \end{itemize}
-We also need to calculate the $S3$ penalties at the current solution and add
-optimality cuts. TODO
 
 \subsection{Sub-problem (BSP)} \label{BSP}
-The sub-problem will allocate events to rooms within a time period once they
-have been scheduled by the master problem. In addition to the sets, data and
-variables defined in the master problem, we fix $p \in P$ (and hence $E_p$) and
-define the following.
+The sub-problem will allocate events to rooms within a fixed time period $p$
+once they have been scheduled by the master problem, minimizing the number of
+events assigned to an undesired room.
 
-\subsubsection*{Data}
-Let $R_p$ be the set of rooms available in the current period.
+\subsubsection*{Sets}
+\begin{itemize}
+    \item $R^c \subseteq R$ the set of composite rooms.
+    \item $R^0_{r^c}$ the set of rooms (irreducible or composite) overlapping
+        with the composite room $r^c \in R^c$.
+\end{itemize}
 
 \subsubsection*{Variables}
 Let $x_{e,r}$ be the decision variable assigning events $e \in E_p$ to rooms $r
 \in RA_e \cap R_p$.
 
 \subsubsection*{Objective}
-$$
-    \min \qquad \sum_{e \in E_p \cap P2} \ \sum_{r \in UR_e \cap R_p} x_{e,r}
-$$
+\begin{equation}
+    \min \qquad \sum_{e \in E_p \cap P2} \
+        \sum_{r \in UR_e \cap R_p} x_{e,r}
+\end{equation}
 
 \subsubsection*{Constraints}
-Our only constraints are that each event is allocated exactly one room, and no
-two events are allocated the same room:
-\begin{gather*}
+First we add constraints ensuring each event is allocated exactly one room, and
+no two events are allocated the same room:
+\begin{gather}
     \sum_{r \in RA_e \cap R_p} x_{e,r} = 1 \qquad \forall e \in E_p \\
     \sum_{e \in E_p \; : \; r \in RA_e} x_{e, r} \leq 1 \qquad \forall r \in R_p
-\end{gather*}
+\end{gather}
+
+We can ensure that, whenever an event is allocated to a composite room, no event
+is allocated to an overlapping room:
+\begin{equation}
+    |R^0_{r^c} \cap R_p| \sum_{e \in E_p \; : \; r^c \in RA_e} x_{e, r^c}
+        + \sum_{r^0 \in R^0_{r^c} \cap R_p} \ \sum_{e \in E_p \; : \; r^0 \in RA_e}
+        x_{e, r^0} \leq |R^0_{r^c} \cap R_p| \qquad \forall r^c \in R^c \cap R_p
+\end{equation}
 
 \end{document}

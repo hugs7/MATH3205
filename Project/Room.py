@@ -3,7 +3,8 @@ Class for handing rooms in the problem
 """
 
 import Constants as const
-from typing import Iterator, Dict, List, Tuple
+from typing import Iterator, Dict, List, Tuple, Set
+import Utils as utils
 
 
 class Room:
@@ -170,12 +171,12 @@ class RoomManager:
                 return room
         return None
 
-    def get_composite_rooms(self) -> list[Room]:
+    def get_composite_rooms(self) -> Set[Room]:
         """
         Gets list of composite rooms stored by the RoomManager
         """
 
-        return [r for r in self.rooms if r.get_type() == const.COMPOSITE]
+        return {r for r in self.rooms if r.get_type() == const.COMPOSITE}
 
     def get_rooms_by_size(self) -> Dict[str, List[Room]]:
         """
@@ -473,14 +474,14 @@ class RoomManager:
 
         return joining_rooms
 
-    def construct_composite_map(self) -> Dict[Room, List[Room]]:
+    def construct_composite_map(self):
         """
         Constructs graph in the form of an ajacency list to store
         which rooms are composite and joining
         """
 
         if self.constructed:
-            return self.composite_map
+            return
 
         # Iterate over all composite rooms stored by the RoomManager
         for comp_room in self.get_composite_rooms():
@@ -495,59 +496,21 @@ class RoomManager:
         # Set the constructed flag to true
         self.constructed = True
 
-        # Return Composite Graph
-        return self.composite_map
-
-    def get_overlapping_rooms(self) -> Dict[Room, List[Room]]:
+    def get_overlapping_rooms(self, rc: Room) -> Set[Room]:
         """
-        Returns a dictionary with composite rooms as keys and
-        a list of overlapping rooms as values.
+        Returns all rooms overlapping with the supplied composite room. Two
+        rooms are overlapping if they cannot both have events scheduled in them
+        at the same time.
         """
+        self.construct_composite_map()
+        if rc not in self.composite_map:
+            raise Exception(f"Expected a composite room, got {rc}")
 
-        if not self.constructed:
-            self.construct_composite_map()
-
-        overlapping_rooms: Dict[Room, List[Room]] = {}
-
-        visited_regions = []
-        for comp_room, members in self.composite_map.items():
-            rooms_in_connected_region = [comp_room]
-            if comp_room in visited_regions:
-                continue
-            visited_regions.append(comp_room)
-
-            connected_region: Dict[Room, List[Room]] = {}
-            connected_region[comp_room] = members
-
-            for other_comp_room, other_members in self.composite_map.items():
-                if comp_room == other_comp_room:
-                    continue
-
-                connected = False
-                for other_member in other_members:
-                    if other_member in members:
-                        connected = True
-                        break
-
-                if not connected:
-                    continue
-
-                rooms_in_connected_region.append(other_comp_room)
-                visited_regions.append(other_comp_room)
-                connected_region[other_comp_room] = other_members
-
-            connected_region_set_of_members = [
-                set(members) for members in connected_region.values()
-            ]
-
-            intersection = connected_region_set_of_members[0]
-            for cr in connected_region_set_of_members[1:]:
-                intersection = intersection.intersection(cr)
-
-            for room in rooms_in_connected_region:
-                overlapping_rooms[room] = list(intersection)
-
-        return overlapping_rooms
+        return {r for r in self.get_rooms() if r in self.composite_map[rc]} | {
+            r
+            for r in self.get_composite_rooms()
+            if not utils.disjoint(r.get_members(), rc.get_members())
+        }
 
     # Implement the iterable functionality
     def __iter__(self) -> Iterator[Room]:

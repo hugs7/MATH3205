@@ -255,12 +255,14 @@ class CourseManager:
 
     def __init__(self) -> None:
         self.courses: List[Course] = []
+        self.course_name_map = {}
+        self.no_edit = False
 
     def add_course(self, course_data) -> Course:
         """
         Adds a course to the course manager and returns the course
         """
-
+        assert not self.no_edit
         new_course = Course(course_data)
         self.courses.append(new_course)
 
@@ -270,8 +272,19 @@ class CourseManager:
         """
         Returns a list of the courses the CourseManager manages
         """
-
         return self.courses
+
+    def construct_course_name_map(self):
+        """
+        Construct the map sending course names to courses and set the no_edit
+        flag
+        """
+        if self.no_edit:
+            # Course map already constructed; nothing to do
+            return
+        for course in self.courses:
+            self.course_name_map[course.get_course_name()] = course
+        self.no_edit = True
 
     def get_course_by_name(self, course_name: str) -> Course:
         """
@@ -279,21 +292,8 @@ class CourseManager:
         Raises a CourseNotFoundException if the course is not managed by
         this CourseManager
         """
-
-        for course in self.courses:
-            if course.get_course_name() == course_name:
-                return course
-
-        raise CourseNotFoundException("Course not found!")
+        self.construct_course_name_map()  # does nothing if already constructed
+        return self.course_name_map[course_name]
 
     def __str__(self):
         return "\n".join([str(course) for course in self.courses])
-
-
-class CourseNotFoundException(Exception):
-    """
-    Defines an exception for course not found
-    """
-
-    def __init__(self, exp_msg: str) -> None:
-        super().__init__(exp_msg)
