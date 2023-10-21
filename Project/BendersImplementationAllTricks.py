@@ -767,7 +767,9 @@ def solve(instance_name: str) -> None:
 
     for p in Periods:
         for room_type in const.ROOM_TYPES:
-            for room_size in range(1, 4):
+            for room_size in range(
+                1, Rooms.get_max_members_by_room_type(room_type) + 1
+            ):
                 # Set to the number of rooms of this type and size
                 rooms_available[
                     p, room_type, room_size
@@ -813,6 +815,16 @@ def solve(instance_name: str) -> None:
                         if p in PA[e]
                         and e.get_num_rooms() > room_size
                         and e.get_room_type() == room_type
+                    )
+                    - quicksum(
+                        Y[e, p]
+                        for e in Events
+                        if p in PA[e]
+                        and room_size == 1
+                        and e.get_num_rooms() == room_size
+                        and e.get_room_type()
+                        in Rooms.get_compatible_room_types(room_type, room_size)[1:]
+                        # Where the room type is effectively "larger" hence [1:].
                     )
                 )
         # Number of rooms available by size per period
@@ -1118,8 +1130,9 @@ def solve(instance_name: str) -> None:
     # infeasible then add a no good cut.
     seem_event_sets: Dict[Period, Set[frozenset[Event]]] = {p: set() for p in Periods}
 
+    X_global: Dict[Tuple[Event, Period], Room] = {}
+
     def Callback(model, where):
-        global counter
         if where != GRB.Callback.MIPSOL:
             return
 
@@ -1308,8 +1321,13 @@ def solve(instance_name: str) -> None:
                 # Now go solve the master problem again
             else:
                 # BSP is feasible.
-                # print("Feasible subproblem - Period", p)
-                # print("BSP Objective Value:", BSP.ObjVal)
+                # Set X_global so we can access this later during printing
+
+                for e in EventsP:
+                    for r in RA[e]:
+                        if X[e, r].x > 0.9:
+                            X_global[e, p] = r
+
                 # Update the objective function of the master problem
                 # print("Adding optimality cut for period", p, S2V[p], BSP.objVal)
                 model.cbLazy(
@@ -1362,7 +1380,7 @@ def solve(instance_name: str) -> None:
 def main():
     problem_path = os.path.join(".", "Project", "data")
     for filename in os.listdir(problem_path):
-        if filename != "D3-1-16.json":
+        if filename != "D1-3-18.json":
             continue
 
         if os.path.isfile(os.path.join(problem_path, filename)):
