@@ -1251,7 +1251,7 @@ def solve(instance_name: str) -> None:
                 #     len(Events),
                 # )
                 # model.cbLazy(
-                #     quicksum((1 - YV[e, p]) for e in Events if e in EventsP) >= 1
+                #     quicksum((1 - Y[e, p]) for e in Events if e in EventsP) >= 1
                 # )
 
                 # Idea of other constraint I had - commented out.
@@ -1340,12 +1340,12 @@ def solve(instance_name: str) -> None:
                 # print("BSP Objective Value:", BSP.ObjVal)
                 # Update the objective function of the master problem
                 model.cbLazy(
-                    S2RV[p]
+                    S2[p]
                     >= BSP.objVal
                     * (
                         1
                         - quicksum(
-                            (1 - YV[e, p])
+                            (1 - Y[e, p])
                             for e in EventsP
                             if len(undesired_event_rooms[e]) > 0
                         )
