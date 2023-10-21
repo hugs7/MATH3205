@@ -1277,8 +1277,7 @@ def solve(instance_name: str) -> None:
                         model.cbLazy(
                             quicksum(
                                 Y[e, p]
-                                for e in Events
-                                if p in PA[e]
+                                for e in EventsP
                                 if e.get_room_type() != const.DUMMY
                                 and e.get_num_rooms() == room_size
                                 and e.get_room_type() == room_type
@@ -1290,16 +1289,14 @@ def solve(instance_name: str) -> None:
                                 * Rooms.get_independence_number(
                                     e.get_room_type(), e.get_num_rooms()
                                 )
-                                for e in Events
-                                if p in PA[e]
-                                and e.get_num_rooms() > room_size
+                                for e in EventsP
+                                if e.get_num_rooms() > room_size
                                 and e.get_room_type() == room_type
                             )
                             - quicksum(
                                 Y[e, p]
-                                for e in Events
-                                if p in PA[e]
-                                and room_size == 1
+                                for e in EventsP
+                                if room_size == 1
                                 and e.get_num_rooms() == room_size
                                 and e.get_room_type()
                                 in Rooms.get_compatible_room_types(
