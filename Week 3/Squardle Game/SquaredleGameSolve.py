@@ -5,7 +5,7 @@ import os
 Alphabet = "abcdefghijklmnopqrstuvwxyz"
 
 min_word_length = 4
-max_word_len = 9
+max_word_len = 12
 
 
 def generate_words(grid):

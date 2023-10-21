@@ -372,10 +372,6 @@ def solve(instance_name: str):
                 if course_a.__eq__(course_b):
                     continue
 
-                # Get minimum separation between exams
-                course_a_min_dist = course_a.get_min_distance_between_exams()
-                course_b_min_dist = course_b.get_min_distance_between_exams()
-
                 course_a_examinations = CourseExaminations.get(course_a)
                 course_b_examinations = CourseExaminations.get(course_b)
 
@@ -445,8 +441,8 @@ def solve(instance_name: str):
     # secondary courses in the same curriculum
     SCSS = {}  # tySe is dict[Event, set(Event)]
     for event in Events:
-        event_course = event.get_course()
-        event_course_name = event_course.get_course_name()
+        event_course: Course = event.get_course()
+        event_course_name: str = event_course.get_course_name()
 
         overlapping_secondary_curriculum_courses = []
 
@@ -950,7 +946,7 @@ def solve(instance_name: str):
 
 
 def main():
-    instance_name = "D3-1-16.json"
+    instance_name = "D1-3-16.json"
     solve(instance_name)
 
 

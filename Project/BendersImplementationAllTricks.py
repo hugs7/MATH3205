@@ -197,7 +197,7 @@ def solve(instance_name: str) -> None:
     # R_e in paper
     RA: Dict[Event, Set[Room]] = {}
 
-    available_types: Dict[str, List[str]] = {
+    available_types: Dict[str, Dict[str, List[str]]] = {
         const.DUMMY: [const.DUMMY],
         const.SMALL: [const.SMALL, const.MEDIUM, const.LARGE],
         const.MEDIUM: [const.MEDIUM, const.LARGE],
@@ -1368,7 +1368,8 @@ def solve(instance_name: str) -> None:
             if p.get_day() == d:
                 # print(f"{' '*4}Period ", p)
                 for e in Events:
-                    if Y[e, p].x > 0.9:
+                    # Ensure we check if p in available periods for event e before accessing Y[e, p]
+                    if p in PA[e] and Y[e, p].x > 0.9:
                         print(f"{' '*4} Period {p}: exam {e}")
 
                         # If we know event e is assigned period p, loop over the rooms to find out which one
