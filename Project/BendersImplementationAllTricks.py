@@ -795,38 +795,38 @@ def solve(instance_name: str) -> None:
                         rooms_available[p, room_type, room_size] -= 1
 
                 # A pre-cut for the BSP
-                # BMP.addConstr(
-                #     quicksum(
-                #         Y[e, p]
-                #         for e in Events
-                #         if p in PA[e]
-                #         if e.get_room_type() != const.DUMMY
-                #         and e.get_num_rooms() == room_size
-                #         and e.get_room_type() == room_type
-                #     )
-                #     <= Rooms.get_num_compatible_rooms(room_type, room_size)
-                #     - quicksum(
-                #         Y[e, p]
-                #         * e.get_num_rooms()
-                #         * Rooms.get_independence_number(
-                #             e.get_room_type(), e.get_num_rooms()
-                #         )
-                #         for e in Events
-                #         if p in PA[e]
-                #         and e.get_num_rooms() > room_size
-                #         and e.get_room_type() == room_type
-                #     )
-                #     - quicksum(
-                #         Y[e, p]
-                #         for e in Events
-                #         if p in PA[e]
-                #         and room_size == 1
-                #         and e.get_num_rooms() == room_size
-                #         and e.get_room_type()
-                #         in Rooms.get_compatible_room_types(room_type, room_size)[1:]
-                #         # Where the room type is effectively "larger" hence [1:].
-                #     )
-                # )
+                BMP.addConstr(
+                    quicksum(
+                        Y[e, p]
+                        for e in Events
+                        if p in PA[e]
+                        if e.get_room_type() != const.DUMMY
+                        and e.get_num_rooms() == room_size
+                        and e.get_room_type() == room_type
+                    )
+                    <= Rooms.get_num_compatible_rooms(room_type, room_size)
+                    #     - quicksum(
+                    #         Y[e, p]
+                    #         * e.get_num_rooms()
+                    #         * Rooms.get_independence_number(
+                    #             e.get_room_type(), e.get_num_rooms()
+                    #         )
+                    #         for e in Events
+                    #         if p in PA[e]
+                    #         and e.get_num_rooms() > room_size
+                    #         and e.get_room_type() == room_type
+                    #     )
+                    #     - quicksum(
+                    #         Y[e, p]
+                    #         for e in Events
+                    #         if p in PA[e]
+                    #         and room_size == 1
+                    #         and e.get_num_rooms() == room_size
+                    #         and e.get_room_type()
+                    #         in Rooms.get_compatible_room_types(room_type, room_size)[1:]
+                    #         # Where the room type is effectively "larger" hence [1:].
+                    #     )
+                )
         # Number of rooms available by size per period
         # This will be handy for callback
 
@@ -1255,7 +1255,7 @@ def solve(instance_name: str) -> None:
 
                 if frozenset(EventsP) in seem_event_sets[p]:
                     print("Adding no Good cut", p)
-                    model.cbLazy(quicksum((1 - Y[e, p]) for e in EventsP) >= 1)
+                    # model.cbLazy(quicksum((1 - Y[e, p]) for e in EventsP) >= 1)
 
                 # Idea of other constraint I had
                 # Feasibility cut is different for each room type.
@@ -1283,29 +1283,29 @@ def solve(instance_name: str) -> None:
                                 and e.get_room_type() == room_type
                             )
                             <= Rooms.get_num_compatible_rooms(room_type, room_size)
-                            # - quicksum(
-                            #     Y[e, p]
-                            #     * e.get_num_rooms()
-                            #     * Rooms.get_independence_number(
-                            #         e.get_room_type(), e.get_num_rooms()
-                            #     )
-                            #     for e in Events
-                            #     if p in PA[e]
-                            #     and e.get_num_rooms() > room_size
-                            #     and e.get_room_type() == room_type
-                            # )
-                            # - quicksum(
-                            #     Y[e, p]
-                            #     for e in Events
-                            #     if p in PA[e]
-                            #     and room_size == 1
-                            #     and e.get_num_rooms() == room_size
-                            #     and e.get_room_type()
-                            #     in Rooms.get_compatible_room_types(
-                            #         room_type, room_size
-                            #     )[1:]
-                            #     # Where the room type is effectively "larger" hence [1:].
-                            # )
+                            - quicksum(
+                                Y[e, p]
+                                * e.get_num_rooms()
+                                * Rooms.get_independence_number(
+                                    e.get_room_type(), e.get_num_rooms()
+                                )
+                                for e in Events
+                                if p in PA[e]
+                                and e.get_num_rooms() > room_size
+                                and e.get_room_type() == room_type
+                            )
+                            - quicksum(
+                                Y[e, p]
+                                for e in Events
+                                if p in PA[e]
+                                and room_size == 1
+                                and e.get_num_rooms() == room_size
+                                and e.get_room_type()
+                                in Rooms.get_compatible_room_types(
+                                    room_type, room_size
+                                )[1:]
+                                # Where the room type is effectively "larger" hence [1:].
+                            )
                         )
 
                         if room_size == 1:
@@ -1420,7 +1420,7 @@ def main():
     problem_path = os.path.join(".", "Project", "data")
     for filename in os.listdir(problem_path):
         if os.path.isfile(os.path.join(problem_path, filename)):
-            if filename != "D1-1-16.json":
+            if filename != "D3-1-16.json":
                 continue
 
             solve(filename)
