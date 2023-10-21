@@ -1253,9 +1253,10 @@ def solve(instance_name: str) -> None:
 
                 # Add a no good cut to say this exact combination isn't feasible
 
-                if frozenset(EventsP) in seem_event_sets[p]:
-                    print("Adding no Good cut", p)
-                    # model.cbLazy(quicksum((1 - Y[e, p]) for e in EventsP) >= 1)
+                # Uncomment to add no good cut
+                # if frozenset(EventsP) in seem_event_sets[p]:
+                #     print("Adding no Good cut", p)
+                #     model.cbLazy(quicksum((1 - Y[e, p]) for e in EventsP) >= 1)
 
                 # Idea of other constraint I had
                 # Feasibility cut is different for each room type.
@@ -1307,55 +1308,6 @@ def solve(instance_name: str) -> None:
                                 # Where the room type is effectively "larger" hence [1:].
                             )
                         )
-
-                        if room_size == 1:
-                            # Room type can vary
-                            # Room size is fixed.
-                            continue
-                            model.cbLazy(
-                                quicksum(
-                                    Y[e, p]
-                                    for e in EventsP
-                                    if e.get_room_type() != const.DUMMY
-                                    and e.get_num_rooms() == room_size
-                                    and e.get_room_type() == room_type
-                                )
-                                <= Rooms.get_num_compatible_rooms(room_type, room_size)
-                                - quicksum(
-                                    Y[e, p]
-                                    * e.get_num_rooms()
-                                    * Rooms.get_independence_number(
-                                        e.get_room_type(), e.get_num_rooms()
-                                    )
-                                    for e in EventsP
-                                )
-                            )
-
-                        else:
-                            # Room type is fixed
-                            # Room size is fixed
-                            continue
-                            model.cbLazy(
-                                quicksum(
-                                    Y[e, p]
-                                    for e in Events
-                                    if e.get_room_type() != const.DUMMY
-                                    and e.get_num_rooms() == room_size
-                                    and room_type == e.get_room_type()
-                                )
-                                <= Rooms.get_num_compatible_rooms(room_type, room_size)
-                                # - quicksum(
-                                #     room.get_num_members()
-                                #     * Rooms.get_independence_number(
-                                #         room.get_type(), room.get_num_members()
-                                #     )
-                                #     * Y[e, p]
-                                #     for e in Events
-                                #     for room in Rooms
-                                #     if room.get_num_members() == room_size
-                                #     and room.get_type() == room_type
-                                # )
-                            )
 
                 # Now go solve the master problem again
             else:
