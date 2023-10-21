@@ -1114,7 +1114,9 @@ def solve(instance_name: str) -> None:
     previous_time = time.time()
     print("Defined Gurobi Model:", time.time() - previous_time, const.SECONDS)
 
-    counter = -1
+    # Keeps track of set of events we've seen. If we've seen this set before in period p and the BSP was
+    # infeasible then add a no good cut.
+    seem_event_sets: Dict[Period, Set[frozenset[Event]]] = {p: set() for p in Periods}
 
     def Callback(model, where):
         global counter
@@ -1123,8 +1125,6 @@ def solve(instance_name: str) -> None:
 
         print("Callback")
         YV = model.cbGetSolution(Y)
-
-        S2V = model.cbGetSolution(S2)
 
         numCuts = 0
 
@@ -1153,7 +1153,6 @@ def solve(instance_name: str) -> None:
             }
 
             # Define Sub Problem
-            BSP = None
             BSP = Model("BSP for Period " + str(p))
 
             # Set output flag off/on
@@ -1215,8 +1214,7 @@ def solve(instance_name: str) -> None:
             # being allocated to this period
 
             if BSP.status == GRB.INFEASIBLE:
-                print("##############Infeasible subproblem")
-                print("Number of events:", len(EventsP))
+                print("##############   Infeasible subproblem")
                 # Subproblem was infeasible. Add feasability cut
 
                 # Find number of events allocated to period p that request small rooms
@@ -1238,9 +1236,10 @@ def solve(instance_name: str) -> None:
                 # but this doesn't apply to composite rooms
 
                 # Add a no good cut to say this exact combination isn't feasible
-                # print("Adding no Good cut", p)
 
-                # model.cbLazy(quicksum((1 - Y[e, p]) for e in EventsP) >= 1)
+                if frozenset(EventsP) in seem_event_sets[p]:
+                    print("Adding no Good cut", p)
+                    model.cbLazy(quicksum((1 - Y[e, p]) for e in EventsP) >= 1)
 
                 # Idea of other constraint I had
                 # Feasibility cut is different for each room type.
@@ -1325,6 +1324,10 @@ def solve(instance_name: str) -> None:
                         )
                     )
                 )
+
+            # Add to seem_event_sets
+
+            seem_event_sets[p].add(frozenset(EventsP))
 
             numCuts += 1
 
