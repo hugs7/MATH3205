@@ -1099,7 +1099,8 @@ def solve(instance_name: str) -> None:
             quicksum(
                 Y[e, p]
                 for e in Events
-                for p in constrManager.get_period_constraints()
+                for p in PA[e]
+                if p in constrManager.get_period_constraints()
                 if p.period in PA[e]
             )
             + quicksum(Y[e, p] for e in Events for p in undesired_event_periods[e])
@@ -1383,7 +1384,7 @@ def main():
     problem_path = os.path.join(".", "Project", "data")
     for filename in os.listdir(problem_path):
         if os.path.isfile(os.path.join(problem_path, filename)):
-            if filename != "D1-3-16.json":
+            if filename != "D2-1-18.json":
                 continue
 
             solve(filename)
