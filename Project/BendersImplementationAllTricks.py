@@ -1244,15 +1244,16 @@ def solve(instance_name: str) -> None:
                 # but this doesn't apply to composite rooms
 
                 # Add a no good cut to say this exact combination isn't feasible
-                # print(
-                #     "Adding no Good cut",
-                #     p,
-                #     len([e for e in Events if e in EventsP]),
-                #     len(Events),
-                # )
-                # model.cbLazy(
-                #     quicksum((1 - YV[e, p]) for e in Events if e in EventsP) >= 1
-                # )
+                print(
+                    "Adding no Good cut",
+                    p,
+                    len([e for e in Events if e in EventsP]),
+                    len(Events),
+                )
+
+                model.cbLazy(
+                    quicksum((1 - YV[e, p]) for e in Events if p in PA[e]) >= 1
+                )
 
                 # Idea of other constraint I had - commented out.
 
@@ -1331,8 +1332,6 @@ def solve(instance_name: str) -> None:
                 #                 )
                 #             )
 
-                numCuts += 1
-
                 # Now go solve the master problem again
             else:
                 # BSP is feasible.
@@ -1351,6 +1350,8 @@ def solve(instance_name: str) -> None:
                         )
                     )
                 )
+
+            numCuts += 1
 
     BMP.setParam("OutputFlag", 1)
     BMP.setParam("MIPGap", 0)
