@@ -121,10 +121,16 @@
 \newpage
 
 \section{Problem Description}
-TODO
+TODO. Should be fairly succinct. Consider discussing the motivation for using
+curricula instead of individual students, exam types, exams can have multiple
+events, courses can have multiple exams, oral exams may not require a room. Also
+discuss the available test instances and solution checker that the original
+authors have made available.
 
 \section{Incumbent Formulation}
-TODO
+TODO. We don't need to describe the model in its entirety, but it would be good
+to give a high level description of the variables, constraints and objective.
+Discuss use of big-M constraints, poor calculation of S1.
 
 \section{Benders Formulation}
 \subsection{Master Problem (BMP)}
@@ -134,7 +140,8 @@ how events will be assigned to rooms within each time period).
 \subsubsection*{Sets}
 \begin{itemize}
     \item $E$ the set of events
-    \item $P$ the set of periods
+    \item $P$ the set of periods, each of which is assigned an ordinal value
+        $0,1,\dots, |P| - 1$.
     \item $PA_e \subseteq P$ the set of available periods for event $e \in E$
     \item $PD \subseteq E$ the set of all events with period preferences.
     \item $PU \subseteq E$ the set of all events with undesired periods.
@@ -147,10 +154,19 @@ how events will be assigned to rooms within each time period).
     \item $P2 \subseteq E$ the set of all events which have undesired rooms.
     \item $C$ the set of curricula.
     \item $T$ the set of teachers.
+    \item $F \subset E \times E$ the set of pairs of events where the first
+        event must precede (that is, be scheduled strictly before) the second.
+        An event $e_1$ must precede an event $e_2 \in E$ if they are consecutive
+        parts of the same examination, or if they belong to consecutive
+        examinations of the same course.
+    \item $DP^\leftarrow$ and $DP^\leftrightarrow$ the sets of pairs of events
+        with desired undirected or directed separations respectively.
 \end{itemize}
 
 \subsubsection*{Data}
 \begin{itemize}
+    \item $O_p \in \{0,1,\dots,|P| - 1\}$ the ordinal value of the period $p \in
+        P$.
     \item $RA_e$ the set of rooms to which the event $e \in E$ could be
         assigned.
     \item $PA_e$ the set of periods to which the event $e \in E$ could be
@@ -171,6 +187,9 @@ how events will be assigned to rooms within each time period).
         $c \in C$.
     \item $C^T_t$ the set of events belonging to courses taught by teacher $t
         \in T$.
+    \item $P_{e_1, e_2}^\text{min}, P_{e_1, e_2}^\text{max}$ the respective
+        minimum/maximum preferred distances between the events $e_1, e_2 \in
+        DP^\leftarrow \cup DP^\leftrightarrow$.
 \end{itemize}
 
 \subsubsection*{Variables}
@@ -178,9 +197,14 @@ how events will be assigned to rooms within each time period).
     \item $y_{e, p} \in \{0,1\}$ the decision variable assigning events $e$ to
         periods $p \in PA_e$.
     \item $S1_s$ the penalty for a soft conflict between the events in the
-        unordered pair events $s$, for all $s \in P1$.
+        unordered pair events $s$, for all $s \in P1$. Although these variables
+        must have integer values, they may be relaxed to be continuous as they
+        will naturally attain integer values (see constraint \eqref{setS1}).
     \item $S2_p$ the estimate of the number of events allocated to undesired
-        rooms in period $p \in P$.
+        rooms in period $p \in P$. These variables may also be relaxed to be
+        continuous.
+    \item $h_e$ the ordinal value of the period to which the event $e \in E$ is
+        scheduled.
 \end{itemize}
 
 \subsubsection*{Objective}
@@ -197,7 +221,7 @@ how events will be assigned to rooms within each time period).
 Each event must be scheduled to exactly one time period (BSP in \S\ref{BSP} will
 allocate events to rooms once the period assignment has been fixed here):
 \begin{equation}
-    \sum_{p \in P} y_{e,p} = 1 \qquad \forall e \in E
+    \sum_{p \in P \; : \; p \in PA_e} y_{e,p} = 1 \qquad \forall e \in E
 \end{equation}
 
 We need to make sure that $S1$ is exactly the penalty for a soft conflict (two
@@ -205,20 +229,24 @@ events from a common curriculum being scheduled at the same time). To do this,
 we will ensure that $S1_s \geq 0$ (which can be implemented by setting the lower
 bound for the variable in the Gurboi API) and that it achieves the cost if and
 only if two events are in soft conflict:
-\begin{gather}
-    S1_s \geq 0 \qquad \forall s \in P1 \\
+\begin{gather} \label{setS1}
     S1_{\{e_1, e_2\}} \geq \text{SOFT\_CONFLICT}_{\{e_1, e_2\}}
         (y_{e_1, p} + y_{e_2, p} - 1) \qquad \forall \{e_1, e_2\} \in P1, \
         \forall p \in PA_{e_1} \cap PA_{e_2}
 \end{gather}
 
-Precedences
-\begin{equation}
-    TODO
-\end{equation}
+We will set the values of the $h$ variables and use them to enforce precedences:
+\begin{gather}
+    h_e = \sum_{p \in PA_e} O_p y_{e, p} \qquad \forall e \in E \\
+    h_{e_1} - h_{e_2} \leq -1 \forall (e_1, e_2) \in F
+\end{gather}
 
 We can enforce that no two courses in H3-conflict are scheduled in the same time
-period with the following constraints:
+period with the following constraints. Notice that we can actually express these
+constraints equivalently (and more efficiently) without introducing $h$, but the
+existence of this variable makes calculating the penalties for not respecting
+minimum or maximum separation of relevant pairs of events a much more difficult
+and expensive integer problem.
 \begin{gather}
     \sum_{e \in C^P_c \; : \; p \in PA_e} y_{e,p} \leq 1
         \qquad \forall c \in C, \ \forall p \in P \\
