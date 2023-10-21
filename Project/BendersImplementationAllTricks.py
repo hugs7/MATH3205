@@ -1105,7 +1105,9 @@ def solve(instance_name: str) -> None:
             + quicksum(Y[e, p] for e in Events for p in undesired_event_periods[e])
         )
         + const.P_NOT_PREFERED_PERIOD
-        * quicksum(1 - Y[e, p] for e in Events for p in preferred_periods[e])
+        * quicksum(
+            1 - Y[e, p] for e in Events for p in PA[e] if p in preferred_periods[e]
+        )
         + const.P_UNDESIRED_ROOM * quicksum(S2[p] for p in Periods)
         # Cost S3
         + const.DD_SAME_COURSE * quicksum(PMinE[e1, e2] for (e1, e2) in DPSameCourse)
@@ -1380,10 +1382,10 @@ def solve(instance_name: str) -> None:
 def main():
     problem_path = os.path.join(".", "Project", "data")
     for filename in os.listdir(problem_path):
-        if filename != "D1-3-18.json":
-            continue
-
         if os.path.isfile(os.path.join(problem_path, filename)):
+            if filename != "D1-3-16.json":
+                continue
+
             solve(filename)
 
             print("\n\n")
