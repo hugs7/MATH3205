@@ -767,7 +767,9 @@ def solve(instance_name: str) -> None:
 
     for p in Periods:
         for room_type in const.ROOM_TYPES:
-            for room_size in range(1, 4):
+            for room_size in range(
+                1, Rooms.get_max_members_by_room_type(room_type) + 1
+            ):
                 # Set to the number of rooms of this type and size
                 rooms_available[
                     p, room_type, room_size
@@ -793,34 +795,38 @@ def solve(instance_name: str) -> None:
                         rooms_available[p, room_type, room_size] -= 1
 
                 # A pre-cut for the BSP
-                # BMP.addConstr(
-                #     quicksum(
-                #         Y[e, p]
-                #         for e in Events
-                #         if e.get_room_type() != const.DUMMY
-                #         and e.get_num_rooms() == room_size
-                #         and e.get_room_type() == room_type
-                #         # in Rooms.get_compatible_room_types(
-                #         #     e.get_room_type(), e.get_num_rooms()
-                #         # )
-                #     )
-                #     <= Rooms.get_num_rooms_by_type_and_size(room_type, room_size)
-                # - quicksum(
-                #     room.get_num_members()
-                #     * Rooms.get_independence_number(
-                #         room.get_type(), room.get_num_members()
-                #     )
-                #     * Y[e, p]
-                #     for e in Events
-                #     for room in Rooms
-                #     if room.get_num_members() == e.get_num_rooms()
-                #     and room.get_type()
-                #     in Rooms.get_compatible_room_types(
-                #         e.get_room_type(), e.get_num_rooms()
-                #     )
-                # )
-                # )
-
+                BMP.addConstr(
+                    quicksum(
+                        Y[e, p]
+                        for e in Events
+                        if p in PA[e]
+                        if e.get_room_type() != const.DUMMY
+                        and e.get_num_rooms() == room_size
+                        and e.get_room_type() == room_type
+                    )
+                    <= Rooms.get_num_compatible_rooms(room_type, room_size)
+                    #     - quicksum(
+                    #         Y[e, p]
+                    #         * e.get_num_rooms()
+                    #         * Rooms.get_independence_number(
+                    #             e.get_room_type(), e.get_num_rooms()
+                    #         )
+                    #         for e in Events
+                    #         if p in PA[e]
+                    #         and e.get_num_rooms() > room_size
+                    #         and e.get_room_type() == room_type
+                    #     )
+                    #     - quicksum(
+                    #         Y[e, p]
+                    #         for e in Events
+                    #         if p in PA[e]
+                    #         and room_size == 1
+                    #         and e.get_num_rooms() == room_size
+                    #         and e.get_room_type()
+                    #         in Rooms.get_compatible_room_types(room_type, room_size)[1:]
+                    #         # Where the room type is effectively "larger" hence [1:].
+                    #     )
+                )
         # Number of rooms available by size per period
         # This will be handy for callback
 
@@ -1093,13 +1099,16 @@ def solve(instance_name: str) -> None:
             quicksum(
                 Y[e, p]
                 for e in Events
-                for p in constrManager.get_period_constraints()
+                for p in PA[e]
+                if p in constrManager.get_period_constraints()
                 if p.period in PA[e]
             )
             + quicksum(Y[e, p] for e in Events for p in undesired_event_periods[e])
         )
         + const.P_NOT_PREFERED_PERIOD
-        * quicksum(1 - Y[e, p] for e in Events for p in preferred_periods[e])
+        * quicksum(
+            1 - Y[e, p] for e in Events for p in PA[e] if p in preferred_periods[e]
+        )
         + const.P_UNDESIRED_ROOM * quicksum(S2[p] for p in Periods)
         # Cost S3
         + const.DD_SAME_COURSE * quicksum(PMinE[e1, e2] for (e1, e2) in DPSameCourse)
@@ -1120,17 +1129,18 @@ def solve(instance_name: str) -> None:
     previous_time = time.time()
     print("Defined Gurobi Model:", time.time() - previous_time, const.SECONDS)
 
-    counter = -1
+    # Keeps track of set of events we've seen. If we've seen this set before in period p and the BSP was
+    # infeasible then add a no good cut.
+    seem_event_sets: Dict[Period, Set[frozenset[Event]]] = {p: set() for p in Periods}
+
+    X_global: Dict[Tuple[Event, Period], Room] = {}
 
     def Callback(model, where):
-        global counter
         if where != GRB.Callback.MIPSOL:
             return
 
         print("Callback")
         YV = model.cbGetSolution(Y)
-
-        S2RV = model.cbGetSolution(S2)
 
         numCuts = 0
 
@@ -1159,7 +1169,6 @@ def solve(instance_name: str) -> None:
             }
 
             # Define Sub Problem
-            BSP = None
             BSP = Model("BSP for Period " + str(p))
 
             # Set output flag off/on
@@ -1221,8 +1230,7 @@ def solve(instance_name: str) -> None:
             # being allocated to this period
 
             if BSP.status == GRB.INFEASIBLE:
-                print("##############Infeasible subproblem")
-                print("Number of events:", len(EventsP))
+                print("##############   Infeasible subproblem")
                 # Subproblem was infeasible. Add feasability cut
 
                 # Find number of events allocated to period p that request small rooms
@@ -1244,101 +1252,75 @@ def solve(instance_name: str) -> None:
                 # but this doesn't apply to composite rooms
 
                 # Add a no good cut to say this exact combination isn't feasible
-                # print(
-                #     "Adding no Good cut",
-                #     p,
-                #     len([e for e in Events if e in EventsP]),
-                #     len(Events),
-                # )
-                # model.cbLazy(
-                #     quicksum((1 - Y[e, p]) for e in Events if e in EventsP) >= 1
-                # )
 
-                # Idea of other constraint I had - commented out.
+                # Uncomment to add no good cut
+                # if frozenset(EventsP) in seem_event_sets[p]:
+                #     print("Adding no Good cut", p)
+                #     model.cbLazy(quicksum((1 - Y[e, p]) for e in EventsP) >= 1)
 
-                # for room_type in const.ROOM_TYPES:
-                #     # if Rooms.get_max_members_by_room_type(room_type) == 0:
-                #     #     continue
+                # Idea of other constraint I had
+                # Feasibility cut is different for each room type.
+                print("Adding feasibility cut for period", p)
+                for room_type in const.ROOM_TYPES:
+                    # SMALL, MEDIUM and LARGE, excluding composite.
+                    if Rooms.get_max_members_by_room_type(room_type) == 0:
+                        continue
 
-                #     for room_size in range(
-                #         1, Rooms.get_max_members_by_room_type(room_type) + 1
-                #     ):
-                #         # Limit the number of events allocated to period p of type room_type
-                #         # with num_members members
+                    for room_size in range(
+                        1, Rooms.get_max_members_by_room_type(room_type) + 1
+                    ):
+                        # Limit the number of events allocated to period p of type room_type
+                        # with num_members members
 
-                #         # For now just constrain number of events to number of rooms available in the period
-                #         # regardless of type
-                #         if room_size == 1:
-                #             # Room type can vary
-                #             # Room size is fixed.
-                #             model.cbLazy(
-                #                 quicksum(
-                #                     YV[e, p]
-                #                     for e in EventsP
-                #                     if e.get_room_type() != const.DUMMY
-                #                     and e.get_num_rooms() == room_size
-                #                     and e.get_room_type() == room_type
-                #                     # in Rooms.get_compatible_room_types(
-                #                     #     e.get_room_type(), e.get_num_rooms()
-                #                     # )
-                #                 )
-                #                 <= Rooms.get_num_compatible_rooms(room_type, room_size)
-                #                 # - quicksum(
-                #                 #     room.get_num_members()
-                #                 #     * Rooms.get_independence_number(
-                #                 #         room.get_type(), room.get_num_members()
-                #                 #     )
-                #                 #     * Y[e, p]
-                #                 #     for e in EventsP
-                #                 #     for room in Rooms
-                #                 #     if room.get_num_members() == e.get_num_rooms()
-                #                 #     and room.get_type()
-                #                 #     in Rooms.get_compatible_room_types(
-                #                 #         e.get_room_type(), e.get_num_rooms()
-                #                 #     )
-                #                 # )
-                #             )
-                #             print(
-                #                 room_type,
-                #                 room_size,
-                #                 Rooms.get_num_compatible_rooms(room_type, room_size),
-                #             )
-                #         else:
-                #             # Room type is fixed
-                #             # Room size is fixed.
-                #             model.cbLazy(
-                #                 quicksum(
-                #                     YV[e, p]
-                #                     for e in Events
-                #                     if e.get_room_type() != const.DUMMY
-                #                     and e.get_num_rooms() == room_size
-                #                     and room_type == e.get_room_type()
-                #                     # in Rooms.get_compatible_room_types(
-                #                     #     e.get_room_type(), e.get_num_rooms()
-                #                     # )
-                #                 )
-                #                 <= Rooms.get_num_compatible_rooms(room_type, room_size)
-                #                 - quicksum(
-                #                     room.get_num_members()
-                #                     * Rooms.get_independence_number(
-                #                         room.get_type(), room.get_num_members()
-                #                     )
-                #                     * YV[e, p]
-                #                     for e in Events
-                #                     for room in Rooms
-                #                     if room.get_num_members() == room_size
-                #                     and room.get_type() == room_type
-                #                 )
-                #             )
-
-                numCuts += 1
+                        # For now just constrain number of events to number of rooms available in the period
+                        # regardless of type
+                        model.cbLazy(
+                            quicksum(
+                                Y[e, p]
+                                for e in Events
+                                if p in PA[e]
+                                if e.get_room_type() != const.DUMMY
+                                and e.get_num_rooms() == room_size
+                                and e.get_room_type() == room_type
+                            )
+                            <= Rooms.get_num_compatible_rooms(room_type, room_size)
+                            - quicksum(
+                                Y[e, p]
+                                * e.get_num_rooms()
+                                * Rooms.get_independence_number(
+                                    e.get_room_type(), e.get_num_rooms()
+                                )
+                                for e in Events
+                                if p in PA[e]
+                                and e.get_num_rooms() > room_size
+                                and e.get_room_type() == room_type
+                            )
+                            - quicksum(
+                                Y[e, p]
+                                for e in Events
+                                if p in PA[e]
+                                and room_size == 1
+                                and e.get_num_rooms() == room_size
+                                and e.get_room_type()
+                                in Rooms.get_compatible_room_types(
+                                    room_type, room_size
+                                )[1:]
+                                # Where the room type is effectively "larger" hence [1:].
+                            )
+                        )
 
                 # Now go solve the master problem again
             else:
                 # BSP is feasible.
-                # print("Feasible subproblem - Period", p)
-                # print("BSP Objective Value:", BSP.ObjVal)
+                # Set X_global so we can access this later during printing
+
+                for e in EventsP:
+                    for r in RA[e]:
+                        if X[e, r].x > 0.9:
+                            X_global[e, p] = r
+
                 # Update the objective function of the master problem
+                # print("Adding optimality cut for period", p, S2V[p], BSP.objVal)
                 model.cbLazy(
                     S2[p]
                     >= BSP.objVal
@@ -1351,6 +1333,12 @@ def solve(instance_name: str) -> None:
                         )
                     )
                 )
+
+            # Add to seem_event_sets
+
+            seem_event_sets[p].add(frozenset(EventsP))
+
+            numCuts += 1
 
     BMP.setParam("OutputFlag", 1)
     BMP.setParam("MIPGap", 0)
@@ -1383,10 +1371,10 @@ def solve(instance_name: str) -> None:
 def main():
     problem_path = os.path.join(".", "Project", "data")
     for filename in os.listdir(problem_path):
-        if filename != "D3-1-16.json":
-            continue
-
         if os.path.isfile(os.path.join(problem_path, filename)):
+            if filename != "D3-1-16.json":
+                continue
+
             solve(filename)
 
             print("\n\n")

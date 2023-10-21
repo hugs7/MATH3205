@@ -25,9 +25,8 @@ class Event:
         if not isinstance(other, Event):
             return False
 
-        return (
-            self.examination == other.examination
-            and self.event_type == other.event_type
+        return self.examination.__eq__(other.examination) and self.event_type.__eq__(
+            other.event_type
         )
 
     def __hash__(self) -> int:
