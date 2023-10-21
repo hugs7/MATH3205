@@ -92,13 +92,13 @@ class Course:
 
     def __init__(self, course_data) -> None:
         # Course name
-        self.course_name = course_data.get(const.COURSE)
+        self.course_name: str = course_data.get(const.COURSE)
 
         # Exam type of course
-        self.exam_type = course_data.get(const.EXAM_TYPE)
+        self.exam_type: str = course_data.get(const.EXAM_TYPE)
 
         # Number of exams the course has
-        self.num_of_exams = course_data.get(const.NUMBER_OF_EXAMS)
+        self.num_of_exams: int = int(course_data.get(const.NUMBER_OF_EXAMS))
 
         # If NUMBER_OF_EXAMS is more than 1, get MINIMUM_DISTANCE_BETWEEN_EXAMS
         self.min_distance_between_exams = None
@@ -113,7 +113,7 @@ class Course:
         )
 
         # Teacher
-        self.teacher = course_data.get(const.TEACHER)
+        self.teacher: str = course_data.get(const.TEACHER)
 
         # For courses which have WRITTEN_AND_ORAL exams, get this data
         if self.is_written_and_oral():

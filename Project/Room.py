@@ -385,7 +385,7 @@ class RoomManager:
 
     def get_compatible_room_types(self, room_type: str, room_size: int) -> List[str]:
         """
-        Given a room type and room size, retrn the list of room types that are compatible
+        Given a room type and room size, return the list of room types that are compatible
         """
 
         if room_size == 1:
@@ -395,6 +395,29 @@ class RoomManager:
                 return [const.MEDIUM, const.LARGE]
             elif room_type == const.LARGE:
                 return [const.LARGE]
+        else:
+            if room_type == const.SMALL:
+                return [const.SMALL]
+            elif room_type == const.MEDIUM:
+                return [const.MEDIUM]
+            elif room_type == const.LARGE:
+                return [const.LARGE]
+
+    def get_inverse_compatible_room_types(
+        self, room_type: str, room_size: int
+    ) -> List[str]:
+        """
+        Given a room type and room size, return the list of room types that are inverse compatible
+        E.g. If room_type is small, return [small], medium return [small, medium], etc
+        """
+
+        if room_size == 1:
+            if room_type == const.SMALL:
+                return [const.SMALL]
+            elif room_type == const.MEDIUM:
+                return [const.SMALL, const.MEDIUM]
+            elif room_type == const.LARGE:
+                return [const.SMALL, const.MEDIUM, const.LARGE]
         else:
             if room_type == const.SMALL:
                 return [const.SMALL]

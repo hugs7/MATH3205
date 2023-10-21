@@ -215,7 +215,10 @@ class Examination:
         """
 
         if isinstance(other, Examination):
-            return self.course == other.course and self.index == other.index
+            from Course import Course
+
+            self.course: Course
+            return self.course.__eq__(other.course) and self.index == other.index
 
         return False
 
