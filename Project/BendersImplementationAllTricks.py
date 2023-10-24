@@ -1350,9 +1350,38 @@ def solve(instance_filename: str) -> None:
 
             numCuts += 1
 
+    # Bender's Master Problem Config
+    
+    # Keep master problem output enabled
     BMP.setParam("OutputFlag", 1)
+
+    # Set Solution MIPGap to 0
     BMP.setParam("MIPGap", 0)
+
+    # Enable Lazy Constraints as we are using a Callback
     BMP.setParam("LazyConstraints", 1)
+    
+    # Set agressive presolve
+    BMP.setParam("Presolve", 2)
+
+    # Limit nodes within system memory (10^9 Bytes)
+    BMP.setParam("NodefileStart", 10)
+
+    # Set node cache path
+    user_dir = "C:\\Users\\Hugo Burton"
+    gurobi_dir = ".gurobi"
+    nodecache_dir = "nodecache"
+    node_cache_path = os.path.join(user_dir, gurobi_dir, nodecache_dir)
+    BMP.setParam("NodefileDir", node_cache_path)
+
+    # Set MIPFocus to prioritise upper bound of objective
+    BMP.setParam("MIPFocus", 3)
+
+    # Memory limit
+    BMP.setParam("SoftMemLimit", 35)
+    BMP.setParam("MemLimit", 40)
+
+    # Solve master problem with Callback
     BMP.optimize(Callback)
 
     # Define Solution object to generate save file
@@ -1402,7 +1431,7 @@ def main():
     problem_path = os.path.join(".", "Project", "data")
     for filename in os.listdir(problem_path):
         if os.path.isfile(os.path.join(problem_path, filename)):
-            if filename != "D3-1-16.json":
+            if filename != "D2-3-18.json":
                 continue
 
             solve(filename)
