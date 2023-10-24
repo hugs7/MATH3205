@@ -937,7 +937,7 @@ def solve(instance_name: str):
                                 e.get_examination().get_index(),
                                 e.get_event_type(),
                                 p.get_ordinal_value(),
-                                r.get_room(),
+                                r.get_room_name(),
                             )
                             print(f"{' '*4} Period {p}: exam {e} in room {r}")
 
