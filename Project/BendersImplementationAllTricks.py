@@ -1082,9 +1082,7 @@ def solve(instance_name: str) -> None:
         e1_course: Course = e1.get_course()
         e2_course: Course = e2.get_course()
 
-        Constraint24[(e1, e2)] = BMP.addConstr(
-            PMinPS[e1, e2] + D_abs[e1, e2] >= primary_primary_distance
-        )
+        Constraint24[(e1, e2)] = BMP.addConstr(PMinPS[e1, e2] + D_abs[e1, e2] >= 1)
 
     print("Constraints defined", time.time())
 
@@ -1149,6 +1147,8 @@ def solve(instance_name: str) -> None:
 
             # Set of events that are assigned to period p (from the master problem)
             EventsP = {e for e in Events if p in PA[e] and YV[e, p] > 0.9}
+            for e in EventsP:
+                X_global[e, p] = None
 
             # Set of events assigned to period p requiring room with type room_type and # members num_rooms
             events_p_by_type_and_size: Dict[Tuple[str, int], List[Event]] = {}
@@ -1163,8 +1163,9 @@ def solve(instance_name: str) -> None:
                         and e.get_num_rooms() == room_size
                     ]
 
+            # Set of single member rooms and other composite rooms with members in common as rc
             OverlappingP = {
-                rc: Rooms.get_overlapping_rooms(rc) & RoomsAvailable[p]
+                rc: Rooms.get_overlapping_rooms(rc) & (RoomsAvailable[p] - {rc})
                 for rc in CompositeRooms
             }
 
@@ -1177,7 +1178,12 @@ def solve(instance_name: str) -> None:
             # Variables in Subproblem
 
             # X = 1 if event e is assigned to period p and room r, 0 else
-            X = {(e, r): BSP.addVar(vtype=GRB.BINARY) for e in EventsP for r in Rooms}
+            X = {
+                (e, r): BSP.addVar(vtype=GRB.BINARY)
+                for e in EventsP
+                for r in RA[e]
+                if r in RoomsAvailable[p]
+            }
 
             # Subproblem objective function
 
@@ -1186,7 +1192,7 @@ def solve(instance_name: str) -> None:
                     X[e, r]
                     for e in EventsP
                     for r in undesired_event_rooms[e]
-                    if r in RA[e]
+                    if r in RA[e] and r in RoomsAvailable[p]
                 ),
                 GRB.MINIMIZE,
             )
@@ -1196,7 +1202,7 @@ def solve(instance_name: str) -> None:
             # Each event assigned to an available period and exactly 1 room.
             AssignedRooms = {
                 e: BSP.addConstr(
-                    quicksum(X[e, r] for r in RA[e] & RoomsAvailable[p]) == 1
+                    quicksum(X[e, r] for r in RA[e] if r in RoomsAvailable[p]) == 1
                 )
                 for e in EventsP
             }
@@ -1254,9 +1260,9 @@ def solve(instance_name: str) -> None:
                 # Add a no good cut to say this exact combination isn't feasible
 
                 # Uncomment to add no good cut
-                # if frozenset(EventsP) in seem_event_sets[p]:
-                #     print("Adding no Good cut", p)
-                #     model.cbLazy(quicksum((1 - Y[e, p]) for e in EventsP) >= 1)
+                if frozenset(EventsP) in seem_event_sets[p]:
+                    print("Adding no Good cut", p)
+                    model.cbLazy(quicksum((1 - Y[e, p]) for e in EventsP) >= 1)
 
                 # Idea of other constraint I had
                 # Feasibility cut is different for each room type.
@@ -1310,10 +1316,19 @@ def solve(instance_name: str) -> None:
             else:
                 # BSP is feasible.
                 # Set X_global so we can access this later during printing
-
+                print(p, EventsP)
                 for e in EventsP:
+                    if e.get_course_name() == "Programming":
+                        print("####################")
+                        print(
+                            p,
+                            e,
+                            [X[e, r].x for r in RA[e] if r in RoomsAvailable[p]],
+                            [r for r in RA[e] if r in RoomsAvailable[p]],
+                        )
+                        print("###")
                     for r in RA[e]:
-                        if X[e, r].x > 0.9:
+                        if r in RoomsAvailable[p] and X[e, r].x > 0.4:
                             X_global[e, p] = r
 
                 # Update the objective function of the master problem
@@ -1355,7 +1370,13 @@ def solve(instance_name: str) -> None:
                 for e in Events:
                     # Ensure we check if p in available periods for event e before accessing Y[e, p]
                     if p in PA[e] and Y[e, p].x > 0.9:
-                        print(f"{' '*4} Period {p}: exam {e}")
+                        # Work out which room event e is assigned to
+                        if e.get_room_type() == const.DUMMY:
+                            room = "DUMMY"
+                        else:
+                            room = X_global[e, p]
+
+                        print(f"{' '*4} Period {p}: exam {e} | in room: {room}")
 
                         # If we know event e is assigned period p, loop over the rooms to find out which one
                         # for r in RA[e]:
@@ -1369,7 +1390,7 @@ def main():
     problem_path = os.path.join(".", "Project", "data")
     for filename in os.listdir(problem_path):
         if os.path.isfile(os.path.join(problem_path, filename)):
-            if filename != "D3-1-16.json":
+            if filename != "toy.json":
                 continue
 
             solve(filename)
