@@ -93,3 +93,7 @@ UD_PRIMARY_SECONDARY = 2
 
 # Benders
 EPS = 0.0001
+
+
+# Gurobi
+BINARY_ONE_BOUND = 0.9

@@ -1146,7 +1146,7 @@ def solve(instance_name: str) -> None:
             # Sets
 
             # Set of events that are assigned to period p (from the master problem)
-            EventsP = {e for e in Events if p in PA[e] and YV[e, p] > 0.9}
+            EventsP = {e for e in Events if p in PA[e] and YV[e, p] > const.BINARY_ONE_BOUND}
             for e in EventsP:
                 X_global[e, p] = None
 
@@ -1250,7 +1250,7 @@ def solve(instance_name: str) -> None:
                     # ensuring to add the number of rooms for composite events.
                     for e in EventsP:
                         # If the event was scheduled in this period
-                        if YV[e, p] > 0.9 and e.get_room_type() == room_type:
+                        if YV[e, p] > const.BINARY_ONE_BOUND and e.get_room_type() == room_type:
                             # Add the number of rooms required by the event.
                             room_allocations[room_type] += e.get_num_rooms()
 
@@ -1316,19 +1316,9 @@ def solve(instance_name: str) -> None:
             else:
                 # BSP is feasible.
                 # Set X_global so we can access this later during printing
-                print(p, EventsP)
                 for e in EventsP:
-                    if e.get_course_name() == "Programming":
-                        print("####################")
-                        print(
-                            p,
-                            e,
-                            [X[e, r].x for r in RA[e] if r in RoomsAvailable[p]],
-                            [r for r in RA[e] if r in RoomsAvailable[p]],
-                        )
-                        print("###")
                     for r in RA[e]:
-                        if r in RoomsAvailable[p] and X[e, r].x > 0.4:
+                        if r in RoomsAvailable[p] and X[e, r].x > const.BINARY_ONE_BOUND:
                             X_global[e, p] = r
 
                 # Update the objective function of the master problem
@@ -1369,7 +1359,7 @@ def solve(instance_name: str) -> None:
                 # print(f"{' '*4}Period ", p)
                 for e in Events:
                     # Ensure we check if p in available periods for event e before accessing Y[e, p]
-                    if p in PA[e] and Y[e, p].x > 0.9:
+                    if p in PA[e] and Y[e, p].x > const.BINARY_ONE_BOUND:
                         # Work out which room event e is assigned to
                         if e.get_room_type() == const.DUMMY:
                             room = "DUMMY"
@@ -1380,7 +1370,7 @@ def solve(instance_name: str) -> None:
 
                         # If we know event e is assigned period p, loop over the rooms to find out which one
                         # for r in RA[e]:
-                        #     if X[e, r].x > 0.9:
+                        #     if X[e, r].x > const.BINARY_ONE_BOUND:
                         #         print(f"{' '*4} Period {p}: exam {e} in in room {r}")
 
     print("------" * 10)
@@ -1390,7 +1380,7 @@ def main():
     problem_path = os.path.join(".", "Project", "data")
     for filename in os.listdir(problem_path):
         if os.path.isfile(os.path.join(problem_path, filename)):
-            if filename != "toy.json":
+            if filename != "D3-1-16.json":
                 continue
 
             solve(filename)
