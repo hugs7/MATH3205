@@ -1375,14 +1375,22 @@ def solve(instance_filename: str) -> None:
     BMP.setParam("NodefileDir", node_cache_path)
 
     # Set MIPFocus to prioritise upper bound of objective
-    BMP.setParam("MIPFocus", 3)
+    BMP.setParam("MIPFocus", 2)
 
     # Memory limit
     BMP.setParam("SoftMemLimit", 35)
     BMP.setParam("MemLimit", 40)
+    
+    # Time Limit
+    BMP.setParam("TimeLimit", 400)
 
     # Solve master problem with Callback
     BMP.optimize(Callback)
+
+    # Check feasibility
+    if BMP.status == GRB.INFEASIBLE:
+        print("#### WARNING: Model is infeasible")
+        return
 
     # Define Solution object to generate save file
     instance_name: str = os.path.splitext(instance_filename)[0]
@@ -1392,7 +1400,7 @@ def solve(instance_filename: str) -> None:
 
     print("----")
     print("\n\nFinal Objective Value:", BMP.ObjVal, "\n\n")
-
+    
     for d in Days:
         print("------" * 10 + "\nDay ", d)
         for p in Periods:
@@ -1403,9 +1411,11 @@ def solve(instance_filename: str) -> None:
                     if p in PA[e] and Y[e, p].x > const.BINARY_ONE_BOUND:
                         # Work out which room event e is assigned to
                         if e.get_room_type() == const.DUMMY:
-                            room = const.DUMMY
+                            room = Rooms.get_dummy_room()
                         else:
                             room = X_global[e, p]
+                            if room is None:
+                                room = Rooms.get_dummy_room()
 
                         # Add event to solution
                         course_name: str = e.get_course_name()
@@ -1424,18 +1434,19 @@ def solve(instance_filename: str) -> None:
     print("------" * 10)
 
     # ------ Save output ------
+    print("Saving...")
     solution.export()
+    print("Saved solution to file")
 
 
 def main():
     problem_path = os.path.join(".", "Project", "data")
     for filename in os.listdir(problem_path):
         if os.path.isfile(os.path.join(problem_path, filename)):
-            if filename != "D2-3-18.json":
-                continue
+            # if filename < "D3-2-17":
+                # continue
 
             solve(filename)
-
             print("\n\n")
 
     print("Done")
