@@ -45,7 +45,7 @@ class Room:
 
         return hash(self.room)
 
-    def get_room(self) -> str:
+    def get_room_name(self) -> str:
         """
         Returns name of room
         """
@@ -167,7 +167,7 @@ class RoomManager:
         """
 
         for room in self.rooms:
-            if room.get_room() == room_name:
+            if room.get_room_name() == room_name:
                 return room
         return None
 
@@ -456,7 +456,7 @@ class RoomManager:
                         if not super_room.is_composite():
                             raise Exception("Error. Composite Room Expected")
 
-                        if room.get_room() in super_room.get_members():
+                        if room.get_room_name() in super_room.get_members():
                             direct_parent_rooms.append(super_room)
 
                     self.room_joining_map[room] = direct_parent_rooms
@@ -469,7 +469,7 @@ class RoomManager:
         joining_rooms: List[Room] = []
 
         for comp_room in self.get_composite_rooms():
-            if room.get_room() in comp_room.get_members():
+            if room.get_room_name() in comp_room.get_members():
                 joining_rooms.append(comp_room)
 
         return joining_rooms
