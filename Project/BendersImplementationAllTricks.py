@@ -18,7 +18,6 @@ from Room import RoomManager, Room
 from Constraint import (
     ConstraintManager,
     EventPeriodConstraint,
-    EventRoomConstraint,
     RoomPeriodConstraint,
 )
 from Course import CourseManager, Course
@@ -26,12 +25,13 @@ from Event import Event
 from Curriculum import CurriculaManager, Curriculum
 from Period import Period
 import Constants as const
+from SolutionExport import Solution
 
 
-def solve(instance_name: str) -> None:
-    print("---------------- Instance: ", instance_name, "----------------")
+def solve(instance_filename: str) -> None:
+    print("---------------- Instance: ", instance_filename, "----------------")
     previous_time = time.time()
-    data_file = os.path.join(".", "Project", "data", instance_name)
+    data_file = os.path.join(".", "Project", "data", instance_filename)
 
     with open(data_file, "r") as json_file:
         json_data = json_file.read()
@@ -897,7 +897,7 @@ def solve(instance_name: str) -> None:
     # Dictionary mapping periods to the set of rooms available (i.e. not forbidden)
     # in that period. Used in BSP
     RoomsAvailable = {
-        p: {r for r in Rooms if not constrManager.is_forbidden(r.get_room(), p)}
+        p: {r for r in Rooms if not constrManager.is_forbidden(r.get_room_name(), p)}
         for p in Periods
     }
 
@@ -1146,7 +1146,9 @@ def solve(instance_name: str) -> None:
             # Sets
 
             # Set of events that are assigned to period p (from the master problem)
-            EventsP = {e for e in Events if p in PA[e] and YV[e, p] > const.BINARY_ONE_BOUND}
+            EventsP = {
+                e for e in Events if p in PA[e] and YV[e, p] > const.BINARY_ONE_BOUND
+            }
             for e in EventsP:
                 X_global[e, p] = None
 
@@ -1250,7 +1252,10 @@ def solve(instance_name: str) -> None:
                     # ensuring to add the number of rooms for composite events.
                     for e in EventsP:
                         # If the event was scheduled in this period
-                        if YV[e, p] > const.BINARY_ONE_BOUND and e.get_room_type() == room_type:
+                        if (
+                            YV[e, p] > const.BINARY_ONE_BOUND
+                            and e.get_room_type() == room_type
+                        ):
                             # Add the number of rooms required by the event.
                             room_allocations[room_type] += e.get_num_rooms()
 
@@ -1318,7 +1323,10 @@ def solve(instance_name: str) -> None:
                 # Set X_global so we can access this later during printing
                 for e in EventsP:
                     for r in RA[e]:
-                        if r in RoomsAvailable[p] and X[e, r].x > const.BINARY_ONE_BOUND:
+                        if (
+                            r in RoomsAvailable[p]
+                            and X[e, r].x > const.BINARY_ONE_BOUND
+                        ):
                             X_global[e, p] = r
 
                 # Update the objective function of the master problem
@@ -1347,6 +1355,10 @@ def solve(instance_name: str) -> None:
     BMP.setParam("LazyConstraints", 1)
     BMP.optimize(Callback)
 
+    # Define Solution object to generate save file
+    instance_name: str = os.path.splitext(instance_filename)[0]
+    solution: Solution = Solution(instance_name, BMP.objVal)
+
     # ------ Print output ------
 
     print("----")
@@ -1362,18 +1374,28 @@ def solve(instance_name: str) -> None:
                     if p in PA[e] and Y[e, p].x > const.BINARY_ONE_BOUND:
                         # Work out which room event e is assigned to
                         if e.get_room_type() == const.DUMMY:
-                            room = "DUMMY"
+                            room = const.DUMMY
                         else:
                             room = X_global[e, p]
 
+                        # Add event to solution
+                        course_name: str = e.get_course_name()
+                        examination: Examination = e.get_examination()
+                        exam_index: int = examination.get_index()
+                        part: str = e.get_event_type()
+                        period_ordinal: int = p.get_ordinal_value()
+                        room_name = room.get_room_name()
+                        solution.add_event(
+                            course_name, exam_index, part, period_ordinal, room_name
+                        )
+
+                        # Print to console
                         print(f"{' '*4} Period {p}: exam {e} | in room: {room}")
 
-                        # If we know event e is assigned period p, loop over the rooms to find out which one
-                        # for r in RA[e]:
-                        #     if X[e, r].x > const.BINARY_ONE_BOUND:
-                        #         print(f"{' '*4} Period {p}: exam {e} in in room {r}")
-
     print("------" * 10)
+
+    # ------ Save output ------
+    solution.export()
 
 
 def main():
