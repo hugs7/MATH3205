@@ -24,7 +24,7 @@ class Room:
         """
 
         if self.is_composite():
-            return f"{self.room} ({self.room_type}) - {self.members}"
+            return f"{self.room} ({self.room_type}, {self.members})"
 
         return f"{self.room} ({self.room_type})"
 
@@ -502,6 +502,7 @@ class RoomManager:
         rooms are overlapping if they cannot both have events scheduled in them
         at the same time.
         """
+
         self.construct_composite_map()
         if rc not in self.composite_map:
             raise Exception(f"Expected a composite room, got {rc}")
