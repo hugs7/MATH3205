@@ -667,12 +667,6 @@ def solve(instance_filename: str) -> None:
     previous_time = time.time()
 
     # ------ Data ------
-    # -- Teachers --
-    teachers = parsed_data[const.TEACHERS]
-
-    # -- Exam Distance --
-    primaryPrimaryDistance = parsed_data[const.PRIMARY_PRIMARY_DISTANCE]
-
     print(f"------\n{const.GUROBI}\n------")
 
     # ------ Define Model ------
@@ -731,6 +725,7 @@ def solve(instance_filename: str) -> None:
 
     print("Variables Defined:", time.time() - previous_time, const.SECONDS)
     previous_time = time.time()
+
     # ------ Constraints ------
 
     # Limits every event to be assigned exactly 1 period
@@ -794,27 +789,6 @@ def solve(instance_filename: str) -> None:
                         and e.get_room_type() == room_type
                     )
                     <= Rooms.get_num_compatible_rooms(room_type, room_size)
-                    #     - quicksum(
-                    #         Y[e, p]
-                    #         * e.get_num_rooms()
-                    #         * Rooms.get_independence_number(
-                    #             e.get_room_type(), e.get_num_rooms()
-                    #         )
-                    #         for e in Events
-                    #         if p in PA[e]
-                    #         and e.get_num_rooms() > room_size
-                    #         and e.get_room_type() == room_type
-                    #     )
-                    #     - quicksum(
-                    #         Y[e, p]
-                    #         for e in Events
-                    #         if p in PA[e]
-                    #         and room_size == 1
-                    #         and e.get_num_rooms() == room_size
-                    #         and e.get_room_type()
-                    #         in Rooms.get_compatible_room_types(room_type, room_size)[1:]
-                    #         # Where the room type is effectively "larger" hence [1:].
-                    #     )
                 )
         # Number of rooms available by size per period
         # This will be handy for callback
