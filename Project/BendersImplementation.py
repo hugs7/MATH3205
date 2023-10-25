@@ -1233,40 +1233,6 @@ while not reachedOptimal:
             reachedOptimal = True
             print("No Cuts Added")
 
-
-# def SolveBSP(p: Period, YV):
-#     """
-#     Solves the subproblem
-#     """
-
-#     global SolvesCalled
-#     SolvesCalled += 1
-
-#     _SolveBSP[p] = BSP.ObjVal
-#     return BSP.ObjVal
-
-
-# def Callback(model, where):
-#     """
-#     Callback is called when the master problem reaches an objective
-#     """
-
-#     if where == GRB.Callback.MIPSOL:
-#         YV = model.cbGetSolution(Y)
-#         YSet = {t for t in YV if YV[t] > 0.9}
-
-#         S2RV = model.cbGetSolution(S2R)
-
-#         TotalObj = 0
-#         CutsAdded = 0
-#         for p in Periods:
-#             for e in Events:
-#                 Obj = SolveBSP(p, YV)
-#                 TotalObj += Obj
-
-#                 if Obj < 0:
-#                     CutsAdded += 1
-
 # ------ Print output ------
 
 # for event in Events:
@@ -1285,10 +1251,5 @@ for d in Days:
             for e in Events:
                 if Y[e, p].x > 0.9:
                     print(f"{' '*4} Period {p}: exam {e}")
-
-                    # If we know event e is assigned period p, loop over the rooms to find out which one
-                    # for r in RA[e]:
-                    #     if X[e, r].x > 0.9:
-                    #         print(f"{' '*4} Period {p}: exam {e} in in room {r}")
 
 print("------" * 10)
