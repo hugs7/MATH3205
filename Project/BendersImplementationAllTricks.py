@@ -728,11 +728,6 @@ def solve(instance_filename: str) -> None:
 
     # ------ Constraints ------
 
-    # Limits every event to be assigned exactly 1 period
-    # OnePeriodPerEvent = {
-    #     e: BMP.addConstr(quicksum(Y[e, p] for p in Periods) == 1) for e in Events
-    # }
-
     # Hard upper limit on the number of events assigned to a period
     # Total number of rooms around campus
     num_rooms: int = len(Rooms.get_single_rooms())
@@ -1083,9 +1078,6 @@ def solve(instance_filename: str) -> None:
     )
 
     # ---- Define Subproblem
-
-    # Dictionary to store subproblem objective valujes (one for each period)
-    # _SolveBSP: Dict[Period, float] = {}
 
     previous_time = time.time()
     print("Defined Gurobi Model:", time.time() - previous_time, const.SECONDS)
