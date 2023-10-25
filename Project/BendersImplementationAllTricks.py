@@ -1448,7 +1448,7 @@ def main():
     problem_path = os.path.join(".", "Project", "data")
     for filename in os.listdir(problem_path):
         if os.path.isfile(os.path.join(problem_path, filename)):
-            if filename != "D3-1-17.json":
+            if filename != "D3-1-16.json":
                 continue
 
             solve(filename)

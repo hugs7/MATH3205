@@ -7,7 +7,7 @@
           "exam": 0,
           "part": "Written",
           "period_ordinal": 0,
-          "room_name": "AB"
+          "room_name": "AC"
         },
         {
           "exam": 1,
@@ -33,7 +33,7 @@
         {
           "exam": 0,
           "part": "Oral",
-          "period_ordinal": 7
+          "period_ordinal": 9
         },
         {
           "exam": 1,
@@ -43,12 +43,31 @@
       ]
     },
     {
-      "Course": "Analytics",
+      "Course": "OpRes",
       "Events": [
         {
           "exam": 0,
+          "part": "Written",
+          "period_ordinal": 12,
+          "room_name": "A"
+        },
+        {
+          "exam": 0,
           "part": "Oral",
-          "period_ordinal": 9
+          "period_ordinal": 13,
+          "room_name": "A"
+        },
+        {
+          "exam": 1,
+          "part": "Written",
+          "period_ordinal": 16,
+          "room_name": "A"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 17,
+          "room_name": "A"
         }
       ]
     },
@@ -58,43 +77,24 @@
         {
           "exam": 0,
           "part": "Written",
-          "period_ordinal": 12,
-          "room_name": "B"
+          "period_ordinal": 14,
+          "room_name": "C"
         },
         {
           "exam": 1,
           "part": "Written",
           "period_ordinal": 19,
-          "room_name": "B"
+          "room_name": "C"
         }
       ]
     },
     {
-      "Course": "OpRes",
+      "Course": "Analytics",
       "Events": [
         {
           "exam": 0,
-          "part": "Written",
-          "period_ordinal": 13,
-          "room_name": "B"
-        },
-        {
-          "exam": 0,
           "part": "Oral",
-          "period_ordinal": 14,
-          "room_name": "B"
-        },
-        {
-          "exam": 1,
-          "part": "Written",
-          "period_ordinal": 17,
-          "room_name": "B"
-        },
-        {
-          "exam": 1,
-          "part": "Oral",
-          "period_ordinal": 18,
-          "room_name": "H"
+          "period_ordinal": 18
         }
       ]
     }
