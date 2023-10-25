@@ -18,7 +18,6 @@ from Room import RoomManager, Room
 from Constraint import (
     ConstraintManager,
     EventPeriodConstraint,
-    EventRoomConstraint,
     RoomPeriodConstraint,
 )
 from Course import CourseManager, Course
@@ -26,12 +25,13 @@ from Event import Event
 from Curriculum import CurriculaManager, Curriculum
 from Period import Period
 import Constants as const
+from SolutionExport import Solution
 
 
-def solve(instance_name: str) -> None:
-    print("---------------- Instance: ", instance_name, "----------------")
+def solve(instance_filename: str) -> None:
+    print("---------------- Instance: ", instance_filename, "----------------")
     previous_time = time.time()
-    data_file = os.path.join(".", "Project", "data", instance_name)
+    data_file = os.path.join(".", "Project", "data", instance_filename)
 
     with open(data_file, "r") as json_file:
         json_data = json_file.read()
@@ -897,7 +897,7 @@ def solve(instance_name: str) -> None:
     # Dictionary mapping periods to the set of rooms available (i.e. not forbidden)
     # in that period. Used in BSP
     RoomsAvailable = {
-        p: {r for r in Rooms if not constrManager.is_forbidden(r.get_room(), p)}
+        p: {r for r in Rooms if not constrManager.is_forbidden(r.get_room_name(), p)}
         for p in Periods
     }
 
@@ -1082,9 +1082,7 @@ def solve(instance_name: str) -> None:
         e1_course: Course = e1.get_course()
         e2_course: Course = e2.get_course()
 
-        Constraint24[(e1, e2)] = BMP.addConstr(
-            PMinPS[e1, e2] + D_abs[e1, e2] >= primary_primary_distance
-        )
+        Constraint24[(e1, e2)] = BMP.addConstr(PMinPS[e1, e2] + D_abs[e1, e2] >= 1)
 
     print("Constraints defined", time.time())
 
@@ -1148,7 +1146,11 @@ def solve(instance_name: str) -> None:
             # Sets
 
             # Set of events that are assigned to period p (from the master problem)
-            EventsP = {e for e in Events if p in PA[e] and YV[e, p] > 0.9}
+            EventsP = {
+                e for e in Events if p in PA[e] and YV[e, p] > const.BINARY_ONE_BOUND
+            }
+            for e in EventsP:
+                X_global[e, p] = None
 
             # Set of events assigned to period p requiring room with type room_type and # members num_rooms
             events_p_by_type_and_size: Dict[Tuple[str, int], List[Event]] = {}
@@ -1163,8 +1165,9 @@ def solve(instance_name: str) -> None:
                         and e.get_num_rooms() == room_size
                     ]
 
+            # Set of single member rooms and other composite rooms with members in common as rc
             OverlappingP = {
-                rc: Rooms.get_overlapping_rooms(rc) & RoomsAvailable[p]
+                rc: Rooms.get_overlapping_rooms(rc) & (RoomsAvailable[p] - {rc})
                 for rc in CompositeRooms
             }
 
@@ -1177,7 +1180,12 @@ def solve(instance_name: str) -> None:
             # Variables in Subproblem
 
             # X = 1 if event e is assigned to period p and room r, 0 else
-            X = {(e, r): BSP.addVar(vtype=GRB.BINARY) for e in EventsP for r in Rooms}
+            X = {
+                (e, r): BSP.addVar(vtype=GRB.BINARY)
+                for e in EventsP
+                for r in RA[e]
+                if r in RoomsAvailable[p]
+            }
 
             # Subproblem objective function
 
@@ -1186,7 +1194,7 @@ def solve(instance_name: str) -> None:
                     X[e, r]
                     for e in EventsP
                     for r in undesired_event_rooms[e]
-                    if r in RA[e]
+                    if r in RA[e] and r in RoomsAvailable[p]
                 ),
                 GRB.MINIMIZE,
             )
@@ -1196,7 +1204,7 @@ def solve(instance_name: str) -> None:
             # Each event assigned to an available period and exactly 1 room.
             AssignedRooms = {
                 e: BSP.addConstr(
-                    quicksum(X[e, r] for r in RA[e] & RoomsAvailable[p]) == 1
+                    quicksum(X[e, r] for r in RA[e] if r in RoomsAvailable[p]) == 1
                 )
                 for e in EventsP
             }
@@ -1244,7 +1252,10 @@ def solve(instance_name: str) -> None:
                     # ensuring to add the number of rooms for composite events.
                     for e in EventsP:
                         # If the event was scheduled in this period
-                        if YV[e, p] > 0.9 and e.get_room_type() == room_type:
+                        if (
+                            YV[e, p] > const.BINARY_ONE_BOUND
+                            and e.get_room_type() == room_type
+                        ):
                             # Add the number of rooms required by the event.
                             room_allocations[room_type] += e.get_num_rooms()
 
@@ -1254,9 +1265,9 @@ def solve(instance_name: str) -> None:
                 # Add a no good cut to say this exact combination isn't feasible
 
                 # Uncomment to add no good cut
-                # if frozenset(EventsP) in seem_event_sets[p]:
-                #     print("Adding no Good cut", p)
-                #     model.cbLazy(quicksum((1 - Y[e, p]) for e in EventsP) >= 1)
+                if frozenset(EventsP) in seem_event_sets[p]:
+                    print("Adding no Good cut", p)
+                    model.cbLazy(quicksum((1 - Y[e, p]) for e in EventsP) >= 1)
 
                 # Idea of other constraint I had
                 # Feasibility cut is different for each room type.
@@ -1310,10 +1321,12 @@ def solve(instance_name: str) -> None:
             else:
                 # BSP is feasible.
                 # Set X_global so we can access this later during printing
-
                 for e in EventsP:
                     for r in RA[e]:
-                        if X[e, r].x > 0.9:
+                        if (
+                            r in RoomsAvailable[p]
+                            and X[e, r].x > const.BINARY_ONE_BOUND
+                        ):
                             X_global[e, p] = r
 
                 # Update the objective function of the master problem
@@ -1337,16 +1350,57 @@ def solve(instance_name: str) -> None:
 
             numCuts += 1
 
+    # Bender's Master Problem Config
+    
+    # Keep master problem output enabled
     BMP.setParam("OutputFlag", 1)
+
+    # Set Solution MIPGap to 0
     BMP.setParam("MIPGap", 0)
+
+    # Enable Lazy Constraints as we are using a Callback
     BMP.setParam("LazyConstraints", 1)
+    
+    # Set agressive presolve
+    BMP.setParam("Presolve", 2)
+
+    # Limit nodes within system memory (10^9 Bytes)
+    BMP.setParam("NodefileStart", 10)
+
+    # Set node cache path
+    user_dir = "C:\\Users\\Hugo Burton"
+    gurobi_dir = ".gurobi"
+    nodecache_dir = "nodecache"
+    node_cache_path = os.path.join(user_dir, gurobi_dir, nodecache_dir)
+    BMP.setParam("NodefileDir", node_cache_path)
+
+    # Set MIPFocus to prioritise upper bound of objective
+    BMP.setParam("MIPFocus", 2)
+
+    # Memory limit
+    BMP.setParam("SoftMemLimit", 35)
+    BMP.setParam("MemLimit", 40)
+    
+    # Time Limit
+    BMP.setParam("TimeLimit", 400)
+
+    # Solve master problem with Callback
     BMP.optimize(Callback)
+
+    # Check feasibility
+    if BMP.status == GRB.INFEASIBLE:
+        print("#### WARNING: Model is infeasible")
+        return
+
+    # Define Solution object to generate save file
+    instance_name: str = os.path.splitext(instance_filename)[0]
+    solution: Solution = Solution(instance_name, BMP.objVal)
 
     # ------ Print output ------
 
     print("----")
     print("\n\nFinal Objective Value:", BMP.ObjVal, "\n\n")
-
+    
     for d in Days:
         print("------" * 10 + "\nDay ", d)
         for p in Periods:
@@ -1354,26 +1408,45 @@ def solve(instance_name: str) -> None:
                 # print(f"{' '*4}Period ", p)
                 for e in Events:
                     # Ensure we check if p in available periods for event e before accessing Y[e, p]
-                    if p in PA[e] and Y[e, p].x > 0.9:
-                        print(f"{' '*4} Period {p}: exam {e}")
+                    if p in PA[e] and Y[e, p].x > const.BINARY_ONE_BOUND:
+                        # Work out which room event e is assigned to
+                        if e.get_room_type() == const.DUMMY:
+                            room = Rooms.get_dummy_room()
+                        else:
+                            room = X_global[e, p]
+                            if room is None:
+                                room = Rooms.get_dummy_room()
 
-                        # If we know event e is assigned period p, loop over the rooms to find out which one
-                        # for r in RA[e]:
-                        #     if X[e, r].x > 0.9:
-                        #         print(f"{' '*4} Period {p}: exam {e} in in room {r}")
+                        # Add event to solution
+                        course_name: str = e.get_course_name()
+                        examination: Examination = e.get_examination()
+                        exam_index: int = examination.get_index()
+                        part: str = e.get_event_type()
+                        period_ordinal: int = p.get_ordinal_value()
+                        room_name = room.get_room_name()
+                        solution.add_event(
+                            course_name, exam_index, part, period_ordinal, room_name
+                        )
+
+                        # Print to console
+                        print(f"{' '*4} Period {p}: exam {e} | in room: {room}")
 
     print("------" * 10)
+
+    # ------ Save output ------
+    print("Saving...")
+    solution.export()
+    print("Saved solution to file")
 
 
 def main():
     problem_path = os.path.join(".", "Project", "data")
     for filename in os.listdir(problem_path):
         if os.path.isfile(os.path.join(problem_path, filename)):
-            if filename != "D3-1-16.json":
-                continue
+            # if filename < "D3-2-17":
+                # continue
 
             solve(filename)
-
             print("\n\n")
 
     print("Done")
