@@ -1333,11 +1333,11 @@ def solve(instance_filename: str) -> None:
     BMP.setParam("MIPFocus", 2)
 
     # Memory limit
-    BMP.setParam("SoftMemLimit", 35)
-    BMP.setParam("MemLimit", 40)
+    BMP.setParam("SoftMemLimit", 60)
+    # BMP.setParam("MemLimit", 40)
 
     # Time Limit
-    BMP.setParam("TimeLimit", 400)
+    BMP.setParam("TimeLimit", 60 * 30)
 
     # Solve master problem with Callback
     BMP.optimize(Callback)
@@ -1396,15 +1396,20 @@ def solve(instance_filename: str) -> None:
 
 def main():
     problem_path = os.path.join(".", "Project", "data")
+    skipped = []
     for filename in os.listdir(problem_path):
         if os.path.isfile(os.path.join(problem_path, filename)):
-            if filename != "D3-1-16.json":
-                continue
+            try:
+                solve(filename)
+            except Exception as e:
+                print("Exception occurred:", e)
+                skipped.append(filename)
+                print("Continuing to next problem set")
 
-            solve(filename)
             print("\n\n")
 
     print("Done")
+    print("Encountered", len(skipped), "errors with the following files:", skipped)
 
 
 if __name__ == "__main__":
