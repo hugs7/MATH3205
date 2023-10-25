@@ -157,13 +157,13 @@ class EventRoomConstraint(Constraint):
         self.part = constraint_data.get(const.PART)
         self.exam_ordinal = constraint_data.get(const.EXAM)
 
-
     def get_course_name(self) -> str:
         """
         Get the 'Course' attribute.
         Returns:
             Optional[str]: The 'Course' value or None if it doesn't exist.
         """
+
         return self.course_name
 
     def get_room_name(self) -> str:
@@ -172,6 +172,7 @@ class EventRoomConstraint(Constraint):
         Returns:
             str: The 'Room' name
         """
+
         return self.room
 
     # Getter method for 'Part' attribute
@@ -181,7 +182,17 @@ class EventRoomConstraint(Constraint):
         Returns:
             str The 'Part' value. This is like the event the constraint refers to
         """
+
         return self.part
+
+    def get_exam_ordinal(self) -> int:
+        """
+        Get the 'Exam' attribute.
+        Returns:
+            Optional[str]: The 'Exam' value or None if it doesn't exist.
+        """
+
+        return self.exam_ordinal
 
 
 class PeriodConstraint(Constraint):
