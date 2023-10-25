@@ -1,7 +1,7 @@
 {
   "Assignments": [
     {
-      "Course": "1458",
+      "Course": "1437",
       "Events": [
         {
           "exam": 0,
@@ -11,7 +11,27 @@
       ]
     },
     {
-      "Course": "1437",
+      "Course": "1450",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 0
+        }
+      ]
+    },
+    {
+      "Course": "1444",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 0
+        }
+      ]
+    },
+    {
+      "Course": "1429",
       "Events": [
         {
           "exam": 0,
@@ -31,52 +51,12 @@
         {
           "exam": 0,
           "part": "Oral",
-          "period_ordinal": 24
+          "period_ordinal": 16
         }
       ]
     },
     {
-      "Course": "1478",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 0
-        }
-      ]
-    },
-    {
-      "Course": "1434",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 0
-        }
-      ]
-    },
-    {
-      "Course": "1447",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 0
-        }
-      ]
-    },
-    {
-      "Course": "1423",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 0
-        }
-      ]
-    },
-    {
-      "Course": "1430",
+      "Course": "1440",
       "Events": [
         {
           "exam": 0,
@@ -86,22 +66,32 @@
       ]
     },
     {
-      "Course": "1457",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 1
-        }
-      ]
-    },
-    {
-      "Course": "1420",
+      "Course": "1441",
       "Events": [
         {
           "exam": 0,
           "part": "Written",
           "period_ordinal": 2
+        }
+      ]
+    },
+    {
+      "Course": "1468",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 2
+        }
+      ]
+    },
+    {
+      "Course": "1422",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 3
         }
       ]
     },
@@ -116,107 +106,7 @@
         {
           "exam": 0,
           "part": "Oral",
-          "period_ordinal": 24
-        }
-      ]
-    },
-    {
-      "Course": "1431",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 6
-        }
-      ]
-    },
-    {
-      "Course": "1428",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 6
-        }
-      ]
-    },
-    {
-      "Course": "1440",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 6
-        }
-      ]
-    },
-    {
-      "Course": "1441",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 7
-        }
-      ]
-    },
-    {
-      "Course": "1418",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 12
-        }
-      ]
-    },
-    {
-      "Course": "1419",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 14
-        }
-      ]
-    },
-    {
-      "Course": "1425",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 15
-        }
-      ]
-    },
-    {
-      "Course": "1598",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 16
-        }
-      ]
-    },
-    {
-      "Course": "1471",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 21
-        }
-      ]
-    },
-    {
-      "Course": "1422",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 21
+          "period_ordinal": 26
         }
       ]
     },
@@ -226,162 +116,7 @@
         {
           "exam": 0,
           "part": "Written",
-          "period_ordinal": 24
-        }
-      ]
-    },
-    {
-      "Course": "1424",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 26
-        }
-      ]
-    },
-    {
-      "Course": "1466",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 27
-        }
-      ]
-    },
-    {
-      "Course": "1472",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 29
-        }
-      ]
-    },
-    {
-      "Course": "1460",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 42
-        }
-      ]
-    },
-    {
-      "Course": "1450",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 42
-        }
-      ]
-    },
-    {
-      "Course": "1436",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 43
-        }
-      ]
-    },
-    {
-      "Course": "1597",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 50
-        }
-      ]
-    },
-    {
-      "Course": "1463",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 52
-        }
-      ]
-    },
-    {
-      "Course": "1444",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 53
-        }
-      ]
-    },
-    {
-      "Course": "1453",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 59
-        }
-      ]
-    },
-    {
-      "Course": "1476-1477",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 60
-        },
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 69
-        }
-      ]
-    },
-    {
-      "Course": "1417",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 63
-        }
-      ]
-    },
-    {
-      "Course": "1445",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 71
-        }
-      ]
-    },
-    {
-      "Course": "1449",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 84
-        }
-      ]
-    },
-    {
-      "Course": "1473",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 92
+          "period_ordinal": 4
         }
       ]
     },
@@ -391,112 +126,37 @@
         {
           "exam": 0,
           "part": "Oral",
-          "period_ordinal": 94
+          "period_ordinal": 4
         }
       ]
     },
     {
-      "Course": "1429",
+      "Course": "1417",
       "Events": [
         {
           "exam": 0,
           "part": "Written",
-          "period_ordinal": 98
+          "period_ordinal": 7
         }
       ]
     },
     {
-      "Course": "1468",
+      "Course": "1478",
       "Events": [
         {
           "exam": 0,
           "part": "Written",
-          "period_ordinal": 100
+          "period_ordinal": 8
         }
       ]
     },
     {
-      "Course": "1448",
+      "Course": "1425",
       "Events": [
         {
           "exam": 0,
           "part": "Written",
-          "period_ordinal": 102
-        }
-      ]
-    },
-    {
-      "Course": "1462",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 102
-        }
-      ]
-    },
-    {
-      "Course": "1451",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 104
-        }
-      ]
-    },
-    {
-      "Course": "1459",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 110
-        }
-      ]
-    },
-    {
-      "Course": "1452",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 113
-        }
-      ]
-    },
-    {
-      "Course": "1474",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 126
-        }
-      ]
-    },
-    {
-      "Course": "1432-1433",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 135
-        },
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 141
-        }
-      ]
-    },
-    {
-      "Course": "1454",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 135
+          "period_ordinal": 11
         }
       ]
     },
@@ -506,12 +166,42 @@
         {
           "exam": 0,
           "part": "Written",
-          "period_ordinal": 137
+          "period_ordinal": 12
         },
         {
           "exam": 0,
           "part": "Oral",
-          "period_ordinal": 143
+          "period_ordinal": 18
+        }
+      ]
+    },
+    {
+      "Course": "1428",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 14
+        }
+      ]
+    },
+    {
+      "Course": "1423",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 17
+        }
+      ]
+    },
+    {
+      "Course": "1436",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 18
         }
       ]
     },
@@ -521,57 +211,37 @@
         {
           "exam": 0,
           "part": "Written",
-          "period_ordinal": 142
+          "period_ordinal": 19
         }
       ]
     },
     {
-      "Course": "1446",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 149
-        }
-      ]
-    },
-    {
-      "Course": "1456",
+      "Course": "1597",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
-          "period_ordinal": 154
+          "period_ordinal": 23
         }
       ]
     },
     {
-      "Course": "1439",
+      "Course": "1419",
       "Events": [
         {
           "exam": 0,
-          "part": "Written",
-          "period_ordinal": 154
+          "part": "Oral",
+          "period_ordinal": 24
         }
       ]
     },
     {
-      "Course": "1461",
+      "Course": "1453",
       "Events": [
         {
           "exam": 0,
           "part": "Written",
-          "period_ordinal": 155
-        }
-      ]
-    },
-    {
-      "Course": "1467",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 155
+          "period_ordinal": 29
         }
       ]
     },
@@ -581,7 +251,117 @@
         {
           "exam": 0,
           "part": "Written",
-          "period_ordinal": 155
+          "period_ordinal": 29
+        }
+      ]
+    },
+    {
+      "Course": "1445",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 29
+        }
+      ]
+    },
+    {
+      "Course": "1459",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 46
+        }
+      ]
+    },
+    {
+      "Course": "1467",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 51
+        }
+      ]
+    },
+    {
+      "Course": "1418",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 58
+        }
+      ]
+    },
+    {
+      "Course": "1460",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 59
+        }
+      ]
+    },
+    {
+      "Course": "1452",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 59
+        }
+      ]
+    },
+    {
+      "Course": "1451",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 61
+        }
+      ]
+    },
+    {
+      "Course": "1472",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 62
+        }
+      ]
+    },
+    {
+      "Course": "1461",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 63
+        }
+      ]
+    },
+    {
+      "Course": "1448",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 65
+        }
+      ]
+    },
+    {
+      "Course": "1466",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 86
         }
       ]
     },
@@ -591,10 +371,230 @@
         {
           "exam": 0,
           "part": "Written",
+          "period_ordinal": 89
+        }
+      ]
+    },
+    {
+      "Course": "1463",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 93
+        }
+      ]
+    },
+    {
+      "Course": "1474",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 94
+        }
+      ]
+    },
+    {
+      "Course": "1454",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 95
+        }
+      ]
+    },
+    {
+      "Course": "1439",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 95
+        }
+      ]
+    },
+    {
+      "Course": "1424",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 96
+        }
+      ]
+    },
+    {
+      "Course": "1430",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 112
+        }
+      ]
+    },
+    {
+      "Course": "1447",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 113
+        }
+      ]
+    },
+    {
+      "Course": "1449",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 113
+        }
+      ]
+    },
+    {
+      "Course": "1458",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 126
+        }
+      ]
+    },
+    {
+      "Course": "1476-1477",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 126
+        },
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 142
+        }
+      ]
+    },
+    {
+      "Course": "1598",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 129
+        }
+      ]
+    },
+    {
+      "Course": "1431",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 133
+        }
+      ]
+    },
+    {
+      "Course": "1462",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 135
+        }
+      ]
+    },
+    {
+      "Course": "1432-1433",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 137
+        },
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 144
+        }
+      ]
+    },
+    {
+      "Course": "1457",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 138
+        }
+      ]
+    },
+    {
+      "Course": "1420",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 151
+        }
+      ]
+    },
+    {
+      "Course": "1434",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 153
+        }
+      ]
+    },
+    {
+      "Course": "1471",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 154
+        }
+      ]
+    },
+    {
+      "Course": "1473",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 155
+        }
+      ]
+    },
+    {
+      "Course": "1446",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 155
+        }
+      ]
+    },
+    {
+      "Course": "1456",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
           "period_ordinal": 155
         }
       ]
     }
   ],
-  "Cost": 940
+  "Cost": 824
 }

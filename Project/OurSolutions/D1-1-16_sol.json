@@ -1,112 +1,24 @@
 {
   "Assignments": [
     {
-      "Course": "2586",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 0,
-          "room_name": "559"
-        }
-      ]
-    },
-    {
-      "Course": "2425",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 0,
-          "room_name": "344"
-        }
-      ]
-    },
-    {
-      "Course": "2606",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 0,
-          "room_name": "291"
-        }
-      ]
-    },
-    {
-      "Course": "2538",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 0,
-          "room_name": "436"
-        }
-      ]
-    },
-    {
       "Course": "2555",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 0,
-          "room_name": "292"
+          "room_name": "435"
         }
       ]
     },
     {
-      "Course": "2694",
+      "Course": "2466",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 0,
-          "room_name": "328"
-        }
-      ]
-    },
-    {
-      "Course": "2473",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 0,
-          "room_name": "289"
-        }
-      ]
-    },
-    {
-      "Course": "2605",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 0,
-          "room_name": "333"
-        }
-      ]
-    },
-    {
-      "Course": "2692",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 0,
-          "room_name": "290"
-        }
-      ]
-    },
-    {
-      "Course": "2603",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 0,
-          "room_name": "341"
+          "room_name": "437"
         }
       ]
     },
@@ -117,78 +29,45 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 0,
-          "room_name": "307"
+          "room_name": "438"
         }
       ]
     },
     {
-      "Course": "2458",
+      "Course": "2493",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 0,
-          "room_name": "294"
+          "room_name": "385"
         }
       ]
     },
     {
-      "Course": "2505",
+      "Course": "2606",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 0,
-          "room_name": "437"
+          "room_name": "305"
         }
       ]
     },
     {
-      "Course": "2472",
+      "Course": "2583",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 0,
-          "room_name": "555"
+          "room_name": "341"
         }
       ]
     },
     {
-      "Course": "2438",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 0,
-          "room_name": "296"
-        }
-      ]
-    },
-    {
-      "Course": "2625",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 0,
-          "room_name": "304"
-        }
-      ]
-    },
-    {
-      "Course": "2582",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Written",
-          "period_ordinal": 0,
-          "room_name": "295"
-        }
-      ]
-    },
-    {
-      "Course": "2467",
+      "Course": "2473",
       "Events": [
         {
           "exam": 0,
@@ -199,13 +78,24 @@
       ]
     },
     {
-      "Course": "2616",
+      "Course": "2605",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 0,
-          "room_name": "336"
+          "room_name": "329"
+        }
+      ]
+    },
+    {
+      "Course": "2426",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 0,
+          "room_name": "294"
         }
       ]
     },
@@ -216,18 +106,117 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 0,
-          "room_name": "298"
+          "room_name": "442"
         }
       ]
     },
     {
-      "Course": "2501",
+      "Course": "2603",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 0,
-          "room_name": "438"
+          "room_name": "443"
+        }
+      ]
+    },
+    {
+      "Course": "2652",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 0,
+          "room_name": "340"
+        }
+      ]
+    },
+    {
+      "Course": "2486",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 0,
+          "room_name": "440"
+        }
+      ]
+    },
+    {
+      "Course": "2692",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 0,
+          "room_name": "289"
+        }
+      ]
+    },
+    {
+      "Course": "2438",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 0,
+          "room_name": "436"
+        }
+      ]
+    },
+    {
+      "Course": "2472",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 0,
+          "room_name": "342"
+        }
+      ]
+    },
+    {
+      "Course": "2538",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 0,
+          "room_name": "296"
+        }
+      ]
+    },
+    {
+      "Course": "2616",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 0,
+          "room_name": "333"
+        }
+      ]
+    },
+    {
+      "Course": "2450",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 0,
+          "room_name": "298"
+        }
+      ]
+    },
+    {
+      "Course": "2505",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 0,
+          "room_name": "291"
         }
       ]
     },
@@ -238,61 +227,18 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 1,
-          "room_name": "294"
-        }
-      ]
-    },
-    {
-      "Course": "2646",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 1
-        }
-      ]
-    },
-    {
-      "Course": "2486",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 2,
-          "room_name": "300"
-        }
-      ]
-    },
-    {
-      "Course": "2532",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 2,
-          "room_name": "299"
-        }
-      ]
-    },
-    {
-      "Course": "2707",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 2,
-          "room_name": "328"
-        }
-      ]
-    },
-    {
-      "Course": "2652",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 2,
           "room_name": "296"
+        }
+      ]
+    },
+    {
+      "Course": "2668",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 1,
+          "room_name": "300"
         }
       ]
     },
@@ -303,7 +249,18 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 2,
-          "room_name": "294"
+          "room_name": "299"
+        }
+      ]
+    },
+    {
+      "Course": "2672",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 2,
+          "room_name": "440"
         }
       ]
     },
@@ -314,18 +271,29 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 2,
-          "room_name": "295"
+          "room_name": "296"
         }
       ]
     },
     {
-      "Course": "2476",
+      "Course": "2414",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 2,
+          "room_name": "289"
+        }
+      ]
+    },
+    {
+      "Course": "2638",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 3,
-          "room_name": "294"
+          "room_name": "296"
         }
       ]
     },
@@ -336,183 +304,7 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 4,
-          "room_name": "291"
-        }
-      ]
-    },
-    {
-      "Course": "2545",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 4,
-          "room_name": "438"
-        }
-      ]
-    },
-    {
-      "Course": "2516",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 4,
-          "room_name": "293"
-        }
-      ]
-    },
-    {
-      "Course": "2644",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 4,
-          "room_name": "435"
-        }
-      ]
-    },
-    {
-      "Course": "2509",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 4,
-          "room_name": "328"
-        }
-      ]
-    },
-    {
-      "Course": "2542",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 4,
-          "room_name": "296"
-        }
-      ]
-    },
-    {
-      "Course": "2453",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 4,
-          "room_name": "298"
-        }
-      ]
-    },
-    {
-      "Course": "2515",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 4,
-          "room_name": "290"
-        }
-      ]
-    },
-    {
-      "Course": "2463",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 4,
-          "room_name": "300"
-        }
-      ]
-    },
-    {
-      "Course": "2462",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 4,
-          "room_name": "302"
-        }
-      ]
-    },
-    {
-      "Course": "2681",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 4,
-          "room_name": "342"
-        }
-      ]
-    },
-    {
-      "Course": "2657",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 4,
-          "room_name": "436"
-        }
-      ]
-    },
-    {
-      "Course": "2461",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 4,
-          "room_name": "299"
-        }
-      ]
-    },
-    {
-      "Course": "2423",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 4,
-          "room_name": "303"
-        }
-      ]
-    },
-    {
-      "Course": "2629",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 4,
-          "room_name": "337"
-        }
-      ]
-    },
-    {
-      "Course": "2669",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 4,
-          "room_name": "558"
-        }
-      ]
-    },
-    {
-      "Course": "2419",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 4,
-          "room_name": "340"
+          "room_name": "440"
         }
       ]
     },
@@ -523,12 +315,77 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 4,
-          "room_name": "289"
+          "room_name": "291"
         }
       ]
     },
     {
-      "Course": "2448",
+      "Course": "2542",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 4,
+          "room_name": "442"
+        }
+      ]
+    },
+    {
+      "Course": "2423",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 4,
+          "room_name": "302"
+        }
+      ]
+    },
+    {
+      "Course": "2515",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 4,
+          "room_name": "292"
+        }
+      ]
+    },
+    {
+      "Course": "2629",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 4,
+          "room_name": "439"
+        }
+      ]
+    },
+    {
+      "Course": "2647",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 4
+        }
+      ]
+    },
+    {
+      "Course": "2418",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 4,
+          "room_name": "299"
+        }
+      ]
+    },
+    {
+      "Course": "2604",
       "Events": [
         {
           "exam": 0,
@@ -539,7 +396,62 @@
       ]
     },
     {
-      "Course": "2598",
+      "Course": "2644",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 4,
+          "room_name": "306"
+        }
+      ]
+    },
+    {
+      "Course": "2673",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 4,
+          "room_name": "301"
+        }
+      ]
+    },
+    {
+      "Course": "2461",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 4,
+          "room_name": "289"
+        }
+      ]
+    },
+    {
+      "Course": "2543",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 4,
+          "room_name": "290"
+        }
+      ]
+    },
+    {
+      "Course": "2453",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 4,
+          "room_name": "293"
+        }
+      ]
+    },
+    {
+      "Course": "2516",
       "Events": [
         {
           "exam": 0,
@@ -556,7 +468,51 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 4,
-          "room_name": "295"
+          "room_name": "296"
+        }
+      ]
+    },
+    {
+      "Course": "2598",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 4,
+          "room_name": "298"
+        }
+      ]
+    },
+    {
+      "Course": "2462",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 4,
+          "room_name": "304"
+        }
+      ]
+    },
+    {
+      "Course": "2509",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 4,
+          "room_name": "387"
+        }
+      ]
+    },
+    {
+      "Course": "2463",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 4,
+          "room_name": "342"
         }
       ]
     },
@@ -567,7 +523,40 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 5,
-          "room_name": "294"
+          "room_name": "293"
+        }
+      ]
+    },
+    {
+      "Course": "2587",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 5,
+          "room_name": "306"
+        }
+      ]
+    },
+    {
+      "Course": "2679",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 5,
+          "room_name": "342"
+        }
+      ]
+    },
+    {
+      "Course": "2507",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 5,
+          "room_name": "440"
         }
       ]
     },
@@ -583,35 +572,100 @@
       ]
     },
     {
-      "Course": "2507",
+      "Course": "2564",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
-          "period_ordinal": 5,
-          "room_name": "296"
+          "period_ordinal": 10,
+          "room_name": "302"
         }
       ]
     },
     {
-      "Course": "2585",
+      "Course": "2631",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
-          "period_ordinal": 5,
-          "room_name": "327"
+          "period_ordinal": 10,
+          "room_name": "298"
         }
       ]
     },
     {
-      "Course": "2549",
+      "Course": "2451",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
-          "period_ordinal": 5,
-          "room_name": "303"
+          "period_ordinal": 10,
+          "room_name": "304"
+        }
+      ]
+    },
+    {
+      "Course": "2457",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 10,
+          "room_name": "293"
+        }
+      ]
+    },
+    {
+      "Course": "2646",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 10
+        }
+      ]
+    },
+    {
+      "Course": "2436",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 10,
+          "room_name": "307"
+        }
+      ]
+    },
+    {
+      "Course": "2492",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 10,
+          "room_name": "289"
+        }
+      ]
+    },
+    {
+      "Course": "2634",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 10,
+          "room_name": "558"
+        }
+      ]
+    },
+    {
+      "Course": "2560",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 10,
+          "room_name": "300"
         }
       ]
     },
@@ -627,24 +681,35 @@
       ]
     },
     {
-      "Course": "2691",
+      "Course": "2702",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 10,
-          "room_name": "555"
+          "room_name": "305"
         }
       ]
     },
     {
-      "Course": "2564",
+      "Course": "2655",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 10,
-          "room_name": "342"
+          "room_name": "343"
+        }
+      ]
+    },
+    {
+      "Course": "2424",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 10,
+          "room_name": "290"
         }
       ]
     },
@@ -655,23 +720,12 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 10,
-          "room_name": "289"
+          "room_name": "296"
         }
       ]
     },
     {
-      "Course": "2704",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 10,
-          "room_name": "298"
-        }
-      ]
-    },
-    {
-      "Course": "2624",
+      "Course": "2442",
       "Events": [
         {
           "exam": 0,
@@ -688,117 +742,7 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 10,
-          "room_name": "436"
-        }
-      ]
-    },
-    {
-      "Course": "2436",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 10,
-          "room_name": "439"
-        }
-      ]
-    },
-    {
-      "Course": "2631",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 10,
-          "room_name": "382"
-        }
-      ]
-    },
-    {
-      "Course": "2702",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 10,
-          "room_name": "440"
-        }
-      ]
-    },
-    {
-      "Course": "2492",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 10,
-          "room_name": "293"
-        }
-      ]
-    },
-    {
-      "Course": "2451",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 10,
-          "room_name": "442"
-        }
-      ]
-    },
-    {
-      "Course": "2424",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 10,
-          "room_name": "299"
-        }
-      ]
-    },
-    {
-      "Course": "2441",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 10,
-          "room_name": "290"
-        }
-      ]
-    },
-    {
-      "Course": "2655",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 10,
-          "room_name": "329"
-        }
-      ]
-    },
-    {
-      "Course": "2560",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 10,
-          "room_name": "302"
-        }
-      ]
-    },
-    {
-      "Course": "2634",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 10,
-          "room_name": "303"
+          "room_name": "291"
         }
       ]
     },
@@ -809,29 +753,40 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 10,
-          "room_name": "307"
+          "room_name": "306"
         }
       ]
     },
     {
-      "Course": "2456",
+      "Course": "2624",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 10,
-          "room_name": "291"
+          "room_name": "438"
         }
       ]
     },
     {
-      "Course": "2479",
+      "Course": "2704",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
+          "period_ordinal": 10,
+          "room_name": "292"
+        }
+      ]
+    },
+    {
+      "Course": "2582",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
           "period_ordinal": 11,
-          "room_name": "555"
+          "room_name": "307"
         }
       ]
     },
@@ -842,17 +797,105 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 11,
-          "room_name": "436"
+          "room_name": "289"
         }
       ]
     },
     {
-      "Course": "2466",
+      "Course": "2471",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 11,
+          "room_name": "299"
+        }
+      ]
+    },
+    {
+      "Course": "2454",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 12,
+          "room_name": "294"
+        }
+      ]
+    },
+    {
+      "Course": "2527",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 12,
+          "room_name": "291"
+        }
+      ]
+    },
+    {
+      "Course": "2517",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 12,
+          "room_name": "306"
+        }
+      ]
+    },
+    {
+      "Course": "2639",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 12,
+          "room_name": "298"
+        }
+      ]
+    },
+    {
+      "Course": "2665",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 12,
+          "room_name": "342"
+        }
+      ]
+    },
+    {
+      "Course": "2565",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 12,
+          "room_name": "293"
+        }
+      ]
+    },
+    {
+      "Course": "2531",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 12,
+          "room_name": "440"
+        }
+      ]
+    },
+    {
+      "Course": "2528",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 12,
           "room_name": "296"
         }
       ]
@@ -864,89 +907,12 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 12,
-          "room_name": "442"
-        }
-      ]
-    },
-    {
-      "Course": "2565",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 12,
-          "room_name": "298"
-        }
-      ]
-    },
-    {
-      "Course": "2628",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 12,
-          "room_name": "290"
-        }
-      ]
-    },
-    {
-      "Course": "2524",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 12,
-          "room_name": "289"
-        }
-      ]
-    },
-    {
-      "Course": "2445",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 12,
-          "room_name": "294"
-        }
-      ]
-    },
-    {
-      "Course": "2454",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 12,
-          "room_name": "291"
-        }
-      ]
-    },
-    {
-      "Course": "2665",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 12,
-          "room_name": "304"
-        }
-      ]
-    },
-    {
-      "Course": "2527",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 12,
           "room_name": "301"
         }
       ]
     },
     {
-      "Course": "2517",
+      "Course": "2523",
       "Events": [
         {
           "exam": 0,
@@ -957,13 +923,79 @@
       ]
     },
     {
-      "Course": "2531",
+      "Course": "2691",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 12,
+          "room_name": "290"
+        }
+      ]
+    },
+    {
+      "Course": "2455",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 12,
+          "room_name": "344"
+        }
+      ]
+    },
+    {
+      "Course": "2628",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 12,
+          "room_name": "295"
+        }
+      ]
+    },
+    {
+      "Course": "2524",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 12,
+          "room_name": "437"
+        }
+      ]
+    },
+    {
+      "Course": "2420",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 12,
           "room_name": "555"
+        }
+      ]
+    },
+    {
+      "Course": "2701",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 12,
+          "room_name": "556"
+        }
+      ]
+    },
+    {
+      "Course": "2537",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 12,
+          "room_name": "289"
         }
       ]
     },
@@ -979,189 +1011,79 @@
       ]
     },
     {
-      "Course": "2455",
+      "Course": "2706",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
-          "period_ordinal": 12,
-          "room_name": "292"
+          "period_ordinal": 13,
+          "room_name": "440"
         }
       ]
     },
     {
-      "Course": "2639",
+      "Course": "2549",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
-          "period_ordinal": 12,
+          "period_ordinal": 13,
+          "room_name": "302"
+        }
+      ]
+    },
+    {
+      "Course": "2625",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 13,
+          "room_name": "306"
+        }
+      ]
+    },
+    {
+      "Course": "2480",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 13,
           "room_name": "436"
         }
       ]
     },
     {
-      "Course": "2523",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 12,
-          "room_name": "295"
-        }
-      ]
-    },
-    {
-      "Course": "2537",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 12,
-          "room_name": "437"
-        }
-      ]
-    },
-    {
-      "Course": "2526",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 12,
-          "room_name": "296"
-        }
-      ]
-    },
-    {
-      "Course": "2701",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 12,
-          "room_name": "334"
-        }
-      ]
-    },
-    {
-      "Course": "2688",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 12,
-          "room_name": "387"
-        }
-      ]
-    },
-    {
-      "Course": "2684",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 13,
-          "room_name": "296"
-        }
-      ]
-    },
-    {
-      "Course": "2609",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 13,
-          "room_name": "294"
-        }
-      ]
-    },
-    {
-      "Course": "2528",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 13,
-          "room_name": "295"
-        }
-      ]
-    },
-    {
-      "Course": "2589",
+      "Course": "2707",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 14,
-          "room_name": "555"
+          "room_name": "335"
         }
       ]
     },
     {
-      "Course": "2675",
+      "Course": "2695",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 14,
-          "room_name": "294"
+          "room_name": "338"
         }
       ]
     },
     {
-      "Course": "2640",
+      "Course": "2501",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 14,
-          "room_name": "290"
-        }
-      ]
-    },
-    {
-      "Course": "2536",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 14,
-          "room_name": "443"
-        }
-      ]
-    },
-    {
-      "Course": "2481",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 14,
-          "room_name": "436"
-        }
-      ]
-    },
-    {
-      "Course": "2607",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 14,
-          "room_name": "340"
-        }
-      ]
-    },
-    {
-      "Course": "2540",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 14,
-          "room_name": "291"
+          "room_name": "337"
         }
       ]
     },
@@ -1172,40 +1094,29 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 14,
-          "room_name": "293"
-        }
-      ]
-    },
-    {
-      "Course": "2575",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 14,
-          "room_name": "299"
-        }
-      ]
-    },
-    {
-      "Course": "2664",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 14,
-          "room_name": "560"
-        }
-      ]
-    },
-    {
-      "Course": "2643",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 14,
           "room_name": "298"
+        }
+      ]
+    },
+    {
+      "Course": "2540",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 14,
+          "room_name": "289"
+        }
+      ]
+    },
+    {
+      "Course": "2589",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 14,
+          "room_name": "302"
         }
       ]
     },
@@ -1216,12 +1127,34 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 14,
-          "room_name": "435"
+          "room_name": "295"
         }
       ]
     },
     {
-      "Course": "2480",
+      "Course": "2607",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 14,
+          "room_name": "440"
+        }
+      ]
+    },
+    {
+      "Course": "2536",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 14,
+          "room_name": "297"
+        }
+      ]
+    },
+    {
+      "Course": "2479",
       "Events": [
         {
           "exam": 0,
@@ -1232,68 +1165,79 @@
       ]
     },
     {
+      "Course": "2643",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 14,
+          "room_name": "436"
+        }
+      ]
+    },
+    {
+      "Course": "2664",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 14,
+          "room_name": "435"
+        }
+      ]
+    },
+    {
+      "Course": "2481",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 14,
+          "room_name": "294"
+        }
+      ]
+    },
+    {
+      "Course": "2693",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 14,
+          "room_name": "341"
+        }
+      ]
+    },
+    {
+      "Course": "2641",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 14,
+          "room_name": "290"
+        }
+      ]
+    },
+    {
+      "Course": "2575",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 14,
+          "room_name": "303"
+        }
+      ]
+    },
+    {
       "Course": "2487",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 15,
-          "room_name": "294"
-        }
-      ]
-    },
-    {
-      "Course": "2416",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 16,
-          "room_name": "303"
-        }
-      ]
-    },
-    {
-      "Course": "2663",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 16,
-          "room_name": "292"
-        }
-      ]
-    },
-    {
-      "Course": "2518",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 16,
-          "room_name": "436"
-        }
-      ]
-    },
-    {
-      "Course": "2676",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 16,
-          "room_name": "327"
-        }
-      ]
-    },
-    {
-      "Course": "2508",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 16,
-          "room_name": "299"
+          "room_name": "296"
         }
       ]
     },
@@ -1304,7 +1248,29 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 16,
-          "room_name": "294"
+          "room_name": "289"
+        }
+      ]
+    },
+    {
+      "Course": "2518",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 16,
+          "room_name": "292"
+        }
+      ]
+    },
+    {
+      "Course": "2663",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 16,
+          "room_name": "299"
         }
       ]
     },
@@ -1315,7 +1281,7 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 16,
-          "room_name": "304"
+          "room_name": "291"
         }
       ]
     },
@@ -1326,12 +1292,34 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 16,
-          "room_name": "293"
+          "room_name": "306"
         }
       ]
     },
     {
-      "Course": "2429",
+      "Course": "2551",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 16,
+          "room_name": "304"
+        }
+      ]
+    },
+    {
+      "Course": "2513",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 16,
+          "room_name": "307"
+        }
+      ]
+    },
+    {
+      "Course": "2416",
       "Events": [
         {
           "exam": 0,
@@ -1348,29 +1336,51 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 16,
-          "room_name": "289"
+          "room_name": "436"
         }
       ]
     },
     {
-      "Course": "2450",
+      "Course": "2449",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
-          "period_ordinal": 16,
-          "room_name": "290"
+          "period_ordinal": 17,
+          "room_name": "296"
         }
       ]
     },
     {
-      "Course": "2551",
+      "Course": "2684",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
-          "period_ordinal": 16,
-          "room_name": "298"
+          "period_ordinal": 18,
+          "room_name": "331"
+        }
+      ]
+    },
+    {
+      "Course": "2434",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 18,
+          "room_name": "293"
+        }
+      ]
+    },
+    {
+      "Course": "2474",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 18,
+          "room_name": "299"
         }
       ]
     },
@@ -1381,56 +1391,12 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 18,
-          "room_name": "438"
-        }
-      ]
-    },
-    {
-      "Course": "2468",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 18,
-          "room_name": "436"
+          "room_name": "295"
         }
       ]
     },
     {
       "Course": "2568",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 18,
-          "room_name": "435"
-        }
-      ]
-    },
-    {
-      "Course": "2579",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 18,
-          "room_name": "303"
-        }
-      ]
-    },
-    {
-      "Course": "2618",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 18,
-          "room_name": "294"
-        }
-      ]
-    },
-    {
-      "Course": "2474",
       "Events": [
         {
           "exam": 0,
@@ -1447,18 +1413,7 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 18,
-          "room_name": "300"
-        }
-      ]
-    },
-    {
-      "Course": "2636",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 18,
-          "room_name": "442"
+          "room_name": "440"
         }
       ]
     },
@@ -1474,46 +1429,24 @@
       ]
     },
     {
-      "Course": "2698",
+      "Course": "2467",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 18,
-          "room_name": "295"
+          "room_name": "292"
         }
       ]
     },
     {
-      "Course": "2558",
+      "Course": "2618",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 18,
-          "room_name": "298"
-        }
-      ]
-    },
-    {
-      "Course": "2459",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 18,
-          "room_name": "289"
-        }
-      ]
-    },
-    {
-      "Course": "2434",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 18,
-          "room_name": "340"
+          "room_name": "436"
         }
       ]
     },
@@ -1524,18 +1457,62 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 18,
-          "room_name": "304"
+          "room_name": "289"
         }
       ]
     },
     {
-      "Course": "2612",
+      "Course": "2460",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 18,
-          "room_name": "293"
+          "room_name": "306"
+        }
+      ]
+    },
+    {
+      "Course": "2563",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 18,
+          "room_name": "435"
+        }
+      ]
+    },
+    {
+      "Course": "2579",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 18,
+          "room_name": "437"
+        }
+      ]
+    },
+    {
+      "Course": "2632",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 18,
+          "room_name": "344"
+        }
+      ]
+    },
+    {
+      "Course": "2698",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 18,
+          "room_name": "294"
         }
       ]
     },
@@ -1546,172 +1523,73 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 18,
+          "room_name": "291"
+        }
+      ]
+    },
+    {
+      "Course": "2612",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 19,
+          "room_name": "293"
+        }
+      ]
+    },
+    {
+      "Course": "2429",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 19,
+          "room_name": "296"
+        }
+      ]
+    },
+    {
+      "Course": "2669",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 19,
           "room_name": "299"
         }
       ]
     },
     {
-      "Course": "2511",
+      "Course": "2640",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 19,
-          "room_name": "298"
+          "room_name": "295"
         }
       ]
     },
     {
-      "Course": "2491",
+      "Course": "2562",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 19,
-          "room_name": "301"
-        }
-      ]
-    },
-    {
-      "Course": "2583",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 19,
-          "room_name": "290"
-        }
-      ]
-    },
-    {
-      "Course": "2705",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 19,
-          "room_name": "437"
-        }
-      ]
-    },
-    {
-      "Course": "2693",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 19,
-          "room_name": "436"
-        }
-      ]
-    },
-    {
-      "Course": "2638",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 24,
-          "room_name": "299"
-        }
-      ]
-    },
-    {
-      "Course": "2596",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 24,
-          "room_name": "442"
-        }
-      ]
-    },
-    {
-      "Course": "2431",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 24,
           "room_name": "292"
         }
       ]
     },
     {
-      "Course": "2604",
+      "Course": "2510",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
-          "period_ordinal": 24,
-          "room_name": "438"
-        }
-      ]
-    },
-    {
-      "Course": "2597",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 24,
-          "room_name": "305"
-        }
-      ]
-    },
-    {
-      "Course": "2572",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 24,
-          "room_name": "307"
-        }
-      ]
-    },
-    {
-      "Course": "2432",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 24,
-          "room_name": "290"
-        }
-      ]
-    },
-    {
-      "Course": "2489",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 24,
-          "room_name": "342"
-        }
-      ]
-    },
-    {
-      "Course": "2679",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 24,
-          "room_name": "340"
-        }
-      ]
-    },
-    {
-      "Course": "2571",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 24,
-          "room_name": "293"
+          "period_ordinal": 19,
+          "room_name": "435"
         }
       ]
     },
@@ -1722,29 +1600,18 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 24,
-          "room_name": "298"
+          "room_name": "555"
         }
       ]
     },
     {
-      "Course": "2475",
+      "Course": "2585",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 24,
-          "room_name": "436"
-        }
-      ]
-    },
-    {
-      "Course": "2440",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 24,
-          "room_name": "294"
+          "room_name": "341"
         }
       ]
     },
@@ -1755,34 +1622,45 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 24,
-          "room_name": "303"
+          "room_name": "292"
         }
       ]
     },
     {
-      "Course": "2608",
+      "Course": "2657",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 24,
-          "room_name": "291"
+          "room_name": "440"
         }
       ]
     },
     {
-      "Course": "2470",
+      "Course": "2558",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 24,
-          "room_name": "295"
+          "room_name": "298"
         }
       ]
     },
     {
-      "Course": "2418",
+      "Course": "2431",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 24,
+          "room_name": "438"
+        }
+      ]
+    },
+    {
+      "Course": "2637",
       "Events": [
         {
           "exam": 0,
@@ -1793,79 +1671,123 @@
       ]
     },
     {
-      "Course": "2563",
+      "Course": "2459",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 24,
-          "room_name": "555"
+          "room_name": "296"
         }
       ]
     },
     {
-      "Course": "2504",
+      "Course": "2597",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
-          "period_ordinal": 25,
-          "room_name": "292"
+          "period_ordinal": 24,
+          "room_name": "443"
         }
       ]
     },
     {
-      "Course": "2703",
+      "Course": "2470",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
-          "period_ordinal": 25,
-          "room_name": "301"
-        }
-      ]
-    },
-    {
-      "Course": "2460",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 25,
+          "period_ordinal": 24,
           "room_name": "290"
         }
       ]
     },
     {
-      "Course": "2525",
+      "Course": "2596",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
-          "period_ordinal": 25,
-          "room_name": "298"
+          "period_ordinal": 24,
+          "room_name": "305"
         }
       ]
     },
     {
-      "Course": "2541",
+      "Course": "2571",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
-          "period_ordinal": 25,
-          "room_name": "436"
+          "period_ordinal": 24,
+          "room_name": "295"
         }
       ]
     },
     {
-      "Course": "2672",
+      "Course": "2432",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 24,
+          "room_name": "302"
+        }
+      ]
+    },
+    {
+      "Course": "2570",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 24,
+          "room_name": "293"
+        }
+      ]
+    },
+    {
+      "Course": "2688",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 24,
+          "room_name": "300"
+        }
+      ]
+    },
+    {
+      "Course": "2489",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 24,
+          "room_name": "294"
+        }
+      ]
+    },
+    {
+      "Course": "2440",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 24,
+          "room_name": "299"
+        }
+      ]
+    },
+    {
+      "Course": "2419",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 25,
-          "room_name": "340"
+          "room_name": "289"
         }
       ]
     },
@@ -1876,40 +1798,73 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 25,
-          "room_name": "296"
+          "room_name": "440"
         }
       ]
     },
     {
-      "Course": "2446",
+      "Course": "2703",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 25,
+          "room_name": "499"
+        }
+      ]
+    },
+    {
+      "Course": "2488",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 25,
+          "room_name": "333"
+        }
+      ]
+    },
+    {
+      "Course": "2620",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 25,
+          "room_name": "437"
+        }
+      ]
+    },
+    {
+      "Course": "2476",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 25,
+          "room_name": "293"
+        }
+      ]
+    },
+    {
+      "Course": "2541",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 25,
+          "room_name": "341"
+        }
+      ]
+    },
+    {
+      "Course": "2627",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 26,
-          "room_name": "296"
-        }
-      ]
-    },
-    {
-      "Course": "2546",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 26,
-          "room_name": "299"
-        }
-      ]
-    },
-    {
-      "Course": "2447",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 26,
-          "room_name": "294"
+          "room_name": "307"
         }
       ]
     },
@@ -1925,35 +1880,13 @@
       ]
     },
     {
-      "Course": "2428",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 26,
-          "room_name": "555"
-        }
-      ]
-    },
-    {
       "Course": "2626",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 26,
-          "room_name": "298"
-        }
-      ]
-    },
-    {
-      "Course": "2620",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 26,
-          "room_name": "436"
+          "room_name": "294"
         }
       ]
     },
@@ -1964,29 +1897,84 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 26,
-          "room_name": "292"
+          "room_name": "437"
         }
       ]
     },
     {
-      "Course": "2627",
+      "Course": "2525",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 26,
-          "room_name": "328"
+          "room_name": "436"
         }
       ]
     },
     {
-      "Course": "2488",
+      "Course": "2650",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 26,
-          "room_name": "332"
+          "room_name": "560"
+        }
+      ]
+    },
+    {
+      "Course": "2445",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 26,
+          "room_name": "293"
+        }
+      ]
+    },
+    {
+      "Course": "2608",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 26,
+          "room_name": "295"
+        }
+      ]
+    },
+    {
+      "Course": "2446",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 26,
+          "room_name": "299"
+        }
+      ]
+    },
+    {
+      "Course": "2475",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 26,
+          "room_name": "298"
+        }
+      ]
+    },
+    {
+      "Course": "2546",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 26,
+          "room_name": "302"
         }
       ]
     },
@@ -1997,84 +1985,7 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 27,
-          "room_name": "443"
-        }
-      ]
-    },
-    {
-      "Course": "2561",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 27,
-          "room_name": "555"
-        }
-      ]
-    },
-    {
-      "Course": "2661",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 28,
-          "room_name": "558"
-        }
-      ]
-    },
-    {
-      "Course": "2695",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 28,
-          "room_name": "300"
-        }
-      ]
-    },
-    {
-      "Course": "2484",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 28,
-          "room_name": "299"
-        }
-      ]
-    },
-    {
-      "Course": "2521",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 28,
-          "room_name": "293"
-        }
-      ]
-    },
-    {
-      "Course": "2421",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 28,
-          "room_name": "289"
-        }
-      ]
-    },
-    {
-      "Course": "2514",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 28,
-          "room_name": "292"
+          "room_name": "440"
         }
       ]
     },
@@ -2085,40 +1996,40 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 28,
-          "room_name": "435"
+          "room_name": "437"
         }
       ]
     },
     {
-      "Course": "2591",
+      "Course": "2705",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 28,
-          "room_name": "438"
+          "room_name": "290"
         }
       ]
     },
     {
-      "Course": "2666",
+      "Course": "2484",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 28,
-          "room_name": "303"
+          "room_name": "436"
         }
       ]
     },
     {
-      "Course": "2506",
+      "Course": "2514",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 28,
-          "room_name": "294"
+          "room_name": "440"
         }
       ]
     },
@@ -2129,105 +2040,84 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 28,
-          "room_name": "436"
+          "room_name": "294"
         }
       ]
     },
     {
-      "Course": "2493",
+      "Course": "2661",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
-          "period_ordinal": 29,
-          "room_name": "436"
-        }
-      ]
-    },
-    {
-      "Course": "2656",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 30,
+          "period_ordinal": 28,
           "room_name": "438"
         }
       ]
     },
     {
-      "Course": "2557",
+      "Course": "2421",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
-          "period_ordinal": 30,
-          "room_name": "290"
+          "period_ordinal": 28,
+          "room_name": "299"
         }
       ]
     },
     {
-      "Course": "2680",
+      "Course": "2506",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
-          "period_ordinal": 30,
-          "room_name": "298"
-        }
-      ]
-    },
-    {
-      "Course": "2668",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 30,
-          "room_name": "328"
-        }
-      ]
-    },
-    {
-      "Course": "2490",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 30,
+          "period_ordinal": 28,
           "room_name": "293"
         }
       ]
     },
     {
-      "Course": "2667",
+      "Course": "2677",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
-          "period_ordinal": 30,
-          "room_name": "303"
+          "period_ordinal": 28,
+          "room_name": "302"
         }
       ]
     },
     {
-      "Course": "2482",
+      "Course": "2666",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
-          "period_ordinal": 30,
-          "room_name": "291"
+          "period_ordinal": 28,
+          "room_name": "289"
         }
       ]
     },
     {
-      "Course": "2649",
+      "Course": "2521",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
-          "period_ordinal": 30
+          "period_ordinal": 28,
+          "room_name": "292"
+        }
+      ]
+    },
+    {
+      "Course": "2534",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 29,
+          "room_name": "296"
         }
       ]
     },
@@ -2238,12 +2128,66 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 30,
-          "room_name": "296"
+          "room_name": "435"
         }
       ]
     },
     {
-      "Course": "2577",
+      "Course": "2482",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 30,
+          "room_name": "292"
+        }
+      ]
+    },
+    {
+      "Course": "2667",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 30,
+          "room_name": "291"
+        }
+      ]
+    },
+    {
+      "Course": "2557",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 30,
+          "room_name": "298"
+        }
+      ]
+    },
+    {
+      "Course": "2642",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 30
+        }
+      ]
+    },
+    {
+      "Course": "2425",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 30,
+          "room_name": "302"
+        }
+      ]
+    },
+    {
+      "Course": "2441",
       "Events": [
         {
           "exam": 0,
@@ -2254,18 +2198,18 @@
       ]
     },
     {
-      "Course": "2483",
+      "Course": "2577",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 30,
-          "room_name": "294"
+          "room_name": "440"
         }
       ]
     },
     {
-      "Course": "2562",
+      "Course": "2490",
       "Events": [
         {
           "exam": 0,
@@ -2276,7 +2220,40 @@
       ]
     },
     {
-      "Course": "2642",
+      "Course": "2591",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 30,
+          "room_name": "438"
+        }
+      ]
+    },
+    {
+      "Course": "2694",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 30,
+          "room_name": "387"
+        }
+      ]
+    },
+    {
+      "Course": "2483",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 30,
+          "room_name": "289"
+        }
+      ]
+    },
+    {
+      "Course": "2649",
       "Events": [
         {
           "exam": 0,
@@ -2292,83 +2269,29 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 30,
-          "room_name": "299"
+          "room_name": "295"
         }
       ]
     },
     {
-      "Course": "2494",
+      "Course": "2609",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 31,
-          "room_name": "296"
+          "room_name": "289"
         }
       ]
     },
     {
-      "Course": "2544",
+      "Course": "2532",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 31,
-          "room_name": "443"
-        }
-      ]
-    },
-    {
-      "Course": "2533",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 31
-        }
-      ]
-    },
-    {
-      "Course": "2632",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 31,
-          "room_name": "555"
-        }
-      ]
-    },
-    {
-      "Course": "2550",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 32,
-          "room_name": "306"
-        }
-      ]
-    },
-    {
-      "Course": "2485",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 32,
-          "room_name": "293"
-        }
-      ]
-    },
-    {
-      "Course": "2497",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 32,
-          "room_name": "301"
+          "room_name": "440"
         }
       ]
     },
@@ -2379,62 +2302,18 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 32,
-          "room_name": "292"
+          "room_name": "293"
         }
       ]
     },
     {
-      "Course": "2510",
+      "Course": "2656",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 32,
-          "room_name": "436"
-        }
-      ]
-    },
-    {
-      "Course": "2556",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 32,
-          "room_name": "435"
-        }
-      ]
-    },
-    {
-      "Course": "2653",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 32,
-          "room_name": "332"
-        }
-      ]
-    },
-    {
-      "Course": "2513",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 32,
-          "room_name": "290"
-        }
-      ]
-    },
-    {
-      "Course": "2706",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 32,
-          "room_name": "299"
+          "room_name": "307"
         }
       ]
     },
@@ -2445,40 +2324,18 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 32,
-          "room_name": "442"
+          "room_name": "294"
         }
       ]
     },
     {
-      "Course": "2673",
+      "Course": "2485",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 32,
-          "room_name": "303"
-        }
-      ]
-    },
-    {
-      "Course": "2426",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 32,
-          "room_name": "437"
-        }
-      ]
-    },
-    {
-      "Course": "2442",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 32,
-          "room_name": "291"
+          "room_name": "296"
         }
       ]
     },
@@ -2489,29 +2346,29 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 32,
-          "room_name": "555"
+          "room_name": "558"
         }
       ]
     },
     {
-      "Course": "2696",
+      "Course": "2653",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 32,
-          "room_name": "441"
+          "room_name": "297"
         }
       ]
     },
     {
-      "Course": "2708",
+      "Course": "2550",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 32,
-          "room_name": "443"
+          "room_name": "435"
         }
       ]
     },
@@ -2522,18 +2379,138 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 32,
+          "room_name": "290"
+        }
+      ]
+    },
+    {
+      "Course": "2675",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 32,
+          "room_name": "299"
+        }
+      ]
+    },
+    {
+      "Course": "2448",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 32,
           "room_name": "298"
         }
       ]
     },
     {
-      "Course": "2678",
+      "Course": "2556",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 32,
+          "room_name": "438"
+        }
+      ]
+    },
+    {
+      "Course": "2511",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 32,
+          "room_name": "437"
+        }
+      ]
+    },
+    {
+      "Course": "2497",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 32,
+          "room_name": "305"
+        }
+      ]
+    },
+    {
+      "Course": "2708",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 32,
+          "room_name": "436"
+        }
+      ]
+    },
+    {
+      "Course": "2681",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 33,
-          "room_name": "443"
+          "room_name": "306"
+        }
+      ]
+    },
+    {
+      "Course": "2533",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 33
+        }
+      ]
+    },
+    {
+      "Course": "2572",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 33,
+          "room_name": "303"
+        }
+      ]
+    },
+    {
+      "Course": "2428",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 33,
+          "room_name": "438"
+        }
+      ]
+    },
+    {
+      "Course": "2458",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 33,
+          "room_name": "296"
+        }
+      ]
+    },
+    {
+      "Course": "2494",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 33,
+          "room_name": "298"
         }
       ]
     },
@@ -2544,40 +2521,40 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 33,
-          "room_name": "555"
+          "room_name": "440"
         }
       ]
     },
     {
-      "Course": "2534",
+      "Course": "2548",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 38,
-          "room_name": "296"
+          "room_name": "292"
         }
       ]
     },
     {
-      "Course": "2587",
+      "Course": "2439",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 38,
-          "room_name": "388"
+          "room_name": "293"
         }
       ]
     },
     {
-      "Course": "2570",
+      "Course": "2610",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 38,
-          "room_name": "435"
+          "room_name": "437"
         }
       ]
     },
@@ -2593,7 +2570,18 @@
       ]
     },
     {
-      "Course": "2697",
+      "Course": "2686",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 38,
+          "room_name": "443"
+        }
+      ]
+    },
+    {
+      "Course": "2674",
       "Events": [
         {
           "exam": 0,
@@ -2604,18 +2592,106 @@
       ]
     },
     {
+      "Course": "2498",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 38,
+          "room_name": "294"
+        }
+      ]
+    },
+    {
+      "Course": "2526",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 38,
+          "room_name": "296"
+        }
+      ]
+    },
+    {
+      "Course": "2468",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 38,
+          "room_name": "290"
+        }
+      ]
+    },
+    {
+      "Course": "2697",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 38,
+          "room_name": "298"
+        }
+      ]
+    },
+    {
+      "Course": "2559",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 38,
+          "room_name": "295"
+        }
+      ]
+    },
+    {
+      "Course": "2586",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 38,
+          "room_name": "556"
+        }
+      ]
+    },
+    {
+      "Course": "2595",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 38,
+          "room_name": "440"
+        }
+      ]
+    },
+    {
+      "Course": "2491",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 38,
+          "room_name": "438"
+        }
+      ]
+    },
+    {
       "Course": "2619",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 38,
-          "room_name": "340"
+          "room_name": "385"
         }
       ]
     },
     {
-      "Course": "2427",
+      "Course": "2561",
       "Events": [
         {
           "exam": 0,
@@ -2632,193 +2708,51 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 38,
-          "room_name": "438"
-        }
-      ]
-    },
-    {
-      "Course": "2610",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 38,
-          "room_name": "295"
-        }
-      ]
-    },
-    {
-      "Course": "2449",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 38,
-          "room_name": "298"
-        }
-      ]
-    },
-    {
-      "Course": "2498",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 38,
-          "room_name": "292"
-        }
-      ]
-    },
-    {
-      "Course": "2548",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 38,
-          "room_name": "437"
-        }
-      ]
-    },
-    {
-      "Course": "2471",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 38,
-          "room_name": "293"
-        }
-      ]
-    },
-    {
-      "Course": "2637",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 38,
-          "room_name": "290"
-        }
-      ]
-    },
-    {
-      "Course": "2595",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 38,
-          "room_name": "344"
-        }
-      ]
-    },
-    {
-      "Course": "2686",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 38,
-          "room_name": "300"
-        }
-      ]
-    },
-    {
-      "Course": "2647",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 38
-        }
-      ]
-    },
-    {
-      "Course": "2674",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 38,
-          "room_name": "303"
-        }
-      ]
-    },
-    {
-      "Course": "2420",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 39,
-          "room_name": "555"
-        }
-      ]
-    },
-    {
-      "Course": "2641",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 39,
-          "room_name": "296"
-        }
-      ]
-    },
-    {
-      "Course": "2677",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 39,
           "room_name": "302"
         }
       ]
     },
     {
-      "Course": "2671",
+      "Course": "2504",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 39,
-          "room_name": "298"
+          "room_name": "299"
         }
       ]
     },
     {
-      "Course": "2650",
+      "Course": "2456",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 39,
-          "room_name": "438"
+          "room_name": "293"
         }
       ]
     },
     {
-      "Course": "2457",
+      "Course": "2545",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 39,
-          "room_name": "289"
+          "room_name": "342"
         }
       ]
     },
     {
-      "Course": "2414",
+      "Course": "2676",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 39,
-          "room_name": "300"
+          "room_name": "301"
         }
       ]
     },
@@ -2829,23 +2763,78 @@
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 39,
-          "room_name": "436"
-        }
-      ]
-    },
-    {
-      "Course": "2439",
-      "Events": [
-        {
-          "exam": 0,
-          "part": "Oral",
-          "period_ordinal": 39,
           "room_name": "291"
         }
       ]
     },
     {
-      "Course": "2559",
+      "Course": "2447",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 39,
+          "room_name": "436"
+        }
+      ]
+    },
+    {
+      "Course": "2544",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 39,
+          "room_name": "440"
+        }
+      ]
+    },
+    {
+      "Course": "2427",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 39,
+          "room_name": "437"
+        }
+      ]
+    },
+    {
+      "Course": "2696",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 39,
+          "room_name": "331"
+        }
+      ]
+    },
+    {
+      "Course": "2636",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 39,
+          "room_name": "289"
+        }
+      ]
+    },
+    {
+      "Course": "2508",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 39,
+          "room_name": "294"
+        }
+      ]
+    },
+    {
+      "Course": "2680",
       "Events": [
         {
           "exam": 0,
@@ -2856,16 +2845,27 @@
       ]
     },
     {
-      "Course": "2543",
+      "Course": "2678",
       "Events": [
         {
           "exam": 0,
           "part": "Oral",
           "period_ordinal": 39,
-          "room_name": "299"
+          "room_name": "558"
+        }
+      ]
+    },
+    {
+      "Course": "2671",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 39,
+          "room_name": "303"
         }
       ]
     }
   ],
-  "Cost": 611
+  "Cost": 573
 }
