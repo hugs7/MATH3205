@@ -173,13 +173,6 @@ def solve(instance_filename: str) -> None:
     # Set of composite rooms (R^C) in paper)
     CompositeRooms = Rooms.get_composite_rooms()
 
-    # -- Room Equivalence Class --
-    # TODO Yet to determine what this is
-    K = {}
-
-    # The set of overlapping rooms of composite room
-    # Indexed by rc
-
     # -- Period Availabilities (P_e in paper) --
     # Set of periods available for event e
     PA: Dict[Event, Set[Period]] = {
@@ -234,11 +227,6 @@ def solve(instance_filename: str) -> None:
                     room_set.add(r)
 
             RA[event] = room_set
-
-    # The set of available room equivalence classes for event e
-    # K_e in paper
-    # TODO Yet to determine what this is
-    KE = {}
 
     # dictionary mapping events e to the set of events in H3 hard conflict with e
     # HC_e in paper
@@ -372,10 +360,6 @@ def solve(instance_filename: str) -> None:
 
                 if course_a.__eq__(course_b):
                     continue
-
-                # Get minimum separation between exams
-                course_a_min_dist = course_a.get_min_distance_between_exams()
-                course_b_min_dist = course_b.get_min_distance_between_exams()
 
                 course_a_examinations = CourseExaminations.get(course_a)
                 course_b_examinations = CourseExaminations.get(course_b)
