@@ -155,6 +155,8 @@ class EventRoomConstraint(Constraint):
         self.course_name = constraint_data.get(const.COURSE)
         self.room = constraint_data.get(const.ROOM)
         self.part = constraint_data.get(const.PART)
+        self.exam_ordinal = constraint_data.get(const.EXAM)
+
 
     def get_course_name(self) -> str:
         """
