@@ -1,5 +1,7 @@
 from typing import Dict, Tuple
 from gurobipy import Model, quicksum, GRB
+import heapq
+
 
 Data = [
     "6   6    4",
@@ -79,7 +81,77 @@ YOn = {
     if Move(s, k + 1, d) in Board
 }
 
-m.optimize()
+
+def Callback(model, where):
+    if where != GRB.Callback.MIPSOL:
+        return
+
+    print("\n\n\n\n\n")
+    # find all the connected regions of walls as a set of sets using a breadth first search algorithm
+    # start with the first seed
+
+    # Get solution
+
+    XV = model.cbGetSolution(X)
+    Walls = [s for s in Board if XV[s] > 0.5]
+    print("Walls", Walls)
+    Regions = []
+
+    allVisited = []
+
+    while len(allVisited) < len(Walls):
+        frontier = []
+
+        while len(allVisited) < len(Walls):
+            frontier = []
+            visitedWalls = set()
+
+            region = []
+
+            # Choose a wall which doesn't appear in allVisited
+            wall = next(w for w in Walls if w not in allVisited)
+
+            # Add the wall to the frontier
+            heapq.heappush(frontier, wall)
+
+            while True:
+                print(len(frontier), len(visitedWalls))
+                try:
+                    square = heapq.heappop(frontier)
+                except IndexError:  # Queue is empty
+                    break
+
+                if square in visitedWalls:
+                    # Check if we've been to this state before and skip if we have
+                    continue
+
+                visitedWalls.add(square)
+                region.append(square)
+
+                for direction in D:
+                    child = Move(square, 1, direction)
+                    if not (child in Board and XV[child] > 0.5):
+                        # We can't move here
+                        continue
+
+                    print("Child", child, "Square", square, "Direction", direction)
+
+                    if child not in region:
+                        region.append(child)
+
+                    if child not in visitedWalls and child not in frontier:
+                        # If we haven't seenn this child before, add to the frontier
+                        heapq.heappush(frontier, child)  # Add to frontier
+                        # Add to visited
+
+            Regions.append(region)
+            for square in region:
+                allVisited.append(square)
+
+        print("regions", Regions)
+
+
+m.optimize(Callback)
 
 for i in range(n):
     for j in range(n):

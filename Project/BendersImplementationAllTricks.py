@@ -588,6 +588,8 @@ def solve(instance_filename: str) -> None:
     undesired_event_rooms: Dict[Event, Set[Room]] = {}
     for e in Events:
         undesired_event_rooms[e] = set()
+        exam: Examination = e.get_examination()
+        exam_index: int = exam.get_index()
 
         for (
             event_room_constraint
@@ -595,7 +597,10 @@ def solve(instance_filename: str) -> None:
             room_name: str = event_room_constraint.get_room_name()
             room: Room = Rooms.get_room_by_name(room_name)
 
-            if event_room_constraint.get_course_name() == e.get_course_name():
+            if (
+                event_room_constraint.get_course_name() == e.get_course_name()
+                and event_room_constraint.get_exam_ordinal() == exam_index
+            ):
                 undesired_event_rooms[e].add(room)
 
     for e in Events:
@@ -1351,7 +1356,7 @@ def solve(instance_filename: str) -> None:
             numCuts += 1
 
     # Bender's Master Problem Config
-    
+
     # Keep master problem output enabled
     BMP.setParam("OutputFlag", 1)
 
@@ -1360,19 +1365,19 @@ def solve(instance_filename: str) -> None:
 
     # Enable Lazy Constraints as we are using a Callback
     BMP.setParam("LazyConstraints", 1)
-    
+
     # Set agressive presolve
     BMP.setParam("Presolve", 2)
 
     # Limit nodes within system memory (10^9 Bytes)
-    BMP.setParam("NodefileStart", 10)
+    # BMP.setParam("NodefileStart", 10)
 
-    # Set node cache path
-    user_dir = "C:\\Users\\Hugo Burton"
-    gurobi_dir = ".gurobi"
-    nodecache_dir = "nodecache"
-    node_cache_path = os.path.join(user_dir, gurobi_dir, nodecache_dir)
-    BMP.setParam("NodefileDir", node_cache_path)
+    # # Set node cache path
+    # user_dir = "C:\\Users\\Hugo Burton"
+    # gurobi_dir = ".gurobi"
+    # nodecache_dir = "nodecache"
+    # node_cache_path = os.path.join(user_dir, gurobi_dir, nodecache_dir)
+    # BMP.setParam("NodefileDir", node_cache_path)
 
     # Set MIPFocus to prioritise upper bound of objective
     BMP.setParam("MIPFocus", 2)
@@ -1380,7 +1385,7 @@ def solve(instance_filename: str) -> None:
     # Memory limit
     BMP.setParam("SoftMemLimit", 35)
     BMP.setParam("MemLimit", 40)
-    
+
     # Time Limit
     BMP.setParam("TimeLimit", 400)
 
@@ -1400,7 +1405,7 @@ def solve(instance_filename: str) -> None:
 
     print("----")
     print("\n\nFinal Objective Value:", BMP.ObjVal, "\n\n")
-    
+
     for d in Days:
         print("------" * 10 + "\nDay ", d)
         for p in Periods:
@@ -1443,8 +1448,8 @@ def main():
     problem_path = os.path.join(".", "Project", "data")
     for filename in os.listdir(problem_path):
         if os.path.isfile(os.path.join(problem_path, filename)):
-            # if filename < "D3-2-17":
-                # continue
+            if filename != "D3-1-17.json":
+                continue
 
             solve(filename)
             print("\n\n")
