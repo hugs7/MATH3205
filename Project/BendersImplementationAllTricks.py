@@ -1105,8 +1105,13 @@ def solve(instance_filename: str) -> None:
             EventsP = {
                 e for e in Events if p in PA[e] and YV[e, p] > const.BINARY_ONE_BOUND
             }
+
             for e in EventsP:
-                X_global[e, p] = None
+                print(e.get_course_name())
+                print(RA[e])
+
+                print("\n")
+            print("---")
 
             # Set of events assigned to period p requiring room with type room_type and # members num_rooms
             events_p_by_type_and_size: Dict[Tuple[str, int], List[Event]] = {}

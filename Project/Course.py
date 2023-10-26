@@ -106,7 +106,6 @@ class Course:
             self.min_distance_between_exams = int(
                 course_data.get(const.MINIMUM_DISTANCE_BETWEEN_EXAMS)
             )
-
         # Rooms requested
         self.rooms_requested: RoomsRequested = RoomsRequested(
             course_data.get(const.ROOMS_REQUESTED)
