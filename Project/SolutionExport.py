@@ -7,9 +7,9 @@ import os
 # Dummy classes so that json.dumps can do all the work for us!
 class Event:
     def __init__(self, exam_index: int, part: str, period_ordinal: int, room_name: str):
-        self.exam: int = exam_index
-        self.part: str = part
-        self.period_ordinal: int = period_ordinal
+        self.Exam: int = exam_index
+        self.Part: str = part
+        self.Period: int = period_ordinal
         if room_name != const.DUMMY:
             self.room_name: str = room_name
 
