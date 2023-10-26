@@ -1413,6 +1413,18 @@ def main():
         # No filename argument provided, run all problem sets
         for filename in os.listdir(problem_path):
             if os.path.isfile(os.path.join(problem_path, filename)):
+                # If solution already exists in OurSolutoins folder then skip
+                if os.path.isfile(
+                    os.path.join(
+                        ".",
+                        "Project",
+                        "OurSolutions",
+                        filename.replace(".json", "_sol.json"),
+                    )
+                ):
+                    print("Skipping", filename)
+                    continue
+
                 try:
                     solve(filename)
                 except Exception as e:
