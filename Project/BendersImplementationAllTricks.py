@@ -9,6 +9,7 @@ import time
 from gurobipy import Model, quicksum, GRB
 import json  # For importing the data as JSON format
 import os
+import sys
 from typing import Dict, List, Set, Tuple, Union
 from Examination import Examination
 
@@ -998,7 +999,7 @@ def solve(instance_filename: str) -> None:
 
         exam_min_dist_1 = e1_course.get_min_distance_between_exams()
         exam_min_dist_2 = e2_course.get_min_distance_between_exams()
-        exam_min_dist = max(exam_min_dist_1, exam_min_dist_2)
+        exam_min_dist = min(exam_min_dist_1, exam_min_dist_2)
 
         Constraint20[(e1, e2)] = BMP.addConstr(
             PMinE[e1, e2] + D_abs[e1, e2] >= exam_min_dist
@@ -1386,16 +1387,26 @@ def solve(instance_filename: str) -> None:
 def main():
     problem_path = os.path.join(".", "Project", "data")
     skipped = []
-    for filename in os.listdir(problem_path):
-        if os.path.isfile(os.path.join(problem_path, filename)):
-            try:
-                solve(filename)
-            except Exception as e:
-                print("Exception occurred:", e)
-                skipped.append(filename)
-                print("Continuing to next problem set")
 
-            print("\n\n")
+    if len(sys.argv) > 1:
+        # A filename argument was provided, run only that problem set
+        filename = sys.argv[1]
+        try:
+            solve(filename)
+        except Exception as e:
+            print("Exception occurred:", e)
+            skipped.append(filename)
+        print("\n\n")
+    else:
+        # No filename argument provided, run all problem sets
+        for filename in os.listdir(problem_path):
+            if os.path.isfile(os.path.join(problem_path, filename)):
+                try:
+                    solve(filename)
+                except Exception as e:
+                    print("Exception occurred:", e)
+                    skipped.append(filename)
+                print("\n\n")
 
     print("Done")
     print("Encountered", len(skipped), "errors with the following files:", skipped)
