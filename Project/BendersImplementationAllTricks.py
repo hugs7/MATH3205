@@ -643,7 +643,7 @@ def solve(instance_filename: str) -> None:
                 for e in new_events:
                     P1.add(e)
                     SOFT_CONFLICT[e] = const.SC_PRIMARY_SECONDARY
-    # Add secondary-secondary conflicts -- BE CAREFUL NOT TO OVERWRITE PREIMARY-PRIMARY COSTS
+    # Add secondary-secondary conflicts -- BE CAREFUL NOT TO OVERWRITE PRIMARY-PRIMARY COSTS
     for c in curriculaManager.get_curricula():
         for name1 in c.get_secondary_course_names():
             for name2 in c.get_secondary_course_names():
