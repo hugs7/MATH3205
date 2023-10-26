@@ -1319,16 +1319,6 @@ def solve(instance_filename: str) -> None:
     # Set agressive presolve
     BMP.setParam("Presolve", 2)
 
-    # Limit nodes within system memory (10^9 Bytes)
-    # BMP.setParam("NodefileStart", 10)
-
-    # # Set node cache path
-    # user_dir = "C:\\Users\\Hugo Burton"
-    # gurobi_dir = ".gurobi"
-    # nodecache_dir = "nodecache"
-    # node_cache_path = os.path.join(user_dir, gurobi_dir, nodecache_dir)
-    # BMP.setParam("NodefileDir", node_cache_path)
-
     # Set MIPFocus to prioritise upper bound of objective
     BMP.setParam("MIPFocus", 2)
 
