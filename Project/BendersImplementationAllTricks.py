@@ -815,8 +815,6 @@ def solve(instance_filename: str) -> None:
                 if room.get_type() != room_type:
                     continue
 
-                # print("Adding forbidden room in period", p, room_type, room)
-
                 forbidden_rooms_by_period_and_type[(p, room_type)].append(room)
 
                 # Check if room is part of any composite rooms
@@ -848,8 +846,6 @@ def solve(instance_filename: str) -> None:
 
                 if room.get_type() != room_type:
                     continue
-
-                # print("Adding undesired room in period", p, room_type, room_name)
 
                 undesired_rooms_by_period_and_type[(p, room_type)].append(room_name)
 
@@ -1105,13 +1101,6 @@ def solve(instance_filename: str) -> None:
             EventsP = {
                 e for e in Events if p in PA[e] and YV[e, p] > const.BINARY_ONE_BOUND
             }
-
-            for e in EventsP:
-                print(e.get_course_name())
-                print(RA[e])
-
-                print("\n")
-            print("---")
 
             # Set of events assigned to period p requiring room with type room_type and # members num_rooms
             events_p_by_type_and_size: Dict[Tuple[str, int], List[Event]] = {}
