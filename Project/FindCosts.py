@@ -17,6 +17,7 @@ data_file = os.path.join(".", "Project", "data", instance_name)
 with open(data_file, "r") as json_file:
     json_data = json_file.read()
 
+# ------ Import solution file ------
 solution_file = os.path.join(
     ".", "Project", "Solutions", "BestSolutions", f"sol_{instance_name}"
 )
@@ -74,35 +75,45 @@ forbidden_period_constraints: List[Period] = [
     period_constraint.get_period().get_ordinal_value()
     for period_constraint in constrManager.get_forbidden_period_constraints()
 ]
+# get minimum distances between exams for each course
 course_min_distance = {}
 for i in courseManager.courses:
     course_min_distance[i.course_name] = i.get_min_distance_between_exams()
 
+
 courses_in_curr = {}
 primary = {}
 secondary = {}
+
+# Loop over curriculums to get primary and secondary courses for each curriculum
 for c in curriculaManager.curricula:
     courses_in_curr[c.name] = [c1 for c1 in c.get_course_names()]
     primary[c.name] = [c1 for c1 in c.primary_course_names]
     secondary[c.name] = [c1 for c1 in c.secondary_course_names]
 
+
 assignments = solution_data["Assignments"]
 events: dict[Course, List[Event]] = {}
+
+# Initialise count of each soft penalty constraint
 broken_forbidden_period = 0
 broken_event_period = 0
 undes_event_period = 0
 broken_undesired_period = 0
 broken_undesired_room = 0
 broken_forbidden_room = 0
+
+# Loop over each course room period assignemnt from solution file
 for a in assignments:
     course_name = a["Course"]
     events[course_name] = a["Events"]
 
+    # Caluclate minimum distance between exam conflicts
     min_distance = course_min_distance[course_name]
     if min_distance == None:
         min_distance = 0
+    # Calculate if more than 1 exam
     if len(events[course_name]) > 1:
-        breakpoint()
         if (
             abs(
                 events[course_name][0].get("Period")
@@ -116,18 +127,20 @@ for a in assignments:
                 events[course_name][0].get("Period"),
                 events[course_name][1].get("Period"),
             )
-
+    # Loop over period constraints
     for e in events[course_name]:
         exam = e["Exam"]
         part = e["Part"]
         period = e["Period"]
         room = e.get("Room")
 
+        # Calculate forbidden period constraints, in a feasible solution this should never be hit
         for p in forbidden_period_constraints:
             if p == period:
                 print("Broken Period Constraint: ", course_name, exam, part, period)
                 broken_forbidden_period += 1
 
+        # Calculate undesired period constraints
         for p in period_constraints:
             if p.get_period().get_ordinal_value() not in forbidden_period_constraints:
                 if p.get_period().get_ordinal_value() == period:
@@ -140,6 +153,7 @@ for a in assignments:
                     )
                     broken_undesired_period += 1
 
+        # calculate preferred and undesired event constraints
         for e in event_constraints:
             if (
                 e.course_name == course_name
@@ -149,16 +163,18 @@ for a in assignments:
                 print(
                     "Broken Event Period Constraint: ", course_name, exam, part, period
                 )
-                if e.level == "Preferred":
+                if e.level == const.PREFERRED:
                     broken_event_period += 1
-                elif e.level == "Undesired":
+                elif e.level == const.UNDESIRED:
                     broken_undesired_period += 1
 
+        # calculate forbidden and undesired event constraints
         for r in room_constraints:
             if (
                 not r.get_room() == room
                 and r.get_period().get_ordinal_value() == period
             ):
+                # Forbidden should never be hit in a feasible solution
                 if r.get_level() == const.FORBIDDEN:
                     print(
                         "Broken Forbidden Room Constraint: ",
@@ -180,6 +196,7 @@ for a in assignments:
                     )
                     broken_undesired_room += 1
 
+        # Calculate event room constraints
         for r in event_room_constraints:
             if (
                 r.course_name == course_name
@@ -188,6 +205,7 @@ for a in assignments:
                 and r.room == room
                 and r.exam_ordinal == exam
             ):
+                # Forbidden should never be hit in a feasible solution
                 if r.get_level() == const.FORBIDDEN:
                     print(
                         "Broken Forbidden Event Room Constraint: ",
@@ -206,15 +224,19 @@ for a in assignments:
                         period,
                         room,
                     )
+                    broken_undesired_room += 1
 
+# initialise distance constraints
 curruculas = curriculaManager.curricula
 count = 0
-primary_secondary_distance = 1
+primary_secondary_distance = 0
 same_period_pp = 0
 same_period_ps = 0
 same_period_ss = 0
 
+# loop over curriculas
 for c in curruculas:
+    # calculate primary and secondary courses for each curricula
     primary_primary = {}
     secondary = {}
     for a in assignments:
@@ -224,6 +246,7 @@ for c in curruculas:
         if a["Course"] in c.get_secondary_course_names():
             for e in a["Events"]:
                 secondary[(a["Course"], e["Exam"], e["Part"])] = e["Period"]
+    # Calculate primary primary conflicts
     index1 = -1
     for p1 in primary_primary.values():
         index1 += 1
@@ -270,6 +293,8 @@ for c in curruculas:
                     list(primary_primary.keys())[index2],
                 )
                 same_period_pp = +1
+
+    # Calculate primary secondary conflicts
     index1 = -1
     count_ps_distance = 0
     for p1 in primary_primary.values():
@@ -316,6 +341,8 @@ for c in curruculas:
                     list(secondary.keys())[index2],
                 )
                 same_period_ps += 1
+
+    # Calculate secondary secondary conflicts
     index1 = -1
     for p1 in secondary.values():
         index1 += 1
@@ -330,6 +357,8 @@ for c in curruculas:
                     list(secondary.keys())[index2],
                 )
                 same_period_ss += 1
+
+# Caluclate minimum distances between exams from same course
 min_distance_not_attained_same_exam = 0
 min_distance_not_attained_diff_exam = 0
 for a in assignments:
@@ -375,6 +404,7 @@ for a in assignments:
                             min_distance_not_attained_diff_exam += 1
 
 
+# Calculate objective value by hand
 print(
     "Objective is: ",
     broken_undesired_period * const.P_UNDESIRED_PERIOD
