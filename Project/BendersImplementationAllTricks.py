@@ -664,6 +664,25 @@ def solve(instance_filename: str) -> None:
                         P1.add(e)
                         SOFT_CONFLICT[e] = const.SC_SECONDARY_SECONDARY
 
+    # Rooms available per period
+    # Dict mapping (Period, room_type, room_size) to number of rooms available
+    rooms_available: Dict[Tuple[Period, str, int], int] = {}
+
+    # Rooms available by size per period
+    forbidden_rooms_by_period_and_type: Dict[
+        Tuple[Period, Union[const.SMALL, const.MEDIUM, const.LARGE]], List[Room]
+    ] = {}
+    undesired_rooms_by_period_and_type: Dict[
+        Tuple[Period, Union[const.SMALL, const.MEDIUM, const.LARGE]], List[Room]
+    ] = {}
+
+    # Dictionary mapping periods to the set of rooms available (i.e. not forbidden)
+    # in that period. Used in BSP
+    RoomsAvailable = {
+        p: {r for r in Rooms if not constrManager.is_forbidden(r.get_room_name(), p)}
+        for p in Periods
+    }
+
     print("Calculating Sets:", time.time() - previous_time, const.SECONDS)
     previous_time = time.time()
 
@@ -681,9 +700,11 @@ def solve(instance_filename: str) -> None:
     # The ordinal (order) value of the period assigned to event e
     H = {e: BMP.addVar(vtype=GRB.INTEGER) for e in Events}
 
-    # The penalty for an S1 soft conflict between a pair of events.
-    # Can definitely be relaxed to continuous
-    S1 = {s: BMP.addVar() for s in P1}
+    # Soft constraint counting variables. The paper claims that all of these may be
+    # relaxed to be continuous.
+    # S1
+    SPS = {(e, p): BMP.addVar(vtype=GRB.CONTINUOUS) for e in Events for p in Periods}
+    SSS = {(e, p): BMP.addVar(vtype=GRB.CONTINUOUS) for e in Events for p in Periods}
 
     # estimate of the number of events allocated to undesired rooms in each period
     # Can definitely be relaxed to continuous
@@ -726,18 +747,6 @@ def solve(instance_filename: str) -> None:
     previous_time = time.time()
 
     # ------ Constraints ------
-
-    # Rooms available per period
-    # Dict mapping (Period, room_type, room_size) to number of rooms available
-    rooms_available: Dict[Tuple[Period, str, int], int] = {}
-
-    # Rooms available by size per period
-    forbidden_rooms_by_period_and_type: Dict[
-        Tuple[Period, Union[const.SMALL, const.MEDIUM, const.LARGE]], List[Room]
-    ] = {}
-    undesired_rooms_by_period_and_type: Dict[
-        Tuple[Period, Union[const.SMALL, const.MEDIUM, const.LARGE]], List[Room]
-    ] = {}
 
     for p in Periods:
         for room_type in const.ROOM_TYPES:
@@ -843,13 +852,6 @@ def solve(instance_filename: str) -> None:
 
                 undesired_rooms_by_period_and_type[(p, room_type)].append(room_name)
 
-    # Dictionary mapping periods to the set of rooms available (i.e. not forbidden)
-    # in that period. Used in BSP
-    RoomsAvailable = {
-        p: {r for r in Rooms if not constrManager.is_forbidden(r.get_room_name(), p)}
-        for p in Periods
-    }
-
     # Number of available rooms by period, type of room, and number of joining members
     # Excludes forbidden room_period constraints
     # Number of joining members = 1 => single room
@@ -908,6 +910,32 @@ def solve(instance_filename: str) -> None:
             quicksum(p.get_ordinal_value() * Y[e, p] for p in PA[e]) == H[e]
         )
         for e in Events
+    }
+
+    # Constraint 8 (S1): Soft Conflicts
+    SoftConflicts = {
+        (e, p): BMP.addConstr(
+            len([e2 for e2 in SCPS[e] if (e, e2) in DPDirected and p in PA[e2]])
+            * Y[e, p]
+            + quicksum(Y[e2, p] for e2 in SCPS[e] if (e, e2) in DPDirected)
+            <= SPS[e, p]
+            + len([e2 for e2 in SCPS[e] if (e, e2) in DPDirected and p in PA[e2]])
+        )
+        for e in Events
+        for p in PA[e]
+    }
+
+    # Constraint 9 (S2): Preferences
+    Preferences = {
+        (e, p): BMP.addConstr(
+            len({e2 for e2 in SCSS[e] if (e, e2) in DPDirected and p in PA[e2]})
+            * Y[e, p]
+            + quicksum(Y[e2, p] for e2 in SCSS[e] if (e, e2) in DPDirected)
+            <= SSS[e, p]
+            + len({e2 for e2 in SCSS[e] if (e, e2) in DPDirected and p in PA[e2]})
+        )
+        for e in Events
+        for p in PA[e]
     }
 
     # Sharp lower bound on the of S1 estimation variables.
@@ -1039,7 +1067,9 @@ def solve(instance_filename: str) -> None:
 
     BMP.setObjective(
         # Cost S1
-        quicksum(S1[s] for s in P1)
+        const.SC_PRIMARY_SECONDARY * quicksum(SPS[e, p] for e in Events for p in PA[e])
+        + const.SC_SECONDARY_SECONDARY
+        * quicksum(SSS[e, p] for e in Events for p in PA[e])
         # Cost S2
         + const.P_UNDESIRED_PERIOD
         * (
@@ -1047,8 +1077,7 @@ def solve(instance_filename: str) -> None:
                 Y[e, p]
                 for e in Events
                 for p in PA[e]
-                if p in constrManager.get_period_constraints()
-                if p.period in PA[e]
+                if p in global_undesired_periods or p in undesired_event_periods[e]
             )
             + quicksum(Y[e, p] for e in Events for p in undesired_event_periods[e])
         )
@@ -1378,11 +1407,7 @@ def main():
     if len(sys.argv) > 1:
         # A filename argument was provided, run only that problem set
         filename = sys.argv[1]
-        try:
-            solve(filename)
-        except Exception as e:
-            print("Exception occurred:", e)
-            skipped.append(filename)
+        solve(filename)
         print("\n\n")
     else:
         # No filename argument provided, run all problem sets

@@ -7,7 +7,7 @@
           "Exam": 0,
           "Part": "Written",
           "Period": 0,
-          "room_name": "B"
+          "room_name": "C"
         },
         {
           "Exam": 1,
@@ -24,13 +24,13 @@
           "Exam": 0,
           "Part": "Written",
           "Period": 0,
-          "room_name": "AC"
+          "room_name": "AB"
         },
         {
           "Exam": 1,
           "Part": "Written",
-          "Period": 18,
-          "room_name": "AC"
+          "Period": 17,
+          "room_name": "AB"
         }
       ]
     },
@@ -52,24 +52,14 @@
         {
           "Exam": 1,
           "Part": "Written",
-          "Period": 18,
+          "Period": 17,
           "room_name": "H"
         },
         {
           "Exam": 1,
           "Part": "Oral",
-          "Period": 19,
+          "Period": 18,
           "room_name": "H"
-        }
-      ]
-    },
-    {
-      "Course": "Analytics",
-      "Events": [
-        {
-          "Exam": 0,
-          "Part": "Oral",
-          "Period": 3
         }
       ]
     },
@@ -80,25 +70,35 @@
           "Exam": 0,
           "Part": "Written",
           "Period": 6,
-          "room_name": "AB"
-        },
-        {
-          "Exam": 0,
-          "Part": "Oral",
-          "Period": 10,
-          "room_name": "AB"
+          "room_name": "AC"
         },
         {
           "Exam": 1,
           "Part": "Written",
-          "Period": 12,
-          "room_name": "AB"
+          "Period": 11,
+          "room_name": "AC"
+        },
+        {
+          "Exam": 0,
+          "Part": "Oral",
+          "Period": 14,
+          "room_name": "AC"
         },
         {
           "Exam": 1,
           "Part": "Oral",
-          "Period": 17,
-          "room_name": "AB"
+          "Period": 16,
+          "room_name": "AC"
+        }
+      ]
+    },
+    {
+      "Course": "Analytics",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Oral",
+          "Period": 7
         }
       ]
     }
