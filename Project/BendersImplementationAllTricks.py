@@ -1061,7 +1061,7 @@ def solve(instance_filename: str) -> None:
         + const.DD_SAME_COURSE * quicksum(PMinE[e1, e2] for (e1, e2) in DPSameCourse)
         + const.DD_SAME_EXAMINATION
         * quicksum(PMinWO[e1, e2] + PMaxWO[e1, e2] for (e1, e2) in DPWrittenOral)
-        + (const.UD_PRIMARY_PRIMARY / 2)
+        + const.UD_PRIMARY_PRIMARY
         * quicksum(PMinPP[e1, e2] for (e1, e2) in DPPrimaryPrimary)
         + const.UD_PRIMARY_SECONDARY
         * quicksum(PMinPS[e1, e2] for (e1, e2) in DPPrimarySecondary),
