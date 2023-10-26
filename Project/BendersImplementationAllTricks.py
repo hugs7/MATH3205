@@ -1324,7 +1324,6 @@ def solve(instance_filename: str) -> None:
 
     # Memory limit
     BMP.setParam("SoftMemLimit", 60)
-    # BMP.setParam("MemLimit", 40)
 
     # Time Limit
     BMP.setParam("TimeLimit", 60 * 30)
