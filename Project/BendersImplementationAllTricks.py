@@ -1035,12 +1035,12 @@ def solve(instance_filename: str) -> None:
             PMinPP[e1, e2] + D_abs[e1, e2] >= primary_primary_distance
         )
 
-    Constraint24 = {}
-    for e1, e2 in DPPrimarySecondary:
-        e1_course: Course = e1.get_course()
-        e2_course: Course = e2.get_course()
+    # Constraint24 = {}
+    # for e1, e2 in DPPrimarySecondary:
+    #     e1_course: Course = e1.get_course()
+    #     e2_course: Course = e2.get_course()
 
-        Constraint24[(e1, e2)] = BMP.addConstr(PMinPS[e1, e2] + D_abs[e1, e2] >= 1)
+    #     Constraint24[(e1, e2)] = BMP.addConstr(PMinPS[e1, e2] + D_abs[e1, e2] >= 1)
 
     print("Constraints defined", time.time())
 
