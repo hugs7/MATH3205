@@ -1344,7 +1344,7 @@ def solve(instance_filename: str) -> None:
     BMP.setParam("SoftMemLimit", 60)
 
     # Time Limit
-    BMP.setParam("TimeLimit", 60 * 60)
+    BMP.setParam("TimeLimit", 60 * 30)
 
     # Solve master problem with Callback
     BMP.optimize(Callback)
