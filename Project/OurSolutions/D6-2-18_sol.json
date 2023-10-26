@@ -1,0 +1,1633 @@
+{
+  "Assignments": [
+    {
+      "Course": "44202-44203",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 0,
+          "room_name": "4132"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 49,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44440-44441",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 0,
+          "room_name": "4123"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 28,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44356-44358-44357-44359",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 0,
+          "room_name": "4128"
+        }
+      ]
+    },
+    {
+      "Course": "44624-44625",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 0,
+          "room_name": "4111"
+        }
+      ]
+    },
+    {
+      "Course": "44616-44617",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 0,
+          "room_name": "4112"
+        }
+      ]
+    },
+    {
+      "Course": "44134-44135",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 0,
+          "room_name": "4115"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 74,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44226-44227",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 0,
+          "room_name": "4116"
+        },
+        {
+          "exam": 1,
+          "part": "Written",
+          "period_ordinal": 56,
+          "room_name": "4125"
+        }
+      ]
+    },
+    {
+      "Course": "45527-45528",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 0,
+          "room_name": "4110"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 56,
+          "room_name": "4116"
+        }
+      ]
+    },
+    {
+      "Course": "44210-44211",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 0,
+          "room_name": "4118"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 28,
+          "room_name": "4110"
+        }
+      ]
+    },
+    {
+      "Course": "45447-45448",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 0,
+          "room_name": "4117"
+        }
+      ]
+    },
+    {
+      "Course": "44644-44645",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 1,
+          "room_name": "4112"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 34,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44534-44535",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 1,
+          "room_name": "4136"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 29,
+          "room_name": "4126"
+        }
+      ]
+    },
+    {
+      "Course": "44418-44420-44419-44421",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 1,
+          "room_name": "4168"
+        },
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 9,
+          "room_name": "4143"
+        },
+        {
+          "exam": 1,
+          "part": "Written",
+          "period_ordinal": 31,
+          "room_name": "4159"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 37,
+          "room_name": "4160"
+        }
+      ]
+    },
+    {
+      "Course": "44504-44505",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 1,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "45463-45464-45465-45466",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 1,
+          "room_name": "4127"
+        }
+      ]
+    },
+    {
+      "Course": "44014-44016-44015-44017",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 1,
+          "room_name": "4117"
+        }
+      ]
+    },
+    {
+      "Course": "44464-45552-44465-45553",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 2,
+          "room_name": "4115"
+        },
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 6,
+          "room_name": "4118"
+        },
+        {
+          "exam": 1,
+          "part": "Written",
+          "period_ordinal": 72,
+          "room_name": "4115"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 77,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44230-44231",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 2,
+          "room_name": "4123"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 70,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44424-44425",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 2,
+          "room_name": "4118"
+        }
+      ]
+    },
+    {
+      "Course": "44634-44635",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 2,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44506-44507",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 2,
+          "room_name": "4112"
+        }
+      ]
+    },
+    {
+      "Course": "44408-44409",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 2,
+          "room_name": "4110"
+        }
+      ]
+    },
+    {
+      "Course": "44488-44489",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 3,
+          "room_name": "4110"
+        }
+      ]
+    },
+    {
+      "Course": "44514-44515",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 3,
+          "room_name": "4132"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 45,
+          "room_name": "4110"
+        }
+      ]
+    },
+    {
+      "Course": "44328-44329",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 3,
+          "room_name": "4115"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 71,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44566-44567",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 3,
+          "room_name": "4118"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 45,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44264-44265",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 4,
+          "room_name": "4128"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 78,
+          "room_name": "4110"
+        }
+      ]
+    },
+    {
+      "Course": "44270-44272-44271-44273",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 4,
+          "room_name": "4118"
+        }
+      ]
+    },
+    {
+      "Course": "44260-44262-44261-44263",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 4,
+          "room_name": "4117"
+        }
+      ]
+    },
+    {
+      "Course": "44414-44416-44415-44417",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 4,
+          "room_name": "4116"
+        }
+      ]
+    },
+    {
+      "Course": "44074-44075",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 4,
+          "room_name": "4115"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 32,
+          "room_name": "4110"
+        }
+      ]
+    },
+    {
+      "Course": "44028-44029",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 4,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44458-44459",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 4,
+          "room_name": "4121"
+        },
+        {
+          "exam": 1,
+          "part": "Written",
+          "period_ordinal": 32,
+          "room_name": "4125"
+        }
+      ]
+    },
+    {
+      "Course": "44544-44546-44545-44547",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 4,
+          "room_name": "4130"
+        },
+        {
+          "exam": 1,
+          "part": "Written",
+          "period_ordinal": 44,
+          "room_name": "4115"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 48,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44568-44569",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 5,
+          "room_name": "4115"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 45,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44582-45535-44583-45536",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 5,
+          "room_name": "4118"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 89,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44480-44481",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 5,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44338-44339",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 6,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44232-44233",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 6,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "45542-45543",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 6,
+          "room_name": "4110"
+        }
+      ]
+    },
+    {
+      "Course": "44306-44308-44307-44309",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 7,
+          "room_name": "4125"
+        }
+      ]
+    },
+    {
+      "Course": "44632-44633",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 8,
+          "room_name": "4125"
+        }
+      ]
+    },
+    {
+      "Course": "44050-44052-44051-44053",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 8,
+          "room_name": "4110"
+        },
+        {
+          "exam": 1,
+          "part": "Written",
+          "period_ordinal": 56,
+          "room_name": "4110"
+        }
+      ]
+    },
+    {
+      "Course": "45522-45523",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 8,
+          "room_name": "4119"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 79,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44656-44658-44657-44659",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 8,
+          "room_name": "4129"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 76,
+          "room_name": "4110"
+        }
+      ]
+    },
+    {
+      "Course": "44146-44147",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 8,
+          "room_name": "4115"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 62,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "45347-45348",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 9,
+          "room_name": "4119"
+        },
+        {
+          "exam": 1,
+          "part": "Written",
+          "period_ordinal": 65,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44612-44613",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 9,
+          "room_name": "4125"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 64,
+          "room_name": "4125"
+        }
+      ]
+    },
+    {
+      "Course": "44062-44064-44063-44065",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 9,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44596-44597",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 9,
+          "room_name": "4126"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 75,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44652-44654-44653-44655",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 9,
+          "room_name": "4129"
+        }
+      ]
+    },
+    {
+      "Course": "44622-44623",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 14,
+          "room_name": "4123"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 72,
+          "room_name": "4118"
+        }
+      ]
+    },
+    {
+      "Course": "44300-45650-44301-45651",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 14,
+          "room_name": "4110"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 74,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44666-44667",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 14,
+          "room_name": "4118"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 63,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44058-44059",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 14,
+          "room_name": "4132"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 46,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44452-44453",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 14,
+          "room_name": "4115"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 56,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44128-44130-44129-44131",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 15,
+          "room_name": "4115"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 77,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44278-44280-44279-44281",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 16,
+          "room_name": "4132"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 89,
+          "room_name": "4110"
+        }
+      ]
+    },
+    {
+      "Course": "44150-44151",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 16
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 56
+        }
+      ]
+    },
+    {
+      "Course": "45570-45571",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 16,
+          "room_name": "4115"
+        },
+        {
+          "exam": 1,
+          "part": "Written",
+          "period_ordinal": 58,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44004-44005",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 17,
+          "room_name": "4115"
+        },
+        {
+          "exam": 1,
+          "part": "Written",
+          "period_ordinal": 45,
+          "room_name": "4118"
+        }
+      ]
+    },
+    {
+      "Course": "44092-44093",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 17,
+          "room_name": "4131"
+        },
+        {
+          "exam": 1,
+          "part": "Written",
+          "period_ordinal": 87,
+          "room_name": "4125"
+        }
+      ]
+    },
+    {
+      "Course": "44360-44361",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 17,
+          "room_name": "4110"
+        },
+        {
+          "exam": 1,
+          "part": "Written",
+          "period_ordinal": 63,
+          "room_name": "4110"
+        }
+      ]
+    },
+    {
+      "Course": "44516-44517",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 19,
+          "room_name": "4132"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 73,
+          "room_name": "4118"
+        }
+      ]
+    },
+    {
+      "Course": "44372-44373",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 19,
+          "room_name": "4125"
+        }
+      ]
+    },
+    {
+      "Course": "44334-44335",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 20,
+          "room_name": "4115"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 76,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44218-44220-44219-44221",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 20,
+          "room_name": "4132"
+        },
+        {
+          "exam": 1,
+          "part": "Written",
+          "period_ordinal": 88,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44572-44574-44573-44575",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 20,
+          "room_name": "4118"
+        }
+      ]
+    },
+    {
+      "Course": "44048-44049",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 21,
+          "room_name": "4110"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 64,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44184-44186-44185-44187",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 21,
+          "room_name": "4123"
+        }
+      ]
+    },
+    {
+      "Course": "44042-44043",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 21,
+          "room_name": "4118"
+        }
+      ]
+    },
+    {
+      "Course": "44332-44333",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 21,
+          "room_name": "4115"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 70,
+          "room_name": "4118"
+        }
+      ]
+    },
+    {
+      "Course": "45583-45584",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 21,
+          "room_name": "4132"
+        },
+        {
+          "exam": 1,
+          "part": "Written",
+          "period_ordinal": 88,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44160-44161",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 22,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44224-44225",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 22,
+          "room_name": "4115"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 63,
+          "room_name": "4125"
+        }
+      ]
+    },
+    {
+      "Course": "44140-44141",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 23,
+          "room_name": "4115"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 58,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44240-44242-44241-44243",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 23,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44054-44055",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 28,
+          "room_name": "4118"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 73,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "45558-45559",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 28,
+          "room_name": "4115"
+        },
+        {
+          "exam": 1,
+          "part": "Written",
+          "period_ordinal": 72,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44526-44528-44527-44529",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 29,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44234-44236-44235-44237",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 29,
+          "room_name": "4119"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 86,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44660-44662-44661-44663",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 29,
+          "room_name": "4115"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 79,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44106-44108-44107-44109",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 30,
+          "room_name": "4118"
+        }
+      ]
+    },
+    {
+      "Course": "44556-44558-44557-44559",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 30
+        }
+      ]
+    },
+    {
+      "Course": "44034-44036-44035-44037",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 30,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44156-44158-44157-44159",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 30,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "45564-45565",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 31,
+          "room_name": "4116"
+        },
+        {
+          "exam": 1,
+          "part": "Written",
+          "period_ordinal": 73,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44442-44443",
+      "Events": [
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 32,
+          "room_name": "4129"
+        }
+      ]
+    },
+    {
+      "Course": "45581-45582",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 34,
+          "room_name": "4118"
+        },
+        {
+          "exam": 1,
+          "part": "Written",
+          "period_ordinal": 78,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44094-44095",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 34,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "45512-45513-45514-45515",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 36,
+          "room_name": "4115"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 86,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44038-44040-44039-44041",
+      "Events": [
+        {
+          "exam": 1,
+          "part": "Written",
+          "period_ordinal": 37,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44182-44183",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 37,
+          "room_name": "4132"
+        },
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 85,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44164-44165",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 42,
+          "room_name": "4132"
+        },
+        {
+          "exam": 1,
+          "part": "Written",
+          "period_ordinal": 76,
+          "room_name": "4118"
+        }
+      ]
+    },
+    {
+      "Course": "44250-44251",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 42,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44138-44139",
+      "Events": [
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 43,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44204-44206-44205-44207",
+      "Events": [
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 46,
+          "room_name": "4118"
+        }
+      ]
+    },
+    {
+      "Course": "44412-44413",
+      "Events": [
+        {
+          "exam": 1,
+          "part": "Written",
+          "period_ordinal": 46,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44560-44561",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Written",
+          "period_ordinal": 48,
+          "room_name": "4126"
+        }
+      ]
+    },
+    {
+      "Course": "44080-44081",
+      "Events": [
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 48,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44490-44491",
+      "Events": [
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 49,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44432-44433",
+      "Events": [
+        {
+          "exam": 0,
+          "part": "Oral",
+          "period_ordinal": 56,
+          "room_name": "4129"
+        }
+      ]
+    },
+    {
+      "Course": "44584-44586-44585-44587",
+      "Events": [
+        {
+          "exam": 1,
+          "part": "Written",
+          "period_ordinal": 56,
+          "room_name": "4119"
+        }
+      ]
+    },
+    {
+      "Course": "45576-45577",
+      "Events": [
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 57,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44602-44603",
+      "Events": [
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 57,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44100-44102-44101-44103",
+      "Events": [
+        {
+          "exam": 1,
+          "part": "Written",
+          "period_ordinal": 58,
+          "room_name": "4118"
+        }
+      ]
+    },
+    {
+      "Course": "44284-44286-44285-44287",
+      "Events": [
+        {
+          "exam": 1,
+          "part": "Written",
+          "period_ordinal": 64,
+          "room_name": "4129"
+        }
+      ]
+    },
+    {
+      "Course": "44056-44057",
+      "Events": [
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 70,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44006-44007",
+      "Events": [
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 70,
+          "room_name": "4110"
+        }
+      ]
+    },
+    {
+      "Course": "45595-45596-45597-45598",
+      "Events": [
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 71,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44172-44173",
+      "Events": [
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 76,
+          "room_name": "4115"
+        }
+      ]
+    },
+    {
+      "Course": "44404-44406-44405-44407",
+      "Events": [
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 85,
+          "room_name": "4161"
+        }
+      ]
+    },
+    {
+      "Course": "44190-44192-44191-44193",
+      "Events": [
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 87,
+          "room_name": "4132"
+        }
+      ]
+    },
+    {
+      "Course": "44244-44245",
+      "Events": [
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 89,
+          "room_name": "4118"
+        }
+      ]
+    },
+    {
+      "Course": "44256-44258-44257-44259",
+      "Events": [
+        {
+          "exam": 1,
+          "part": "Oral",
+          "period_ordinal": 89,
+          "room_name": "4132"
+        }
+      ]
+    }
+  ],
+  "Cost": 383
+}
