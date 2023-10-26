@@ -175,7 +175,7 @@ def solve(instance_name: str):
 
     # The set of overlapping rooms of composite room
     # Indexed by rc
-    R0 = Rooms.get_overlapping_rooms()
+    R0 = Rooms.get_overlapping_rooms_dict()
 
     # -- Period Availabilities (P_e in paper) --
     # Set of periods available for event e
@@ -946,7 +946,7 @@ def solve(instance_name: str):
 
 
 def main():
-    instance_name = "D1-3-16.json"
+    instance_name = "toy.json"
     solve(instance_name)
 
 

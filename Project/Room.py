@@ -513,6 +513,57 @@ class RoomManager:
             if not utils.disjoint(r.get_members(), rc.get_members())
         }
 
+    def get_overlapping_rooms_dict(self) -> Dict[Room, List[Room]]:
+        """
+        Returns a dictionary with composite rooms as keys and
+        a list of overlapping rooms as values.
+        """
+
+        if not self.constructed:
+            self.construct_composite_map()
+
+        overlapping_rooms: Dict[Room, List[Room]] = {}
+
+        visited_regions = []
+        for comp_room, members in self.composite_map.items():
+            rooms_in_connected_region = [comp_room]
+            if comp_room in visited_regions:
+                continue
+            visited_regions.append(comp_room)
+
+            connected_region: Dict[Room, List[Room]] = {}
+            connected_region[comp_room] = members
+
+            for other_comp_room, other_members in self.composite_map.items():
+                if comp_room == other_comp_room:
+                    continue
+
+                connected = False
+                for other_member in other_members:
+                    if other_member in members:
+                        connected = True
+                        break
+
+                if not connected:
+                    continue
+
+                rooms_in_connected_region.append(other_comp_room)
+                visited_regions.append(other_comp_room)
+                connected_region[other_comp_room] = other_members
+
+            connected_region_set_of_members = [
+                set(members) for members in connected_region.values()
+            ]
+
+            intersection = connected_region_set_of_members[0]
+            for cr in connected_region_set_of_members[1:]:
+                intersection = intersection.intersection(cr)
+
+            for room in rooms_in_connected_region:
+                overlapping_rooms[room] = list(intersection)
+
+        return overlapping_rooms
+
     # Implement the iterable functionality
     def __iter__(self) -> Iterator[Room]:
         return iter(self.rooms)
