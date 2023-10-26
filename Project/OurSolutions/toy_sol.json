@@ -1,23 +1,6 @@
 {
   "Assignments": [
     {
-      "Course": "Programming",
-      "Events": [
-        {
-          "Exam": 0,
-          "Part": "Written",
-          "Period": 0,
-          "room_name": "AC"
-        },
-        {
-          "Exam": 1,
-          "Part": "Written",
-          "Period": 18,
-          "room_name": "AC"
-        }
-      ]
-    },
-    {
       "Course": "Algorithms",
       "Events": [
         {
@@ -35,8 +18,31 @@
       ]
     },
     {
+      "Course": "Programming",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 0,
+          "room_name": "AC"
+        },
+        {
+          "Exam": 1,
+          "Part": "Written",
+          "Period": 18,
+          "room_name": "AC"
+        }
+      ]
+    },
+    {
       "Course": "OpRes",
       "Events": [
+        {
+          "Exam": 0,
+          "Part": "Written",
+          "Period": 0,
+          "room_name": "H"
+        },
         {
           "Exam": 0,
           "Part": "Oral",
@@ -46,14 +52,24 @@
         {
           "Exam": 1,
           "Part": "Written",
-          "Period": 17,
+          "Period": 18,
           "room_name": "H"
         },
         {
           "Exam": 1,
           "Part": "Oral",
-          "Period": 18,
+          "Period": 19,
           "room_name": "H"
+        }
+      ]
+    },
+    {
+      "Course": "Analytics",
+      "Events": [
+        {
+          "Exam": 0,
+          "Part": "Oral",
+          "Period": 3
         }
       ]
     },
@@ -67,21 +83,21 @@
           "room_name": "AB"
         },
         {
-          "Exam": 1,
-          "Part": "Written",
-          "Period": 11,
-          "room_name": "AB"
-        },
-        {
           "Exam": 0,
           "Part": "Oral",
-          "Period": 13,
+          "Period": 10,
+          "room_name": "AB"
+        },
+        {
+          "Exam": 1,
+          "Part": "Written",
+          "Period": 12,
           "room_name": "AB"
         },
         {
           "Exam": 1,
           "Part": "Oral",
-          "Period": 15,
+          "Period": 17,
           "room_name": "AB"
         }
       ]

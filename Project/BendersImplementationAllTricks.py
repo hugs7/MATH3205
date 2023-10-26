@@ -623,7 +623,7 @@ def solve(instance_filename: str) -> None:
 
     # Set of all unorded pairs of events (stored as a frozenset) which are in
     # S1 soft conflict
-    P1 = set()
+    P1: Set[Event] = set()
     # Soft conflict cost for each pair
     SOFT_CONFLICT = {}
     # Add primary-secondary conflicts first
@@ -702,8 +702,6 @@ def solve(instance_filename: str) -> None:
 
     # Variables for S3 soft constraints
     # Abs distances between assignment of e1 and e2
-    # NOOOOOOO why does this exist; we should ALWAYS write D_actual_abs_1 +
-    #   D_actual_abs_2 instead TODO TODO
     D_abs = {(e1, e2): BMP.addVar(vtype=GRB.INTEGER) for e1 in Events for e2 in Events}
 
     # Actual distances between assignments of e1 and e2
@@ -728,10 +726,6 @@ def solve(instance_filename: str) -> None:
     previous_time = time.time()
 
     # ------ Constraints ------
-
-    # Hard upper limit on the number of events assigned to a period
-    # Total number of rooms around campus
-    num_rooms: int = len(Rooms.get_single_rooms())
 
     # Rooms available per period
     # Dict mapping (Period, room_type, room_size) to number of rooms available
@@ -918,13 +912,13 @@ def solve(instance_filename: str) -> None:
 
     # Sharp lower bound on the of S1 estimation variables.
     # Note that, by default, there is already a lower bound of 0
-    SoftConflicts = {
-        (s, p): BMP.addConstr(
-            S1[s] >= SOFT_CONFLICT[s] * (-1 + quicksum(Y[e, p] for e in s))
-        )
-        for s in P1
-        for p in utils.intersection(PA[e] for e in s)
-    }
+    # SoftConflicts = {
+    #     (s, p): BMP.addConstr(
+    #         S1[s] >= SOFT_CONFLICT[s] * (-1 + quicksum(Y[e, p] for e in s))
+    #     )
+    #     for s in P1
+    #     for p in utils.intersection(PA[e] for e in s)
+    # }
 
     # Constraint 10 (S3): DirectedDistances
     Constraint10 = {
@@ -1344,7 +1338,6 @@ def solve(instance_filename: str) -> None:
         print("------" * 10 + "\nDay ", d)
         for p in Periods:
             if p.get_day() == d:
-                # print(f"{' '*4}Period ", p)
                 for e in Events:
                     # Ensure we check if p in available periods for event e before accessing Y[e, p]
                     if p in PA[e] and Y[e, p].x > const.BINARY_ONE_BOUND:
