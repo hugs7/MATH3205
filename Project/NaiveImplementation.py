@@ -859,7 +859,6 @@ m.setObjective(
     + const.DD_SAME_EXAMINATION
     * quicksum(PMinWO[e1, e2] + PMaxWO[e1, e2] for (e1, e2) in DPWrittenOral)
     + const.UD_PRIMARY_PRIMARY
-    / 2  # divided by 2 because both undirected pairs exist
     * quicksum(PMinPP[e1, e2] for (e1, e2) in DPPrimaryPrimary),
     # + const.UD_PRIMARY_SECONDARY
     # * quicksum(PMinPS[e1, e2] for (e1, e2) in DPPrimarySecondary),
