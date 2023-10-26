@@ -26,7 +26,7 @@ from Utils import concat
 previous_time = time.time()
 
 # ------ Import data ------
-instance_name = "D1-3-18.json"
+instance_name = "toy.json"
 data_file = os.path.join(".", "Project", "data", instance_name)
 
 with open(data_file, "r") as json_file:
@@ -189,7 +189,8 @@ for event in Events:
             period in forbidden_period_constraints
             or period in forbidden_event_period_constraints[event]
         ):
-            print("Skipping period", period, "for event", event)
+            pass
+            # print("Skipping period", period, "for event", event)
         else:
             PA[event].append(period)
 
@@ -279,7 +280,8 @@ for e in Events:
 
     # Conflicts with teachers
     teacher_name: str = next(
-        (c.get_teacher() for c in Courses if c.get_course_name() == course_name), None
+        (c.get_teacher() for c in Courses if c.get_course_name() == event_course_name),
+        None,
     )
     if teacher_name is None:
         raise Exception(f"No course found matching event {e}")
