@@ -20,7 +20,7 @@ $x_i$ is the fraction of our portfolio investged in each asset
 ## Maximise return
 
 $$
-\max (\lambda sum_{i\in N} r_i x_i - (1-\lambda) x^T w X)
+\max (\lambda \sum_{i\in N} r_i x_i - (1-\lambda) x^T w X)
 $$
 
 with

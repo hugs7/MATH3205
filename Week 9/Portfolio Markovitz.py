@@ -44,7 +44,7 @@ R = [
 # Add the risk free asset
 RiskFree = True
 if RiskFree:
-    R.append(1)
+    R.append(1.05)
     for i in N:
         W[i].append(0.0)
     N = range(NumAsset + 1)
@@ -93,7 +93,7 @@ investAll = m.addConstr(quicksum(X[i] for i in N) == 1)
 
 Ret = []
 Var = []
-m.setParam("OutputFlag", 0)
+m.setParam("OutputFlag", 1)
 
 # Objective
 for l in range(1 - 1, 100 + 1):
@@ -111,5 +111,7 @@ for l in range(1 - 1, 100 + 1):
 
     # Optimise
 
-plt.plot(Ret, Var)
+plt.plot(Var, Ret)
+plt.xlabel("Variance")
+plt.ylabel("Return")
 plt.show()

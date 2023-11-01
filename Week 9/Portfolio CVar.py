@@ -44,7 +44,7 @@ R = [
 # Add the risk free asset
 RiskFree = True
 if RiskFree:
-    R.append(1)
+    R.append(1.05)
     for i in N:
         W[i].append(0.0)
     N = range(NumAsset + 1)
@@ -107,7 +107,7 @@ Ret = []
 CV = []
 LV = []
 Obj = []
-m.setParam("OutputFlag", 0)
+m.setParam("OutputFlag", 1)
 
 for l in range(0, 101):
     Lambda = l * 0.01
@@ -127,6 +127,9 @@ for l in range(0, 101):
 plt.plot(LV, Ret)
 plt.plot(LV, CV)
 plt.plot(LV, Obj)
+plt.xlabel("Lambda")
+plt.legend(["Return", "CVaR", "Objective"])
+plt.ylabel("Value")
 plt.show()
 
 
