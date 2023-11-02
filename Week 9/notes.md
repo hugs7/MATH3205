@@ -48,7 +48,7 @@ Value at Risk and Conditional Value at Risk
 
 Sample average approximation (SAA)
 
-Assume we want VaR and CVaR at the $\alpha$ level (e.g.\ the bottom $5\%$).
+Assume we want VaR and CVaR at the $\alpha$ level (e.g. the bottom $5\%$).
 
 Sets
 $S$ samples
@@ -57,14 +57,15 @@ Data
 $r_{is}$ return for investment $i \in N$ in sample $s \in S$
 
 Variables
-$\beta_s$ return of sample $s \in S$.
-$\text{Var}$ estimate of VaR from samples
-$\text{CVar}$ esstimate of CVaR from samples
-$\beta^{-}$ the amount by which the return of scenario $s \in S$ is below $\text{Var}$
+
+-   $\beta_s$ return of sample $s \in S$.
+-   $\text{Var}$ estimate of VaR from samples
+-   $\text{CVar}$ estimate of CVaR from samples
+-   $\beta^{-}$ the amount by which the return of scenario $s \in S$ is below $\text{Var}$
 
 Objective
 
-$$ \max \frac{\lambda}{|S|} \sum\_{s \in S} + (1 - \lambda)\text{CVar} $$
+$$ \max \frac{\lambda}{|S|} \sum\_{s \in S}\beta_s + (1 - \lambda)\text{CVar} $$
 
 Subject to
 
@@ -87,12 +88,12 @@ $$ \sum\_{i \in N} = 1 $$
 
 Chance constraint for small values of $\alpha$
 
-$$ pr\left(\sum\_{i \in N} r_i x_i \ge 1\right) \ge (1 - \alpha) $$
+$$ \mathbb{P}\left(\sum\_{i \in N} r_i x_i \ge 1\right) \ge (1 - \alpha) $$
 
 This turns into
 $$ \left(F^{-1} \left(1 - \alpha \right)\right)^2 x^\top W x \le \left(1 - \sum\_{i \ in N} r_i x_i \right)^2 $$
 
-What if the data is not normally distribted
+What if the data is not normally distributed
 
 We can generate a lot of samples.
 
