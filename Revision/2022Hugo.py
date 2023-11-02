@@ -1,3 +1,8 @@
+"""
+Hugo Burton
+2/11/2023
+"""
+
 from gurobipy import Model, GRB, quicksum
 import random
 import itertools
@@ -134,3 +139,22 @@ else:
 
     # Optimise
     m.optimize()
+
+    # Print solution
+    print("Best objective", m.objVal)
+
+    # Print way of packing the boxes
+
+    for b in B:
+        # Calculate total weight of box
+        totalWeight = 0
+        for c in C:
+            if X[b, c].x > 0.5:
+                totalWeight += sum([G[c][i] * (i + 21) for i in range(len(Size))])
+
+                print("Box ", b, "weight ", totalWeight, "kg")
+
+                # Print items in the box
+                for index, num in enumerate(G[c]):
+                    if num > 0:
+                        print("     pack", num, "item(s) of weight", index + 21, "kg")
