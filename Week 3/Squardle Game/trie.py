@@ -6,7 +6,7 @@ import itertools
 Alphabet = "abcdefghijklmnopqrstuvwxyz"
 
 min_word_length = 4
-max_word_len = 6
+max_word_len = 12
 
 
 def generate_combinations(grid, min_length, max_length):
@@ -18,22 +18,67 @@ def generate_combinations(grid, min_length, max_length):
     def is_adjacent(pos1, pos2):
         return abs(pos1[0] - pos2[0]) <= 1 and abs(pos1[1] - pos2[1]) <= 1
 
-    combs: Set[List[tuple]] = set()
+    base_combs: Dict[int, Set[List[tuple]]] = dict()
 
-    for length in range(min_length, max_length + 1):
+    for length in range(2, (max_word_len // 3) + 2):
+        base_combs[length] = set()
+        print("Computing permutations of length", length, "...")
         len_comb = set(itertools.permutations(grid_positions, length))
+        print("permutation complete")
         print(length, len(len_comb))
         # Use combinations directly without creating a list
         for index, comb in enumerate(len_comb):
             if index % 100000 == 0:
-                print(index, index / len(len_comb) * 100, "%")
+                print(index, round(index / len(len_comb) * 100, 3), "%")
             # Check if all positions in the combination are adjacent
             if all(is_adjacent(comb[i], comb[i + 1]) for i in range(len(comb) - 1)):
-                combs.add(comb)
+                base_combs[length].add(comb)
 
-    print(len(combs))
+        print("number of base", length, len(base_combs[length]))
+    print("number of base", len(base_combs))
 
-    return combs
+    # mapping to get longer combinations
+    mapping: Dict[int, tuple[int]] = {
+        6: (4, 3),
+        7: (4, 4),
+        8: (5, 4),
+        9: (5, 5),
+        10: (4, 4, 4),
+        11: (5, 4, 4),
+        12: (5, 5, 4),
+    }
+
+    joined_combs = set()
+    for length, bases in mapping.items():
+        print("joining", length, "with bases", bases)
+        if len(bases) == 2:
+            for i, comb1 in enumerate(base_combs[bases[0]]):
+                if i % 1000 == 0:
+                    print(i, "of", len(base_combs[bases[0]]))
+                for comb2 in base_combs[bases[1]]:
+                    if comb1[-1] == comb2[0]:
+                        # Check if any duplicates in combined list
+                        combined = comb1 + comb2[1:]
+                        if len(combined) == len(set(combined)):
+                            joined_combs.add(combined)
+        elif len(bases) == 3:
+            for i, comb1 in enumerate(base_combs[bases[0]]):
+                if i % 100 == 0:
+                    print(i, "of", len(base_combs[bases[0]]))
+                for comb2 in base_combs[bases[1]]:
+                    # check if comb1 and comb2 are adjacent
+                    if comb1[-1] == comb2[0]:
+                        # Check if any duplicates in combined list
+                        for comb3 in base_combs[bases[2]]:
+                            if comb2[-1] == comb3[0]:
+                                combined = comb1 + comb2[1:] + comb3[1:]
+                                if len(combined) == len(set(combined)):
+                                    joined_combs.add(combined)
+
+    print("number of joined", len(joined_combs))
+    final_combs = base_combs + joined_combs
+    print("number of final", len(final_combs))
+    return final_combs
 
 
 def to_words(combs, grid):
@@ -99,6 +144,7 @@ for word in AllWords:
 
 all_pos_combs = generate_combinations(grid, min_word_length, max_word_len)
 print("Number of combinations", len(all_pos_combs))
+
 # Convert lists of positions to words
 all_word_combs = to_words(all_pos_combs, grid)
 print("Number of words", len(all_word_combs))
@@ -110,6 +156,8 @@ for l in range(min_word_length, max_word_len + 1):
 print("splitting words")
 
 for word in all_word_combs:
+    if len(word) < min_word_length:
+        continue
     gridwordsLenDict[len(word)].append(word)
 print([len(w) for w in gridwordsLenDict.values()])
 
