@@ -1,6 +1,7 @@
 import os
 from typing import Dict, Set
 import time
+import sys
 
 startTime = time.time()
 
@@ -171,7 +172,9 @@ def growWord(partWordPositions, endPosition, lengthRemaining, grid, neighbours):
 wordLengthTime = time.time()
 # Generate all possible combinations of grid patterns
 for wordLength in range(min_word_len, max_word_len + 1):
-    print("Word Length", wordLength, "in...", end=" ")
+    print("Computed words of length", wordLength, "in...", end=" ")
+    # flush stdout
+    sys.stdout.flush()
     growWord([], None, wordLength, grid, neighbours)
     print(
         f"{time.time() - wordLengthTime:.3f} seconds - cumulative: {time.time() - startTime:.3f} seconds"
