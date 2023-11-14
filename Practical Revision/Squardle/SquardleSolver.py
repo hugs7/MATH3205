@@ -7,7 +7,7 @@ startTime = time.time()
 
 # Constants
 min_word_len = 4
-max_word_len = 12
+max_word_len = 20
 
 # Functions
 
@@ -64,7 +64,7 @@ print("Grid Letters", grid_letters)
 
 ### Read words from file
 
-f = open(os.path.join(".", "Practical Revision", "Squardle", "words.txt"), "r")
+f = open(os.path.join(".", "Practical Revision", "Squardle", "wordsbig.txt"), "r")
 
 # :-1 removes the new line
 AllWords = [w[:-1] for w in f]
@@ -72,7 +72,7 @@ AllWords = [w[:-1] for w in f]
 # Limit to words with min_word_length to max_word_len letters
 # All letters from each word must also be within grid_letters
 AllWords = [
-    w
+    w.lower()
     for w in AllWords
     if len(w) >= min_word_len
     and len(w) <= max_word_len
@@ -87,6 +87,10 @@ print(
     max_word_len,
     "letters with each of these words containing all of their letters in the grid",
 )
+WordsOfLen = {
+    l: [w for w in AllWords if len(w) == l]
+    for l in range(min_word_len, max_word_len + 1)
+}
 
 print("Generating all possible combinations of grid patterns...")
 
@@ -112,6 +116,12 @@ def positionsToWord(positions, grid):
 
 generatedWords = set()
 
+# open file to write to
+squardleWordsFileName = "squardlewords.txt"
+squardleWordsFile = open(
+    os.path.join(".", "Practical Revision", "Squardle", squardleWordsFileName), "w"
+)
+
 
 def growWord(partWordPositions, endPosition, lengthRemaining, grid, neighbours):
     """
@@ -123,6 +133,12 @@ def growWord(partWordPositions, endPosition, lengthRemaining, grid, neighbours):
         # Add to list of generated words
         newWord = positionsToWord(partWordPositions, grid)
         if newWord in AllWords:
+            if newWord not in generatedWords:
+                squardleWordsFile.write(newWord + "\n")
+                if len(generatedWords) % 100 == 0:
+                    # flush stdout
+                    squardleWordsFile.flush()
+
             generatedWords.add(newWord)
     else:
         if len(partWordPositions) == 0 or endPosition is None:
@@ -139,7 +155,6 @@ def growWord(partWordPositions, endPosition, lengthRemaining, grid, neighbours):
                     neighbours,
                 )
         else:
-            partWord = positionsToWord(partWordPositions, grid)
             for childPosition in neighbours[endPosition]:
                 if childPosition in partWordPositions:
                     # can't use this neighbour as position is already used
@@ -150,7 +165,7 @@ def growWord(partWordPositions, endPosition, lengthRemaining, grid, neighbours):
                 newPartWord = positionsToWord(newPartWordPositions, grid)
                 # Check to see if there exist words that begin with this part word
                 existsWord = False
-                for word in AllWords:
+                for word in WordsOfLen[lengthRemaining + len(partWordPositions)]:
                     if word.startswith(newPartWord):
                         existsWord = True
                         break
@@ -177,7 +192,7 @@ for wordLength in range(min_word_len, max_word_len + 1):
     sys.stdout.flush()
     growWord([], None, wordLength, grid, neighbours)
     print(
-        f"{time.time() - wordLengthTime:.3f} seconds - cumulative: {time.time() - startTime:.3f} seconds"
+        f"{time.time() - wordLengthTime:.3f} seconds - cumulative: {time.time() - startTime:.3f} seconds - {len(generatedWords)} words"
     )
     wordLengthTime = time.time()
 
