@@ -3,8 +3,8 @@ import os
 
 dirpath = os.path.join("Practical Revision", "2013")
 
-f = open(os.path.join(dirpath, "flow1.txt"))
-# f = open(os.path.join(dirpath, "flow2.txt"))
+# f = open(os.path.join(dirpath, "flow1.txt"))
+f = open(os.path.join(dirpath, "flow2.txt"))
 
 Board = [f.readline().strip()]
 N = range(len(Board[0]))
