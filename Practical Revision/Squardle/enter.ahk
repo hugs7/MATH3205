@@ -1,7 +1,7 @@
 #Requires AutoHotkey v2.0-beta
 #Singleinstance
 ; Enters words into squardle.
-; last updated 04/08/2023
+; last updated 14/11/2023
 ; Developer: Hugo Burton
 
 ; Set delay values (in milliseconds)
