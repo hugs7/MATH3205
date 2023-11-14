@@ -5,8 +5,8 @@
 ; Developer: Hugo Burton
 
 ; Set delay values (in milliseconds)
-letterDelay := 20
-wordDelay := 150
+letterDelay := 25
+wordDelay := 300
 
 ; Get the path to the script directory
 scriptDir := A_ScriptDir
@@ -29,19 +29,17 @@ MsgBox filePath
     ; Loop through each word
     for index, word in words {
         ; Loop through each letter in the word
-        wordLength := StrLen(word)
-        if (wordLength > 4) {
+        wordLength := StrLen(word) - 1
 
-            Loop wordLength {
-                ; Type each letter with a delay
-                Send SubStr(word, A_Index, 1)
-                Sleep letterDelay
-            }
-
-            ; Press Enter and wait for wordDelay milliseconds
-            Send "{Enter}"
-            Sleep wordDelay
+        Loop wordLength {
+            ; Type each letter with a delay
+            Send SubStr(word, A_Index, 1)
+            Sleep letterDelay
         }
+
+        ; Press Enter and wait for wordDelay milliseconds
+        Send "{Enter}"
+        Sleep wordDelay
     }
 
     MsgBox "Script completed"

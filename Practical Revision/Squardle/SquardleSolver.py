@@ -76,7 +76,7 @@ AllWords = [
     for w in AllWords
     if len(w) >= min_word_len
     and len(w) <= max_word_len
-    and all(c in grid_letters for c in w)
+    and all(c in grid_letters for c in w.lower())
 ]
 print(
     "There are",
@@ -87,6 +87,7 @@ print(
     max_word_len,
     "letters with each of these words containing all of their letters in the grid",
 )
+
 WordsOfLen = {
     l: [w for w in AllWords if len(w) == l]
     for l in range(min_word_len, max_word_len + 1)
@@ -203,7 +204,7 @@ generatedByLength = {
 }
 
 for length, words in generatedByLength.items():
-    print("\nWords of length", length)
+    print(f"\nWords of length {length} ({len(words)}):")
     for word in words:
         print(word)
 
