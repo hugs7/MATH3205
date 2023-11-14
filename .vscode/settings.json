@@ -1,12 +1,13 @@
 {
-	"[python]": {
-		"editor.defaultFormatter": "ms-python.black-formatter"
-	},
-	"python.formatting.provider": "none",
-	"editor.stickyTabStops": true,
-	"terminal.integrated.tabStopWidth": 4,
-	"prettier.tabWidth": 4,
-	"latex-workshop.bibtex-format.tab": "4 spaces",
-	"python.analysis.extraPaths": ["./Project"],
-	"prettier.printWidth": 140
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "python.formatting.provider": "none",
+    "editor.stickyTabStops": true,
+    "terminal.integrated.tabStopWidth": 4,
+    "prettier.tabWidth": 4,
+    "latex-workshop.bibtex-format.tab": "4 spaces",
+    "python.analysis.extraPaths": ["./Project"],
+    "prettier.printWidth": 140,
+    "editor.detectIndentation": false
 }
