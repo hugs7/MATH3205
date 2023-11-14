@@ -112,6 +112,4 @@ for i in N:
         for c in C:
             if X[(i, j), c].x > 0.9:
                 print(colours[c], end="")
-        if Board[i][j] == "-":
-            print("-", end="")
     print()
