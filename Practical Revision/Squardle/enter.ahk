@@ -12,7 +12,7 @@ wordDelay := 300
 scriptDir := A_ScriptDir
 ; Combine the script directory with the filename
 filePath := scriptDir . "\squardlewords.txt"
-MsgBox filePath
+
 
 ^+h::{
     ; Check if the file exists
@@ -29,9 +29,9 @@ MsgBox filePath
     ; Loop through each word
     for index, word in words {
         ; Loop through each letter in the word
-        wordLength := StrLen(word) - 1
+        wordLength := StrLen(word)
 
-        Loop wordLength {
+        Loop wordLength -1 {
             ; Type each letter with a delay
             Send SubStr(word, A_Index, 1)
             Sleep letterDelay
