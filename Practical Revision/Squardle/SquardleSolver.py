@@ -64,7 +64,7 @@ print("Grid Letters", grid_letters)
 
 ### Read words from file
 
-f = open(os.path.join(".", "Practical Revision", "Squardle", "wordsbig.txt"), "r")
+f = open(os.path.join(".", "Practical Revision", "Squardle", "words.txt"), "r")
 
 # :-1 removes the new line
 AllWords = [w[:-1] for w in f]

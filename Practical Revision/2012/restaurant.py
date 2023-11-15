@@ -1,8 +1,8 @@
 from gurobipy import GRB, quicksum, Model
 
 # Sets
-Items = range(100, 205, 5)
-Amounts = range(300, 455, 5)
+Items = range(200, 355, 5)
+Amounts = range(500, 805, 5)
 
 
 # Model
