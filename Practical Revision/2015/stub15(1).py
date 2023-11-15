@@ -140,11 +140,20 @@ if PartB:
 
     print("----")
     for t in T:
-        print("Turn", t)
         for sfrom in SOut:
             for sto in C[sfrom]:
                 if X[sfrom, sto, t].x > 0.5:
-                    print("Move ", sfrom, " to ", Fore.GREEN, sto, Fore.WHITE, sep="")
+                    print(
+                        "Turn",
+                        t,
+                        ": Move ",
+                        sfrom,
+                        " to ",
+                        Fore.GREEN,
+                        sto,
+                        Fore.WHITE,
+                        sep="",
+                    )
 
         # print grid
         if not printGrid:
