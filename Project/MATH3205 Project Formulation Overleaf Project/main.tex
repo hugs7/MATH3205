@@ -1,0 +1,266 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\graphicspath{ {./images/} }
+\usepackage{stackengine,scalerel}
+\usepackage{enumitem}
+\usepackage[utf8]{inputenc}
+\usepackage{bm}
+\usepackage{babel}
+\usepackage{amsmath}
+\usepackage{dsfont}
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{arydshln}
+\usepackage{listings}
+\usepackage{stackrel}
+\usepackage{setspace}
+\usepackage{multicol}
+\usepackage{stmaryrd}
+\usepackage{indentfirst}
+\usepackage{xcolor}
+\usepackage{xurl}
+\usepackage{titlesec}
+
+\allowdisplaybreaks
+\usepackage{geometry}
+\geometry{verbose,tmargin=1cm,bmargin=2cm,lmargin=2cm,rmargin=2cm,marginpar=1cm}
+
+\newcommand{\scriptP}{\mathcal{P}}
+\newcommand{\scriptR}{\mathcal{R}}
+\newcommand{\scriptK}{\mathcal{K}}
+\newcommand{\scriptE}{\mathcal{E}}
+\newcommand{\B}{\mathbb{B}}
+\newcommand{\Z}{\mathbb{Z}}
+
+\title{MATH3205 Project Formulation}
+\author{Hugo Burton}
+\date{October 2023}
+
+\begin{document}
+
+\maketitle
+
+\section{Formulation}
+
+\subsection{Sets}
+
+\begin{itemize}
+    \item $\scriptE$ - set of events
+    \item $\scriptP$ - set of periods
+    \item $\scriptR$ - set of rooms
+    \item $\scriptR^c$ - set of composite rooms $(\scriptR^c \subset \scriptR)$
+    \item $\scriptR^0_{r^c}$ - set of overlapping rooms of composite rooms
+    \item $\scriptP_e$ - set of available periods for event $e$
+    \item $\scriptR_e$ - set of available rooms for event $e$
+    \item $F$ - set of examination pairs with (hard) precedence constraints
+    \item $HC_e$ - set of events in hard conflict with $e\in \scriptE$
+    \item $DP^{\leftarrow}$ - set of event pairs with directed soft distance constraint
+    \item $DP^{\leftrightarrow}$ - set of event pairs with undirected soft distance constraint
+    \item $O(\cdot)$ - ordinal number of a period
+    \item $DP^{E}$ - set of exams of the same course
+    \item $DP^{WO}$ - set of written and oral events of the same examination
+    \item $DP^{\leftarrow}$ - set of pairs of events having a soft distance constraint where $e_1$ ideally comes before $e_2$.
+    \item $DP^{\leftrightarrow}$ - set of pairs of events where $e_1$ has a soft undirected distance constraint from $e_2$
+    \item $DP^{PP}$ - set of pairs of events existing in the same primary curriculum. Only applies to the first examinatoin if there are multiple exams for the one course.
+    \item $DP^{PS}$ - set of pairs of events in at least 1 secondary curriculum.    
+    \item $SC^{PS}_e$ - set of secondary events in the same curriculum as the primary event $e$
+    \item $SC^{SS}_e$ - set of secondary events (not including itself) in the same curriculum as the secondary event $e$
+\end{itemize}
+
+\subsection{Variables}
+
+$X_{e,p,r} \in \B$ - 1 if event $e$ assigned to period $p$ and room $r$
+
+$Y_{e,p} \in \B$ - 1 if event $e$ assigned to period $p$
+
+$h_e\in \Z_0$ - ordinal value of the period assigned to event e
+
+$d_{e_1, e_2} \in \Z_+$ - the absolute distance value between assignments of $e_1$ and $e_2$
+$d^{\leftrightarrow}_{e_1, e_2} \in \Z$ - the actual distance value between assignments of $e_1$ and $e_2$
+
+$g^{\leftrightarrow}_{e_1, e_2} \in \B$ - 1 if $d^{\leftrightarrow}_{e_1, e_2}$ is positive
+
+$d^{abs_1}_{e_1, e_2}\in \Z_+$ - the absolute value of $d^{\leftrightarrow}_{e_1, e_2}$ or zero.
+$d^{abs_2}_{e_1, e_2}\in \Z_+$ - the absolute value of $d^{\leftrightarrow}_{e_1, e_2}$ or zero.
+
+$p^{\min E}_{e_1, e_2}$ - 1 if $e_1$ and $e_2$ are events within the same examination
+
+\subsection{Constraints}
+
+\begin{align}
+    \sum_{p\in\scriptP_e}\sum_{r\in\scriptR_e} x_{e,p,r} &= 1 \forall e \in \scriptE \\
+    \sum_{e\in \scriptE} x_{e,p,r} &\le 1 \forall r \in \scriptR p \in \scriptP \\
+    |\scriptR^0_{r^c}| \sum_{e\in\scriptE} x_{e,p,r} + \sum_{r_0\in\scriptR^0_{r^c}}\sum_{e\in \scriptE}x_{e,p,r^0} &\le |\scriptR^0_{r^c}| \forall r^c \in \scriptR^c, \forall p \in \scriptP \\
+    h_{e_1} - h_{e_2} &\le -1 \forall(e1, e2) \in F \\
+    |HC_{e}| \cdot Y_{e,p} + \sum_{e2 \in HC_e}y_{e2, p} &\le |HC_{e}| \forall e\in \scriptE, p \in P_{e} \\
+    y_{e,p} - \sum_{r\in\scriptR} x_{e,p,r} &= 0 \forall e \in \scriptE, p \in \scriptP_e \\
+    \sum_{p\in \scriptP_e}O(p) \cdot y_{e,p} &= h_{e} \forall e \in \scriptE \\
+\end{align}
+Soft Constraints
+\begin{align}
+    &|\{e_2 \in SC_e^{PS}: O(e) < O(e_2) ^ p \in P_{e_2}\}| y_{e,p} \nonumber \\
+    &+ \sum_{e_2 \in SC^{PS}_e : O(e) < O(e_2)} y_{e_2, p} \nonumber\\
+    &\le s^{PS}_{e,p} + |\{e_2 \in SC_e^{PS}: O(e) < O(e_2) ^ p \in P_{e_2}\}| \forall e \in \scriptE, p \in \scriptP_e \\
+    &|\{e_2 \in SC_e^{SS}: O(e) < O(e_2) ^ p \in P_{e_2}\}| y_{e,p} \nonumber\\ 
+    &+ \sum_{e_2\in SC_e^{SS}:O(e)<O(e_2)} y_{e_2, p} \nonumber\\
+    &\le e^{SS}_{e,p} + |\{e_2 \in SC_e^{SS}: O(e) < O(e_2) ^ p \in P_{e_2}\}|, \forall e \in \scriptE, p \in \scriptP_e \\
+    d_{e_1, e_2} &= h_{e_2} - h_{e_1}, \forall (e1, e2) \in DP^{\leftarrow}
+\end{align}
+11-19
+\begin{align}
+    d^{\leftrightarrow}_{e_1, e_2} &= h_{e_2} - h_{e_1}  , \forall (e1, e2) \in DP^{\leftrightarrow} \\
+    d^{\leftrightarrow}_{e_1, e_2} &\le |\scriptP|\cdot g^{\leftrightarrow}_{e_1, e_2}  , \forall (e1, e2) \in DP^{\leftrightarrow} \\
+    d^{\leftrightarrow}_{e_1, e_2} &\ge - |\scriptP| (1 - g^{\leftrightarrow}_{e_1, e_2})   , \forall (e1, e2) \in DP^{\leftrightarrow} \\
+    d^{abs_1}_{e_1, e_2} &\le |\scriptP|g^{\leftrightarrow}_{e_1, e_2}  , \forall (e1, e2) \in DP^{\leftrightarrow} \\
+    d^{abs_1}_{e_1, e_2} &\ge - |\scriptP|g^{\leftrightarrow}_{e_1, e_2}  , \forall (e1, e2) \in DP^{\leftrightarrow} \\
+    d^{abs_1}_{e_1, e_2} &\le d^{\leftrightarrow}_{e_1, e_2} + |\scriptP| (1 - g^{\leftrightarrow}_{e_1, e_2}  , \forall (e1, e2) \in DP^{\leftrightarrow} \\
+    d^{abs_1}_{e_1, e_2} &\ge d^{\leftrightarrow}_{e_1, e_2} - |\scriptP| (1 - g^{\leftrightarrow}_{e_1, e_2}  , \forall (e1, e2) \in DP^{\leftrightarrow} \\
+    d^{abs_2}_{e_1, e_2} &= d^{abs_1}_{e_1, e_2} - d^{\leftrightarrow}_{e_1, e_2}  , \forall (e1, e2) \in DP^{\leftrightarrow} \\
+    d_{e_1, e_2} &= d^{abs_1}_{e_1, e_2} + d^{abs_2}_{e_1, e_2} , \forall (e1, e2) \in DP^{\leftrightarrow} 
+\end{align}
+
+\begin{align}
+    p^{\min E}_{e_1, e_2} + d_{e_1, e_2} &\ge P^{min}_{e_1, e_2}, \forall (e_1, e_2)\in DP^{E} \\
+    p^{\min WO}_{e_1, e_2} + d_{e_1, e_2} &\ge P^{min}_{e_1, e_2}, \forall (e_1, e_2)\in DP^{WO} \\
+    d_{e_1, e_2} - p^{\max WO}_{e_1, e_2} &\le P^{max}_{e_1, e_2}, \forall (e_1, e_2)\in DP^{WO} \\
+    p^{\min PP}_{e_1, e_2} + d_{e_1, e_2} &\ge P^{min}_{e_1, e_2}, \forall (e_1, e_2)\in DP^{PP} \\
+    p^{\min PS}_{e_1, e_2} + d_{e_1, e_2} &\ge P^{min}_{e_1, e_2}, \forall (e_1, e_2)\in DP^{PS} \\
+\end{align}
+
+\subsection{Objective Function}
+
+\begin{align} 
+    \min &\beta^{PS}\sum_{e\in \scriptE}\sum_{p\in\scriptP_e}s^{PS}_{e,p} + \beta^{SS}\sum_{e\in\scriptE}\sum_{p\in\scriptP_e}s^{SS}_{e,p} \\
+    &+\sum_{e\in\scriptE}\sum_{p\in\scriptP_e}\alpha_{ep}y_{e,p} \\
+    &+\sum_{e\in\scriptE}\sum_{p\in\scriptP_e}\sum_{r\in\scriptR_e}\alpha_{er}x_{e,p,r}
+    + \gamma^E\sum_{(e1, e2)\in DP^{E}} p^{\min E}_{e_1, e_2} \\
+    &+ \gamma^{WO} \sum_{(e1, e2)\in DP^{WO}}\left(p^{\min WO}_{e_1, e_2} + p^{\max WO}_{e_1, e_2}\right) \\
+    &+ \gamma^{PP}\sum_{(e_1, e_2)\in DP^{PP}} p^{\min PP}_{e_1, e_2)}
+    + \gamma^{PS}\sum_{(e_1, e_2)\in DP^{PS}} p^{\min PS}_{e_1, e_2)}
+\end{align}
+
+
+\section{Bender's Decomposition}
+
+\subsection{Master Problem}
+
+\subsubsection{Variables}
+
+
+$Y_{e,p} \in \B$ - 1 if event $e$ assigned to period $p$
+
+$h_e\in \Z_0$ - ordinal value of the period assigned to event e
+
+$d_{e_1, e_2} \in \Z_+$ - the absolute distance value between assignments of $e_1$ and $e_2$
+$d^{\leftrightarrow}_{e_1, e_2} \in \Z$ - the actual distance value between assignments of $e_1$ and $e_2$
+
+$g^{\leftrightarrow}_{e_1, e_2} \in \B$ - 1 if $d^{\leftrightarrow}_{e_1, e_2}$ is positive
+
+$d^{abs_1}_{e_1, e_2}\in \Z_+$ - the absolute value of $d^{\leftrightarrow}_{e_1, e_2}$ or zero.
+$d^{abs_2}_{e_1, e_2}\in \Z_+$ - the absolute value of $d^{\leftrightarrow}_{e_1, e_2}$ or zero.
+
+$p^{\min E}_{e_1, e_2}$ - 1 if $e_1$ and $e_2$ are events within the same examination
+
+$S2R_{e_1, e_2} \in \Z_0$ - new variable which counts the number of undesired rooms assigned in period $p$.
+
+\subsubsection{BMP Constriants}
+
+\begin{align}
+    h_{e_1} - h_{e_2} &\le -1 \forall(e1, e2) \in F \\
+    |HC_{e}| \cdot Y_{e,p} + \sum_{e2 \in HC_e}y_{e2, p} &\le |HC_{e}| \forall e\in \scriptE, p \in P_{e} \\
+    %y_{e,p} - \sum_{r\in\scriptR} x_{e,p,r} &= 0 \forall e \in \scriptE, p \in \scriptP_e \\
+    \sum_{p\in \scriptP_e}O(p) \cdot y_{e,p} &= h_{e} \forall e \in \scriptE \\
+\end{align}
+Soft Constraints
+\begin{align}
+    &|\{e_2 \in SC_e^{PS}: O(e) < O(e_2) ^ p \in P_{e_2}\}| y_{e,p} \nonumber \\
+    &+ \sum_{e_2 \in SC^{PS}_e : O(e) < O(e_2)} y_{e_2, p} \nonumber\\
+    &\le s^{PS}_{e,p} + |\{e_2 \in SC_e^{PS}: O(e) < O(e_2) ^ p \in P_{e_2}\}| \forall e \in \scriptE, p \in \scriptP_e \\
+    &|\{e_2 \in SC_e^{SS}: O(e) < O(e_2) ^ p \in P_{e_2}\}| y_{e,p} \nonumber\\ 
+    &+ \sum_{e_2\in SC_e^{SS}:O(e)<O(e_2)} y_{e_2, p} \nonumber\\
+    &\le e^{SS}_{e,p} + |\{e_2 \in SC_e^{SS}: O(e) < O(e_2) ^ p \in P_{e_2}\}|, \forall e \in \scriptE, p \in \scriptP_e \\
+    d_{e_1, e_2} &= h_{e_2} - h_{e_1}, \forall (e1, e2) \in DP^{\leftarrow}
+\end{align}
+11-19
+\begin{align}
+    d^{\leftrightarrow}_{e_1, e_2} &= h_{e_2} - h_{e_1}  , \forall (e1, e2) \in DP^{\leftrightarrow} \\
+    d^{\leftrightarrow}_{e_1, e_2} &\le |\scriptP|\cdot g^{\leftrightarrow}_{e_1, e_2}  , \forall (e1, e2) \in DP^{\leftrightarrow} \\
+    d^{\leftrightarrow}_{e_1, e_2} &\ge - |\scriptP| (1 - g^{\leftrightarrow}_{e_1, e_2})   , \forall (e1, e2) \in DP^{\leftrightarrow} \\
+    d^{abs_1}_{e_1, e_2} &\le |\scriptP|g^{\leftrightarrow}_{e_1, e_2}  , \forall (e1, e2) \in DP^{\leftrightarrow} \\
+    d^{abs_1}_{e_1, e_2} &\ge - |\scriptP|g^{\leftrightarrow}_{e_1, e_2}  , \forall (e1, e2) \in DP^{\leftrightarrow} \\
+    d^{abs_1}_{e_1, e_2} &\le d^{\leftrightarrow}_{e_1, e_2} + |\scriptP| (1 - g^{\leftrightarrow}_{e_1, e_2}  , \forall (e1, e2) \in DP^{\leftrightarrow} \\
+    d^{abs_1}_{e_1, e_2} &\ge d^{\leftrightarrow}_{e_1, e_2} - |\scriptP| (1 - g^{\leftrightarrow}_{e_1, e_2}  , \forall (e1, e2) \in DP^{\leftrightarrow} \\
+    d^{abs_2}_{e_1, e_2} &= d^{abs_1}_{e_1, e_2} - d^{\leftrightarrow}_{e_1, e_2}  , \forall (e1, e2) \in DP^{\leftrightarrow} \\
+    d_{e_1, e_2} &= d^{abs_1}_{e_1, e_2} + d^{abs_2}_{e_1, e_2} , \forall (e1, e2) \in DP^{\leftrightarrow} 
+\end{align}
+
+\begin{align}
+    p^{\min E}_{e_1, e_2} + d_{e_1, e_2} &\ge P^{min}_{e_1, e_2}, \forall (e_1, e_2)\in DP^{E} \\
+    p^{\min WO}_{e_1, e_2} + d_{e_1, e_2} &\ge P^{min}_{e_1, e_2}, \forall (e_1, e_2)\in DP^{WO} \\
+    d_{e_1, e_2} - p^{\max WO}_{e_1, e_2} &\le P^{max}_{e_1, e_2}, \forall (e_1, e_2)\in DP^{WO} \\
+    p^{\min PP}_{e_1, e_2} + d_{e_1, e_2} &\ge P^{min}_{e_1, e_2}, \forall (e_1, e_2)\in DP^{PP} \\
+    p^{\min PS}_{e_1, e_2} + d_{e_1, e_2} &\ge P^{min}_{e_1, e_2}, \forall (e_1, e_2)\in DP^{PS} \\
+\end{align}
+
+\subsubsection{Benders Master Problem Objective}
+
+\begin{align} 
+    \min &\beta^{PS}\sum_{e\in \scriptE}\sum_{p\in\scriptP_e}s^{PS}_{e,p} + \beta^{SS}\sum_{e\in\scriptE}\sum_{p\in\scriptP_e}s^{SS}_{e,p} \\
+    &+\sum_{e\in\scriptE}\sum_{p\in\scriptP_e}\alpha_{ep}y_{e,p} \\
+    &+\sum_{p\in\scriptP}\beta_{\text{Undesired room cost}} S2R_{p}
+    + \gamma^E\sum_{(e1, e2)\in DP^{E}} p^{\min E}_{e_1, e_2} \\
+    &+ \gamma^{WO} \sum_{(e1, e2)\in DP^{WO}}\left(p^{\min WO}_{e_1, e_2} + p^{\max WO}_{e_1, e_2}\right) \\
+    &+ \gamma^{PP}\sum_{(e_1, e_2)\in DP^{PP}} p^{\min PP}_{e_1, e_2)}
+    + \gamma^{PS}\sum_{(e_1, e_2)\in DP^{PS}} p^{\min PS}_{e_1, e_2)}
+\end{align}
+
+
+\newpage
+\subsection{Bender's Sub Problem}
+There is one BSP for each $p\in \scriptP$
+
+\subsubsection{Variables}
+Drop the $p$ index since this is within callback, we loop over $p\in \scriptP$.\\
+
+
+$UR_{e}\in\B$ - 1 if event $e$ is assigned to an undesired room
+
+$X_{e,r} \in \B$ - 1 if event $e$ assigned to period $p$ and room $r$
+
+\subsubsection{BSP Constraints}
+
+\begin{align}
+    \sum_{p\in\scriptP_e}\sum_{r\in\scriptR_e} x_{e,r} &= 1 \forall e \in \scriptE | Y_{e,p} = 1 \\
+    \sum_{e\in \scriptE| Y_{e,p} = 1} x_{e,r} &\le 1 \forall r \in \scriptR p \in \scriptP \\
+    |\scriptR^0_{r^c}| \sum_{e\in\scriptE} x_{e,r} + \sum_{r_0\in\scriptR^0_{r^c}}\sum_{e\in \scriptE| Y_{e,p} = 1}x_{e,r^0} &\le |\scriptR^0_{r^c}| \forall r^c \in \scriptR^c, \forall p \in \scriptP \\
+    UR_{e} = \sum_{r\in \scriptR : r \in \text{Undesired event rooms}} x_{e,r}, \forall e\in \scriptE | Y_{e,p} = 1
+\end{align}
+
+\subsubsection{BSP Objective}
+$$\min \sum_{e\in \scriptE | Y_{e,p} = 1} UR_{e}$$
+
+\subsubsection{Lazy cut}
+
+If BSP is infeasible, make the following cut
+
+$$\sum_{e\in\scriptE | Y_{e,p} = 1}(1-Y_{e,p}) \ge 1 \hspace{0.5cm} \forall p \in \scriptP$$
+
+
+
+Other cut idea
+
+RS = 1
+\begin{align}
+    \sum_{\stackrel{e\in\scriptE}{\stackrel{e_{rt}=RT}{e_{rs} = RS}}} y_{e,p} &\le \big|\{r : r\in\scriptR,\, r_{t}\ge RT,\, r_{s}=RS\}\big| \nonumber
+    \\ - \sum_{\stackrel{e\in \scriptE}{\stackrel{e_{rt} > RT}{e_{rs} = RS (1)}}} &  y_{e,p} \nonumber
+    \\ - \sum_{\stackrel{e\in \scriptE}{\stackrel{e_{rt} = RT}{e_{rs} > RS}}} & e_{rs} \cdot I_{e_{rt}, e_{rs}} \cdot y_{e,p}, \hspace{0.5cm} \forall RT \in \left\{S, M, L\right\}    
+\end{align}
+
+where $I_{r_t, r_s}$ is the Independence number of rooms of room type $r_t$ and room size $r_s$.
+
+\begin{align}
+    \sum_{\stackrel{e\in\scriptE}{\stackrel{e_{rt}=RT}{e_{rs} = RS}}} y_{e,p} &\le \big|\{r : r\in\scriptR,\, r_{t}=RT,\, r_{s}=RS\}\big| \nonumber
+    \\ - \sum_{\stackrel{e\in \scriptE}{\stackrel{e_{rt} = RT}{e_{rs} > RS}}} & e_{rs} \cdot I_{e_{rt}, e_{rs}} \cdot y_{e,p}, \hspace{0.5cm} \forall RS \in \left\{2,3,4\right\} \forall RT \in \left\{S, M, L\right\}    
+\end{align}
+
+\end{document}
